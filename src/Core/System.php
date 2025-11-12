@@ -22,6 +22,7 @@ class System {
             new \DNS\Admin\Admin();
         } else {
             new \DNS\Frontend\Frontend();
+            new \DNS\Frontend\Shortcode();
         }
     }
 

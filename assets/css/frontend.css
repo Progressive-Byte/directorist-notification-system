@@ -1,6 +1,6 @@
 /* Admin Page Styling */
 #dns-notifications-admin {
-    font-family: Arial, sans-serif;
+    /*font-family: Arial, sans-serif;*/
     margin: 20px;
 }
 
@@ -29,4 +29,160 @@
 
 .dns-notification-table th {
     background-color: #f1f1f1;
+}
+
+/* DNS Notification Preferences Shortcode Styles */
+
+.dns-wrap {
+    max-width: 760px;
+    margin: 24px auto;
+    padding: 0 12px;
+}
+
+.dns-card {
+    background: #fff;
+    border: 1px solid #e9eaee;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.05);
+    padding: 24px;
+}
+
+.dns-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 6px;
+}
+
+.dns-sub {
+    color: #5a6270;
+    margin: 0 0 18px;
+}
+
+/* Grid Layout */
+.dns-grid {
+    display: grid;
+    gap: 16px;
+}
+
+@media (min-width: 720px) {
+    .dns-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Form Fields */
+.dns-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dns-label {
+    font-weight: 600;
+}
+
+.dns-select,
+.dns-chiplist {
+    border: 1px solid #e1e4ea;
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: #fafbfc;
+}
+
+.dns-select {
+    width: 100%;
+    min-height: 44px;
+}
+
+.dns-help {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* Buttons & Actions */
+.dns-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.dns-btn {
+    border: 0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.dns-btn--primary {
+    background: #111827;
+    color: #fff;
+}
+
+.dns-btn--ghost {
+    background: #f3f4f6;
+}
+
+/* Alert Box */
+.dns-alert {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #bbf7d0;
+}
+
+/* Chips */
+.dns-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.dns-chip {
+    background: #eef2ff;
+    color: #3730a3;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+/* Checkbox labels inside chiplist */
+.dns-chiplist label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+}
+
+/* Tabs */
+.dns-tabs {
+    display: flex;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 16px;
+}
+
+.dns-tab-btn {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: #4b5563;
+    border-bottom: 2px solid transparent;
+}
+
+.dns-tab-btn.active {
+    border-bottom-color: #2563eb;
+    color: #2563eb;
+}
+
+.dns-tab-content {
+    display: none;
+}
+
+.dns-tab-content.active {
+    display: block;
 }
