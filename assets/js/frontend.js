@@ -36,4 +36,8 @@ jQuery(document).ready(function($) {
         $('.dns-tab-content').removeClass('active').hide();
         $('#tab-' + tab).addClass('active').show();
     });
+
+    setTimeout(function(){
+        $('#dns-msg').fadeOut('slow');
+    }, 5000);
 });
