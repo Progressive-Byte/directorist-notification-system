@@ -1,11 +1,10 @@
 <?php
 namespace DNS\Admin;
 
-class NotificationAdmin {
+class Admin {
 
     public function __construct() {
         add_action('admin_menu', [$this, 'add_admin_menu']);
-        add_action('admin_enqueue_scripts', [$this, 'enqueue_assets']);
     }
 
     public function add_admin_menu() {
@@ -23,10 +22,5 @@ class NotificationAdmin {
     public function admin_page() {
         echo '<h1>Directory Notifications Admin</h1>';
         echo '<p>Manage all directory notifications here.</p>';
-    }
-
-    public function enqueue_assets() {
-        wp_enqueue_style('dns-admin-style', plugin_dir_url(__DIR__, 2) . 'assets/css/admin.css');
-        wp_enqueue_script('dns-admin-script', plugin_dir_url(__DIR__, 2) . 'assets/js/admin.js', ['jquery'], false, true);
     }
 }

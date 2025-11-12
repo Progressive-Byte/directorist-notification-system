@@ -4,7 +4,12 @@ namespace DNS\Frontend;
 class Frontend {
 
     public function __construct() {
-        add_action('wp_footer', [$this, 'show_notification']);
+        add_action('wp_footer', [ $this, 'show_notification'] );
+        add_action('wp_head', [ $this, 'head'] );
+    }
+
+    public function head(){
+        var_dump( DNS_ASSETS_URL );
     }
 
     public function show_notification() {

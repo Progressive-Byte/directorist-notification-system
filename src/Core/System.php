@@ -12,7 +12,45 @@ class System {
     }
 
     public function __construct() {
-        new \DNS\Admin\NotificationAdmin();
-        new \DNS\Frontend\NotificationFrontend();
+        add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+        new \DNS\Admin\Admin();
+        new \DNS\Frontend\Frontend();
+    }
+
+    public function enqueue_scripts() {
+        // Frontend CSS + JS
+        wp_enqueue_style(
+            'dns-notification-style',
+            DNS_ASSETS_URL . 'css/frontend.css',
+            [],
+            DNS_VERSION
+        );
+
+        wp_enqueue_script(
+            'dns-notification-script',
+            DNS_ASSETS_URL . 'js/frontend.js',
+            [ 'jquery' ],
+            DNS_VERSION,
+            true
+        );
+    }
+
+    public function enqueue_admin_scripts() {
+        // Admin CSS + JS (optional)
+        wp_enqueue_style(
+            'dns-admin-style',
+            DNS_ASSETS_URL . 'css/admin.css',
+            [],
+            DNS_VERSION
+        );
+
+        wp_enqueue_script(
+            'dns-admin-script',
+            DNS_ASSETS_URL . 'js/admin.js',
+            [ 'jquery' ],
+            DNS_VERSION,
+            true
+        );
     }
 }

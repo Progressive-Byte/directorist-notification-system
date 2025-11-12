@@ -33,6 +33,10 @@ if ( ! defined( 'DNS_TEXT_DOMAIN' ) ) {
     define( 'DNS_TEXT_DOMAIN', 'directorist-notification-system' );
 }
 
+if ( ! defined( 'DNS_ASSETS_URL' ) ) {
+	define( 'DNS_ASSETS_URL', DNS_PLUGIN_URL . 'assets/' );    
+}
+
 // Composer autoload
 if ( file_exists( DNS_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
     require DNS_PLUGIN_DIR . 'vendor/autoload.php';
