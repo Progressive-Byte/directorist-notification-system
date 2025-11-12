@@ -11,7 +11,7 @@ class Frontend {
     }
 
     public function head(){
-        Messages::pri( DNS_ASSETS_URL );
+        dns_display_message('Hello world!');
     }
 
     public function show_notification() {
