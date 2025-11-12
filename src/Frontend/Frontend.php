@@ -6,7 +6,7 @@ use DNS\Helper\Messages;
 class Frontend {
 
     public function __construct() {
-        add_action('wp_footer', [ $this, 'show_notification'] );
+        // add_action('wp_footer', [ $this, 'show_notification'] );
         add_action('wp_head', [ $this, 'head'] );
     }
 
