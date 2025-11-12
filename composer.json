@@ -1,0 +1,10 @@
+{
+    "name": "mahbub/directory-notification-system",
+    "description": "A WordPress notification system plugin for directories.",
+    "type": "wordpress-plugin",
+    "autoload": {
+        "psr-4": {
+            "DNS\\": "src/"
+        }
+    }
+}
