@@ -1,7 +1,7 @@
 <?php
 namespace DNS\Core;
 
-class NotificationSystem {
+class System {
     private static $instance = null;
 
     public static function get_instance() {

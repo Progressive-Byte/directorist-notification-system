@@ -40,5 +40,5 @@ if ( file_exists( DNS_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 
 // Initialize plugin
 add_action('plugins_loaded', function() {
-    DNS\Core\NotificationSystem::get_instance();
+    DNS\Core\System::get_instance();
 });

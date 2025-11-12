@@ -1,7 +1,7 @@
 <?php
 namespace DNS\Frontend;
 
-class NotificationFrontend {
+class Frontend {
 
     public function __construct() {
         add_action('wp_footer', [$this, 'show_notification']);
