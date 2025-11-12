@@ -14,8 +14,15 @@ class System {
     public function __construct() {
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
-        new \DNS\Admin\Admin();
-        new \DNS\Frontend\Frontend();
+        add_action( 'init', [ $this, 'init_classes' ] );       
+    }
+
+    public function init_classes() {
+        if ( is_admin() ) {
+            new \DNS\Admin\Admin();
+        } else {
+            new \DNS\Frontend\Frontend();
+        }
     }
 
     public function enqueue_scripts() {

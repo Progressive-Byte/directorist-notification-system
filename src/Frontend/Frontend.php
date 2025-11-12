@@ -1,6 +1,8 @@
 <?php
 namespace DNS\Frontend;
 
+use DNS\Helper\Messages;
+
 class Frontend {
 
     public function __construct() {
@@ -9,7 +11,7 @@ class Frontend {
     }
 
     public function head(){
-        var_dump( DNS_ASSETS_URL );
+        Messages::pri( DNS_ASSETS_URL );
     }
 
     public function show_notification() {
