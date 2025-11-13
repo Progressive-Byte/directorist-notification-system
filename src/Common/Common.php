@@ -25,7 +25,7 @@ class Common {
 
 		$terms = dns_get_terms_by_post_id( $post_id, $taxonomy );
 
-		Messages::pri( $terms );
+		// Messages::pri( $terms );
 
 		// foreach ($terms as $term) {
 		//     Messages::pri( $term->name . ' (ID: ' . $term->term_id . ')<br>' );
