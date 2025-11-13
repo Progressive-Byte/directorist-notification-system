@@ -11,6 +11,7 @@ class Frontend {
     }
 
     public function head(){
+        
     }
 
     public function show_notification() {

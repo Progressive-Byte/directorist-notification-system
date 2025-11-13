@@ -38,6 +38,12 @@ class System {
                 new \DNS\Frontend\Shortcode();
             }
         }
+
+        if (class_exists('\DNS\Common\Common')) {
+            new \DNS\Common\Common();
+        }
+
+
     }
 
     /**
