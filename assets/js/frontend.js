@@ -15,12 +15,8 @@ jQuery(document).ready(function($) {
     // --- Tab Switch ---
     $('.dns-tab').on('click', function() {
         const target = $(this).data('tab');
-
-        // Remove active from all
         $('.dns-tab').removeClass('active');
         $('.dns-tab-content').removeClass('active');
-
-        // Activate selected
         $(this).addClass('active');
         $('#tab-' + target).addClass('active');
     });
@@ -34,5 +30,14 @@ jQuery(document).ready(function($) {
             });
         }, 5000);
     }
+
+    // --- Location Search Filter ---
+    $('#dns-location-search').on('keyup', function() {
+        const searchText = $(this).val().toLowerCase();
+        $('.dns-location-list .dns-checkbox').each(function() {
+            const labelText = $(this).text().toLowerCase();
+            $(this).toggle(labelText.indexOf(searchText) !== -1);
+        });
+    });
 
 });

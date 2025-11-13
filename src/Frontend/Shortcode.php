@@ -79,8 +79,6 @@ class Shortcode {
                     }
                 }
             }
-
-            $msg = '<div class="dns-alert">Preferences saved 🎉</div>';
         }
 
         ob_start(); ?>
@@ -115,17 +113,23 @@ class Shortcode {
 
                     <div class="dns-tab-content" id="tab-locations">
                         <?php if (!empty($locations) && !is_wp_error($locations)): ?>
-                            <?php foreach ($locations as $loc): ?>
-                                <label class="dns-checkbox">
-                                    <input type="checkbox" name="listing_locations[]" value="<?= esc_attr($loc->term_id); ?>"
-                                    <?= isset($saved['listing_locations']) && in_array($loc->term_id, $saved['listing_locations']) ? 'checked' : ''; ?>>
-                                    <?= esc_html($loc->name); ?>
-                                </label><br>
-                            <?php endforeach; ?>
+                            <div class="dns-search-box">
+                                <input type="text" id="dns-location-search" placeholder="Search location...">
+                            </div>
+                            <div class="dns-location-list">
+                                <?php foreach ($locations as $loc): ?>
+                                    <label class="dns-checkbox">
+                                        <input type="checkbox" name="listing_locations[]" value="<?= esc_attr($loc->term_id); ?>"
+                                        <?= isset($saved['listing_locations']) && in_array($loc->term_id, $saved['listing_locations']) ? 'checked' : ''; ?>>
+                                        <?= esc_html($loc->name); ?>
+                                    </label><br>
+                                <?php endforeach; ?>
+                            </div>
                         <?php else: ?>
                             <p>No locations found.</p>
                         <?php endif; ?>
                     </div>
+
 
                     <div class="dns-actions">
                         <button class="dns-btn dns-btn--primary" type="submit" name="np_save" value="1">Save Preferences</button>
