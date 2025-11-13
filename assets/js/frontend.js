@@ -11,33 +11,28 @@ jQuery(document).ready(function($){
 });
 
 jQuery(document).ready(function($) {
-    // Initialize Select2 for all select fields
-    // $('.dns-select').select2({
-    //     width: '300px', 
-    //     placeholder: 'Select options'
-    // });
 
-    // Enable/disable select based on toggle checkbox
-    $('#np_job_enabled').on('change', function() {
-        $('#np_jobs').prop('disabled', !this.checked).trigger('change');
-    });
-    $('#np_product_enabled').on('change', function() {
-        $('#np_products').prop('disabled', !this.checked).trigger('change');
-    });
-    $('#np_city_enabled').on('change', function() {
-        $('#np_cities').prop('disabled', !this.checked).trigger('change');
-    });
+    // --- Tab Switch ---
+    $('.dns-tab').on('click', function() {
+        const target = $(this).data('tab');
 
-    // Tab system
-    $('.dns-tab-btn').on('click', function() {
-        var tab = $(this).data('tab');
-        $('.dns-tab-btn').removeClass('active');
+        // Remove active from all
+        $('.dns-tab').removeClass('active');
+        $('.dns-tab-content').removeClass('active');
+
+        // Activate selected
         $(this).addClass('active');
-        $('.dns-tab-content').removeClass('active').hide();
-        $('#tab-' + tab).addClass('active').show();
+        $('#tab-' + target).addClass('active');
     });
 
-    setTimeout(function(){
-        $('#dns-msg').fadeOut('slow');
-    }, 5000);
+    // --- Auto-hide success message ---
+    const $alert = $('.dns-alert');
+    if ($alert.length) {
+        setTimeout(function() {
+            $alert.fadeOut(500, function() {
+                $(this).remove();
+            });
+        }, 5000);
+    }
+
 });

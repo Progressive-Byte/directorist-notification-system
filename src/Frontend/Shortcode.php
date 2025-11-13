@@ -19,31 +19,67 @@ class Shortcode {
 
         $user_id = get_current_user_id();
 
-        // --- Get data ---
-        $at_biz_dir = get_posts([
-            'post_type' => 'at_biz_dir',
-            'posts_per_page' => -1,
-            'post_status' => 'publish',
+        // --- Get taxonomy terms ---
+        $listing_types = get_terms([
+            'taxonomy'   => 'atbdp_listing_types',
+            'hide_empty' => false,
+            'orderby'    => 'date',
+            'order'      => 'DESC',
         ]);
-        $city_terms = get_terms(['taxonomy' => 'at_biz_dir-location', 'hide_empty' => false]);
-        $product_terms = get_terms(['taxonomy' => 'at_biz_dir-tags', 'hide_empty' => false]);
 
-        // --- Load saved data ---
+        $locations = get_terms([
+            'taxonomy'   => 'at_biz_dir-location',
+            'hide_empty' => false,
+            'orderby'    => 'name',
+            'order'      => 'ASC',
+        ]);
+
+        // --- Load saved user preferences ---
         $saved = get_user_meta($user_id, 'dns_notify_prefs', true);
         $saved = is_array($saved) ? $saved : [];
 
         // --- Handle form submission ---
         $msg = '';
         if (!empty($_POST['np_save']) && check_admin_referer('np_save_prefs', 'np_nonce')) {
+
+            $selected_types = isset($_POST['listing_types']) ? array_map('intval', (array) $_POST['listing_types']) : [];
+            $selected_locations = isset($_POST['listing_locations']) ? array_map('intval', (array) $_POST['listing_locations']) : [];
+
+            // Save to user_meta
             $saved = [
-                'product_enabled' => !empty($_POST['np_product_enabled']),
-                'products'        => isset($_POST['np_products']) ? array_map('intval', (array) $_POST['np_products']) : [],
-                'job_enabled'     => !empty($_POST['np_job_enabled']),
-                'jobs'            => isset($_POST['np_jobs']) ? array_map('intval', (array) $_POST['np_jobs']) : [],
-                'city_enabled'    => !empty($_POST['np_city_enabled']),
-                'cities'          => isset($_POST['np_cities']) ? array_map('intval', (array) $_POST['np_cities']) : [],
+                'listing_types' => $selected_types,
+                'listing_locations' => $selected_locations,
             ];
             update_user_meta($user_id, 'dns_notify_prefs', $saved);
+
+            // Update term meta for each taxonomy
+            $taxonomies = [
+                'atbdp_listing_types' => $listing_types,
+                'at_biz_dir-location' => $locations,
+            ];
+
+            foreach ($taxonomies as $taxonomy => $terms) {
+                if (!empty($terms) && !is_wp_error($terms)) {
+                    foreach ($terms as $term) {
+                        $meta_key = 'subscribed_users';
+                        $users = get_term_meta($term->term_id, $meta_key, true);
+                        $users = is_array($users) ? $users : [];
+
+                        $selected = ($taxonomy === 'atbdp_listing_types') ? $selected_types : $selected_locations;
+
+                        if (in_array($term->term_id, $selected)) {
+                            if (!in_array($user_id, $users)) {
+                                $users[] = $user_id;
+                            }
+                        } else {
+                            $users = array_diff($users, [$user_id]);
+                        }
+
+                        update_term_meta($term->term_id, $meta_key, $users);
+                    }
+                }
+            }
+
             $msg = '<div class="dns-alert">Preferences saved 🎉</div>';
         }
 
@@ -51,80 +87,54 @@ class Shortcode {
 
         <div class="dns-wrap">
             <div class="dns-card">
-                <h3 class="dns-title">Subscribe to Notifications</h3>
-                <p class="dns-sub">Pick the categories and cities you care about. We’ll notify you when new listings match.</p>
+                <h3 class="dns-title">Notification Preferences</h3>
+                <p class="dns-sub">Choose which listing types and locations you want updates for.</p>
                 <?= $msg; ?>
-
-                <!-- Tabs -->
-                <div class="dns-tabs">
-                    <button class="dns-tab-btn active" data-tab="jobs">Jobs</button>
-                    <button class="dns-tab-btn" data-tab="products">Products</button>
-                    <button class="dns-tab-btn" data-tab="cities">Cities</button>
-                </div>
 
                 <form method="post">
                     <?php wp_nonce_field('np_save_prefs','np_nonce'); ?>
 
-                    <!-- Jobs Tab -->
-                    <div class="dns-tab-content active" id="tab-jobs">
-                        <div class="dns-field">
-                            <label class="dns-label">
-                                <input type="checkbox" name="np_job_enabled" id="np_job_enabled" <?= !empty($saved['job_enabled']) ? 'checked' : ''; ?> />
-                                Enable Job Notifications
-                            </label>
-                            <select class="dns-select" name="np_jobs[]" id="np_jobs" multiple <?= empty($saved['job_enabled']) ? 'disabled' : ''; ?>>
-                                <?php foreach ($at_biz_dir as $biz): ?>
-                                    <option value="<?= esc_attr($biz->ID); ?>" <?= isset($saved['jobs']) && in_array($biz->ID, $saved['jobs']) ? 'selected' : ''; ?>>
-                                        <?= esc_html(get_the_title($biz)); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                    <div class="dns-tabs">
+                        <button type="button" class="dns-tab active" data-tab="types">Listing Types</button>
+                        <button type="button" class="dns-tab" data-tab="locations">Locations</button>
                     </div>
 
-                    <!-- Products Tab -->
-                    <div class="dns-tab-content" id="tab-products">
-                        <div class="dns-field">
-                            <label class="dns-label">
-                                <input type="checkbox" name="np_product_enabled" id="np_product_enabled" <?= !empty($saved['product_enabled']) ? 'checked' : ''; ?> />
-                                Enable Product Notifications
-                            </label>
-                            <select class="dns-select" name="np_products[]" id="np_products" multiple <?= empty($saved['product_enabled']) ? 'disabled' : ''; ?>>
-                                <?php foreach ($product_terms as $t): ?>
-                                    <option value="<?= esc_attr($t->term_id); ?>" <?= isset($saved['products']) && in_array($t->term_id, $saved['products']) ? 'selected' : ''; ?>>
-                                        <?= esc_html($t->name); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                    <div class="dns-tab-content active" id="tab-types">
+                        <?php if (!empty($listing_types) && !is_wp_error($listing_types)): ?>
+                            <?php foreach ($listing_types as $type): ?>
+                                <label class="dns-checkbox">
+                                    <input type="checkbox" name="listing_types[]" value="<?= esc_attr($type->term_id); ?>"
+                                    <?= isset($saved['listing_types']) && in_array($type->term_id, $saved['listing_types']) ? 'checked' : ''; ?>>
+                                    <?= esc_html($type->name); ?>
+                                </label><br>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p>No listing types found.</p>
+                        <?php endif; ?>
                     </div>
 
-                    <!-- Cities Tab -->
-                    <div class="dns-tab-content" id="tab-cities">
-                        <div class="dns-field">
-                            <label class="dns-label">
-                                <input type="checkbox" name="np_city_enabled" id="np_city_enabled" <?= !empty($saved['city_enabled']) ? 'checked' : ''; ?> />
-                                Enable City Notifications
-                            </label>
-                            <select class="dns-select" name="np_cities[]" id="np_cities" multiple <?= empty($saved['city_enabled']) ? 'disabled' : ''; ?>>
-                                <?php foreach ($city_terms as $t): ?>
-                                    <option value="<?= esc_attr($t->term_id); ?>" <?= isset($saved['cities']) && in_array($t->term_id, $saved['cities']) ? 'selected' : ''; ?>>
-                                        <?= esc_html($t->name); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                    <div class="dns-tab-content" id="tab-locations">
+                        <?php if (!empty($locations) && !is_wp_error($locations)): ?>
+                            <?php foreach ($locations as $loc): ?>
+                                <label class="dns-checkbox">
+                                    <input type="checkbox" name="listing_locations[]" value="<?= esc_attr($loc->term_id); ?>"
+                                    <?= isset($saved['listing_locations']) && in_array($loc->term_id, $saved['listing_locations']) ? 'checked' : ''; ?>>
+                                    <?= esc_html($loc->name); ?>
+                                </label><br>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p>No locations found.</p>
+                        <?php endif; ?>
                     </div>
 
                     <div class="dns-actions">
                         <button class="dns-btn dns-btn--primary" type="submit" name="np_save" value="1">Save Preferences</button>
-                        <button class="dns-btn dns-btn--ghost" type="reset">Reset</button>
                     </div>
                 </form>
             </div>
         </div>
+
         <?php
         return ob_get_clean();
     }
-
 }

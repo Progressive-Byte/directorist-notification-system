@@ -11,7 +11,6 @@ class Frontend {
     }
 
     public function head(){
-        // dns_display_message('Hello world!');
     }
 
     public function show_notification() {
