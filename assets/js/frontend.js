@@ -104,61 +104,75 @@ jQuery(document).ready(function($) {
         }, 5000);
     }
 
-    // Location search filter (safe: only runs if element exists)
-    $(document).on('keyup', '#dns-location-search', function () {
-        const q = $(this).val().toLowerCase();
-
-        const $items = $('.dns-location-list .dns-checkbox');
-
-        $items.sort(function (a, b) {
-            const textA = $(a).text().toLowerCase();
-            const textB = $(b).text().toLowerCase();
-
-            const matchA = textA.indexOf(q) !== -1 ? 1 : 0;
-            const matchB = textB.indexOf(q) !== -1 ? 1 : 0;
-
-            // Sort matched (1) before unmatched (0)
-            return matchB - matchA;
-        });
-
-        // Re-append sorted items
-        $('.dns-location-list').html($items);
-
-        // Toggle visibility
-        $items.each(function () {
-            const txt = $(this).text().toLowerCase();
-            $(this).toggle(txt.indexOf(q) !== -1 || q === '');
-        });
-    });
-
-
-    // Listings search filter
-    $(document).on('keyup', '#dns-listing-search', function () {
-        const q = $(this).val().toLowerCase();
-
-        const $items = $('.dns-listing-list .dns-checkbox');
-
-        $items.sort(function (a, b) {
-            const textA = $(a).text().toLowerCase();
-            const textB = $(b).text().toLowerCase();
-
-            const matchA = textA.indexOf(q) !== -1 ? 1 : 0;
-            const matchB = textB.indexOf(q) !== -1 ? 1 : 0;
-
-            return matchB - matchA;
-        });
-
-        $('.dns-listing-list').html($items);
-
-        $items.each(function () {
-            const txt = $(this).text().toLowerCase();
-            $(this).toggle(txt.indexOf(q) !== -1 || q === '');
-        });
-    });
-
-
     // Optional: expose function to switch tab from elsewhere (callable)
     window.dnsActivateTab = activateTab;
 });
+
+jQuery(function($) {
+
+    // Preserve original order
+    const $locationList = $('.dns-location-list');
+    const locationOriginal = $locationList.children('.dns-checkbox').toArray();
+
+    const $listingList = $('.dns-listing-list');
+    const listingOriginal = $listingList.children('.dns-checkbox').toArray();
+
+    // Location search
+    $(document).on('keyup', '#dns-location-search', function () {
+        const q = $(this).val().toLowerCase();
+        const $items = $locationList.children('.dns-checkbox');
+
+        if (q === '') {
+            // Restore original order if input is empty
+            $locationList.html(locationOriginal);
+            $locationList.children('.dns-checkbox').show();
+        } else {
+            // Sort matched first
+            $items.sort(function (a, b) {
+                const textA = $(a).text().toLowerCase();
+                const textB = $(b).text().toLowerCase();
+                const matchA = textA.indexOf(q) !== -1 ? 1 : 0;
+                const matchB = textB.indexOf(q) !== -1 ? 1 : 0;
+                return matchB - matchA;
+            });
+
+            $locationList.html($items);
+
+            // Toggle visibility
+            $items.each(function () {
+                const txt = $(this).text().toLowerCase();
+                $(this).toggle(txt.indexOf(q) !== -1);
+            });
+        }
+    });
+
+    // Listings search
+    $(document).on('keyup', '#dns-listing-search', function () {
+        const q = $(this).val().toLowerCase();
+        const $items = $listingList.children('.dns-checkbox');
+
+        if (q === '') {
+            $listingList.html(listingOriginal);
+            $listingList.children('.dns-checkbox').show();
+        } else {
+            $items.sort(function (a, b) {
+                const textA = $(a).text().toLowerCase();
+                const textB = $(b).text().toLowerCase();
+                const matchA = textA.indexOf(q) !== -1 ? 1 : 0;
+                const matchB = textB.indexOf(q) !== -1 ? 1 : 0;
+                return matchB - matchA;
+            });
+
+            $listingList.html($items);
+
+            $items.each(function () {
+                const txt = $(this).text().toLowerCase();
+                $(this).toggle(txt.indexOf(q) !== -1);
+            });
+        }
+    });
+
+});
+
 
 

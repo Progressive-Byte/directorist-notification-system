@@ -32,7 +32,7 @@ function dns_display_data($data) {
  * @param string $taxonomy Optional taxonomy to limit search
  * @return array Array of term objects
  */
-function dns_get_terms_by_post_id($post_id, $taxonomy = '') {
+function dns_get_terms_by_post_id( $post_id, $taxonomy = '' ) {
     global $wpdb;
 
     // Base query to get all termmeta with key 'subscribed_users'
@@ -62,8 +62,6 @@ function dns_get_terms_by_post_id($post_id, $taxonomy = '') {
         $term_id = (int) $row->term_id;
         $subscribed = get_term_meta( $term_id, 'subscribed_users', true);
 
-        // return is_array( $subscribed );
-
         // Ensure it is always an array
         if ( ! is_array($subscribed)) {
             $subscribed = [];
@@ -74,3 +72,153 @@ function dns_get_terms_by_post_id($post_id, $taxonomy = '') {
 
 }
 
+/**
+ * Get all subscription data for a given post.
+ *
+ * @param int $post_id The post ID to fetch data for.
+ * @return array Data including post meta and term meta.
+ */
+function dns_get_post_data( $post_id ) {
+
+    if ( ! $post_id || ! get_post( $post_id ) ) {
+        return []; // Invalid post
+    }
+
+    $data = [];
+
+    // Get post title
+    $data['post_title'] = get_the_title( $post_id );
+
+    // Get post meta: subscribed users
+    $subscribed_users = get_post_meta( $post_id, 'subscribed_users', true );
+    $data['subscribed_users'] = is_array( $subscribed_users ) ? $subscribed_users : [];
+
+    // Get all taxonomy terms for this post
+    $taxonomies = [ 'atbdp_listing_types', 'at_biz_dir-location' ]; // add more if needed
+    $data['terms'] = [];
+
+    foreach ( $taxonomies as $taxonomy ) {
+        $terms = wp_get_post_terms( $post_id, $taxonomy );
+
+        if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+            $data['terms'][ $taxonomy ] = [];
+
+            foreach ( $terms as $term ) {
+                $term_data = [
+                    'term_id' => $term->term_id,
+                ];
+
+                // Get users subscribed to this term
+                $term_users = get_term_meta( $term->term_id, 'subscribed_users', true );
+                $term_data['subscribed_users'] = is_array( $term_users ) ? $term_users : [];
+
+                $data['terms'][ $taxonomy ][] = $term_data;
+            }
+        }
+    }
+
+    return $data;
+}
+
+/**
+ * Get all terms data for given taxonomies including subscribed users.
+ *
+ * @param array $taxonomies Array of taxonomy slugs.
+ * @return array Data for each taxonomy including term info and subscribed users.
+ */
+function dns_get_terms_data( $taxonomies = [] ) {
+
+    if ( empty( $taxonomies ) || ! is_array( $taxonomies ) ) {
+        return [];
+    }
+
+    $data = [];
+
+    foreach ( $taxonomies as $taxonomy ) {
+
+        if ( ! taxonomy_exists( $taxonomy ) ) {
+            continue;
+        }
+
+        $terms = get_terms(
+            [
+                'taxonomy'   => $taxonomy,
+                'hide_empty' => false,
+                'orderby'    => 'name',
+                'order'      => 'ASC',
+            ]
+        );
+
+        if ( is_wp_error( $terms ) || empty( $terms ) ) {
+            $data[ $taxonomy ] = [];
+            continue;
+        }
+
+        $data[ $taxonomy ] = [];
+
+        foreach ( $terms as $term ) {
+
+            $term_users = get_term_meta( $term->term_id, 'subscribed_users', true );
+            $term_users = is_array( $term_users ) ? $term_users : [];
+
+            $data[ $taxonomy ][] = [
+                'term_id'           => $term->term_id,
+                'name'              => $term->name,
+                'slug'              => $term->slug,
+                'subscribed_users'  => $term_users,
+            ];
+        }
+    }
+
+    return $data;
+}
+
+/**
+ * Get all terms with at least one subscribed user.
+ *
+ * @param array $taxonomies Array of taxonomy slugs.
+ * @return array Filtered terms data with non-empty subscribed_users.
+ */
+function dns_get_terms_with_subscribers( $taxonomies = [] ) {
+
+    if ( empty( $taxonomies ) || ! is_array( $taxonomies ) ) {
+        return [];
+    }
+
+    $data = [];
+
+    foreach ( $taxonomies as $taxonomy ) {
+
+        if ( ! taxonomy_exists( $taxonomy ) ) {
+            continue;
+        }
+
+        $terms = get_terms(
+            [
+                'taxonomy'   => $taxonomy,
+                'hide_empty' => false,
+                'orderby'    => 'name',
+                'order'      => 'ASC',
+            ]
+        );
+
+        if ( is_wp_error( $terms ) || empty( $terms ) ) {
+            continue;
+        }
+
+        foreach ( $terms as $term ) {
+
+            $subscribed_users = get_term_meta( $term->term_id, 'subscribed_users', true );
+            $subscribed_users = is_array( $subscribed_users ) ? $subscribed_users : [];
+
+            // Only include terms with subscribed users
+            if ( ! empty( $subscribed_users ) ) {
+                $data[ $taxonomy ]['subscribed_users'] = 
+                $subscribed_users
+                ;
+            }
+        }
+    }
+
+    return $data;
+}

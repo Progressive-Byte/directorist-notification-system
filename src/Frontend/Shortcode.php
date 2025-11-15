@@ -19,7 +19,7 @@ class Shortcode {
      */
     public function __construct() {
         add_shortcode( 'notification_system', [ $this, 'render' ] );
-        // add_action( 'wp_head', [ $this, 'head' ] );
+        add_action( 'wp_head', [ $this, 'head' ] );
     }
 
     /**
@@ -28,8 +28,14 @@ class Shortcode {
      * @return void
      */
     public function head() {
-        // Messages::pri( get_user_meta( get_current_user_id(), 'dns_notify_prefs', true ) );
-        // Messages::pri( get_term_meta( '254', 'subscribed_users', true ) );
+        $post_id = 672;
+
+        // $post_data = dns_get_post_data( $post_id );
+
+        $taxonomies = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
+        $terms_with_users = dns_get_terms_with_subscribers( $taxonomies );
+
+        Messages::pri( $terms_with_users );
     }
 
     /**
@@ -46,11 +52,7 @@ class Shortcode {
 
         $user_id = get_current_user_id();
 
-        /*
-         *----------------------------------------
-         * Fetch Taxonomy Terms
-         *----------------------------------------
-         */
+        // Fetch Taxonomy Terms.
         $listing_types = get_terms(
             [
                 'taxonomy'   => 'atbdp_listing_types',
@@ -69,11 +71,7 @@ class Shortcode {
             ]
         );
 
-        /*
-         *----------------------------------------
-         * Fetch All Listings
-         *----------------------------------------
-         */
+        // Fetch All Listings.
         $listings = get_posts(
             [
                 'post_type'      => 'at_biz_dir',
@@ -83,15 +81,9 @@ class Shortcode {
             ]
         );
 
-        /*
-         *----------------------------------------
-         * Load Saved User Preferences
-         *----------------------------------------
-         */
+        // Load Saved User Preferences.
         $saved = get_user_meta( $user_id, 'dns_notify_prefs', true );
         $saved = is_array( $saved ) ? $saved : [];
-
-        // Ensure keys exist.
         $saved = array_merge(
             [
                 'listing_types'     => [],
@@ -101,11 +93,6 @@ class Shortcode {
             $saved
         );
 
-        /*
-         *----------------------------------------
-         * Handle Form Submission
-         *----------------------------------------
-         */
         $msg = '';
 
         if ( ! empty( $_POST['np_save'] ) && check_admin_referer( 'np_save_prefs', 'np_nonce' ) ) {
@@ -123,11 +110,7 @@ class Shortcode {
 
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
 
-            /*
-             *----------------------------------------
-             * Sync User Subscriptions with Term Meta
-             *----------------------------------------
-             */
+            // Sync User Subscriptions with Term Meta.
             $taxonomies = [
                 'atbdp_listing_types' => $listing_types,
                 'at_biz_dir-location' => $locations,
@@ -145,13 +128,11 @@ class Shortcode {
                         $users    = get_term_meta( $term->term_id, $meta_key, true );
                         $users    = is_array( $users ) ? $users : [];
 
-                        // Add user to selected terms.
                         if ( in_array( $term->term_id, $selected, true ) ) {
                             if ( ! in_array( $user_id, $users, true ) ) {
                                 $users[] = $user_id;
                             }
                         } else {
-                            // Remove user from terms that are no longer selected.
                             $users = array_diff( $users, [ $user_id ] );
                         }
 
@@ -160,14 +141,23 @@ class Shortcode {
                 }
             }
 
-            $msg = '<div class="notice updated">' . esc_html__( 'Preferences saved successfully.', 'dns' ) . '</div>';
+            // Sync User Subscriptions with Post Meta.
+            if ( ! empty( $selected_listings ) ) {
+                foreach ( $selected_listings as $listing_id ) {
+                    $meta_key = 'subscribed_users';
+                    $users    = get_post_meta( $listing_id, $meta_key, true );
+                    $users    = is_array( $users ) ? $users : [];
+
+                    if ( ! in_array( $user_id, $users, true ) ) {
+                        $users[] = $user_id;
+                    }
+
+                    update_post_meta( $listing_id, $meta_key, $users );
+                }
+            }
         }
 
-        /*
-         *----------------------------------------
-         * Output HTML
-         *----------------------------------------
-         */
+        // Output HTML.
         ob_start();
         ?>
         <div class="dns-wrap">
@@ -176,7 +166,7 @@ class Shortcode {
                 <h3 class="dns-title"><?php esc_html_e( 'Notification Preferences', 'dns' ); ?></h3>
                 <p class="dns-sub"><?php esc_html_e( 'Choose which listing types or listings and locations you want updates for.', 'dns' ); ?></p>
 
-                <?php echo $msg; ?>
+                <?php echo wp_kses_post( $msg ); ?>
 
                 <form method="post">
                     <?php wp_nonce_field( 'np_save_prefs', 'np_nonce' ); ?>
@@ -214,7 +204,7 @@ class Shortcode {
                                 <input type="text" id="dns-location-search" placeholder="<?php esc_attr_e( 'Search location...', 'dns' ); ?>">
                             </div>
                             <div class="dns-location-list">
-                                <?php foreach ( $locations as $loc ) : ?>
+                                <?php foreach ( $locations as $index => $loc ) : ?>
                                     <label class="dns-checkbox">
                                         <input
                                             type="checkbox"
@@ -222,7 +212,7 @@ class Shortcode {
                                             value="<?php echo esc_attr( $loc->term_id ); ?>"
                                             <?php checked( in_array( $loc->term_id, $saved['listing_locations'], true ) ); ?>
                                         >
-                                        <?php echo esc_html( $loc->name ); ?>
+                                        <?php echo esc_html( $index + 1 . '. ' . $loc->name ); ?>
                                     </label>
                                 <?php endforeach; ?>
                             </div>
@@ -238,7 +228,7 @@ class Shortcode {
                                 <input type="text" id="dns-listing-search" placeholder="<?php esc_attr_e( 'Search listings...', 'dns' ); ?>">
                             </div>
                             <div class="dns-listing-list">
-                                <?php foreach ( $listings as $item ) : ?>
+                                <?php foreach ( $listings as $index => $item ) : ?>
                                     <label class="dns-checkbox">
                                         <input
                                             type="checkbox"
@@ -246,7 +236,7 @@ class Shortcode {
                                             value="<?php echo esc_attr( $item->ID ); ?>"
                                             <?php checked( in_array( $item->ID, $saved['listing_posts'], true ) ); ?>
                                         >
-                                        <?php echo esc_html( $item->post_title ); ?>
+                                        <?php echo esc_html( $index + 1 . '. ' . $item->post_title ); ?>
                                     </label>
                                 <?php endforeach; ?>
                             </div>
@@ -268,4 +258,5 @@ class Shortcode {
         <?php
         return ob_get_clean();
     }
+
 }

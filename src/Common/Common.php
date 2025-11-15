@@ -20,15 +20,11 @@ class Common {
     public function head( ){
     	// Messages::pri( 'Hi' );
 
-    	$post_id = 678 ; // The post ID you want to check
-		$taxonomy = 'atbdp_listing_types'; // Optional, limit to a taxonomy
-
-		$terms = dns_get_terms_by_post_id( $post_id, $taxonomy );
-
-		// Messages::pri( $terms );
+    	// $taxonomies = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
+        // $all_data = dns_get_terms_data( $taxonomies );
+		// Messages::pri( $term->name . ' (ID: ' . $term->term_id . ')<br>' );
 
 		// foreach ($terms as $term) {
-		//     Messages::pri( $term->name . ' (ID: ' . $term->term_id . ')<br>' );
 		// }
     }
 
