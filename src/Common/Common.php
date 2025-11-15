@@ -80,12 +80,10 @@ class Common {
             return;
         }
 
-
         // Check if emails were already sent
         if ( get_post_meta( $post_id, '_dns_email_sent', true ) ) {
-            return; // Already sent, do nothing
+            return; // Already sent
         }
-
 
         // Get all subscribed users
         $data = dns_get_post_data( $post_id );
@@ -108,41 +106,46 @@ class Common {
             }
         }
 
-
         // Remove duplicates
         $user_ids = array_unique( $user_ids );
 
-
+        // If still empty → get default taxonomy subscribers
         if ( empty( $user_ids ) ) {
-            $taxonomies             = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
-            $taxonomy_data = dns_get_terms_with_subscribers( $taxonomies );
-            $user_ids      = dns_extract_user_ids_from_taxonomy_data( $taxonomy_data );
+            $taxonomies     = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
+            $taxonomy_data  = dns_get_terms_with_subscribers( $taxonomies );
+            $user_ids       = dns_extract_user_ids_from_taxonomy_data( $taxonomy_data );
         }
 
-        if ( empty( $user_ids )) {
+        // Still empty? nothing to send
+        if ( empty( $user_ids ) ) {
             return;
         }
 
+        // 🚀 Call separate email function
+       $this->dns_send_subscription_email( $post_id, $user_ids );
 
+        // Mark as sent
+        update_post_meta( $post_id, '_dns_email_sent', 1 );
+    }
 
-        // Send email notification to each user
+   private function dns_send_subscription_email( $post_id, $user_ids ) {
+
         foreach ( $user_ids as $user_id ) {
             $user_info = get_userdata( $user_id );
+
             if ( $user_info && ! empty( $user_info->user_email ) ) {
-                error_log( "INside loop" );
+
                 $to      = $user_info->user_email;
                 $subject = 'New Post Published: ' . get_the_title( $post_id );
-                $message = 'Hello ' . $user_info->display_name . ",\n\n";
-                $message .= 'A new post has been published that matches your subscription preferences: ';
+
+                $message  = 'Hello ' . $user_info->display_name . ",\n\n";
+                $message .= 'A new post has been published that matches your subscription preferences:' . "\n";
                 $message .= get_permalink( $post_id ) . "\n\n";
                 $message .= 'Thank you!';
 
                 wp_mail( $to, $subject, $message );
             }
         }
-
-        // Mark email as sent
-        update_post_meta( $post_id, '_dns_email_sent', 1 );
     }
 
 
