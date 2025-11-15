@@ -19,7 +19,7 @@ class Shortcode {
      */
     public function __construct() {
         add_shortcode( 'notification_system', [ $this, 'render' ] );
-        add_action( 'wp_head', [ $this, 'head' ] );
+        // add_action( 'wp_head', [ $this, 'head' ] );
     }
 
     /**
@@ -29,7 +29,7 @@ class Shortcode {
      */
     public function head() {
         // Messages::pri( get_user_meta( get_current_user_id(), 'dns_notify_prefs', true ) );
-        Messages::pri( get_term_meta( '254', 'subscribed_users', true ) );
+        // Messages::pri( get_term_meta( '254', 'subscribed_users', true ) );
     }
 
     /**
