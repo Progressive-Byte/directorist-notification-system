@@ -1,64 +1,97 @@
 <?php
 namespace DNS\Frontend;
 
-if (!defined('ABSPATH')) {
+use DNS\Helper\Messages;
+
+if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * Class Shortcode
+ *
+ * Handles the notification preferences shortcode.
+ */
 class Shortcode {
 
+    /**
+     * Shortcode constructor.
+     */
     public function __construct() {
-        add_shortcode('notification_system', [$this, 'render']);
+        add_shortcode( 'notification_system', [ $this, 'render' ] );
+        add_action( 'wp_head', [ $this, 'head' ] );
     }
 
     /**
-     * Render shortcode output.
+     * Debug or print user preferences in head (optional).
+     *
+     * @return void
+     */
+    public function head() {
+        // Messages::pri( get_user_meta( get_current_user_id(), 'dns_notify_prefs', true ) );
+        Messages::pri( get_term_meta( '254', 'subscribed_users', true ) );
+    }
+
+    /**
+     * Render the shortcode output.
      *
      * @return string
      */
     public function render() {
 
-        // Require login
-        if (!is_user_logged_in()) {
-            return '<div class="dns-card"><p>You must be logged in to save preferences.</p></div>';
+        // Require login.
+        if ( ! is_user_logged_in() ) {
+            return '<div class="dns-card"><p>' . esc_html__( 'You must be logged in to save preferences.', 'dns' ) . '</p></div>';
         }
 
         $user_id = get_current_user_id();
 
-        /*----------------------------------------
-        | Fetch Taxonomy Terms
-        ----------------------------------------*/
-        $listing_types = get_terms([
-            'taxonomy'   => 'atbdp_listing_types',
-            'hide_empty' => false,
-            'orderby'    => 'name',
-            'order'      => 'ASC',
-        ]);
+        /*
+         *----------------------------------------
+         * Fetch Taxonomy Terms
+         *----------------------------------------
+         */
+        $listing_types = get_terms(
+            [
+                'taxonomy'   => 'atbdp_listing_types',
+                'hide_empty' => false,
+                'orderby'    => 'name',
+                'order'      => 'ASC',
+            ]
+        );
 
-        $locations = get_terms([
-            'taxonomy'   => 'at_biz_dir-location',
-            'hide_empty' => false,
-            'orderby'    => 'name',
-            'order'      => 'ASC',
-        ]);
+        $locations = get_terms(
+            [
+                'taxonomy'   => 'at_biz_dir-location',
+                'hide_empty' => false,
+                'orderby'    => 'name',
+                'order'      => 'ASC',
+            ]
+        );
 
-        /*----------------------------------------
-        | Fetch All Listings
-        ----------------------------------------*/
-        $listings = get_posts([
-            'post_type'      => 'at_biz_dir',
-            'posts_per_page' => -1,
-            'orderby'        => 'title',
-            'order'          => 'ASC',
-        ]);
+        /*
+         *----------------------------------------
+         * Fetch All Listings
+         *----------------------------------------
+         */
+        $listings = get_posts(
+            [
+                'post_type'      => 'at_biz_dir',
+                'posts_per_page' => -1,
+                'orderby'        => 'title',
+                'order'          => 'ASC',
+            ]
+        );
 
-        /*----------------------------------------
-        | Load Saved User Preferences
-        ----------------------------------------*/
-        $saved = get_user_meta($user_id, 'dns_notify_prefs', true);
-        $saved = is_array($saved) ? $saved : [];
+        /*
+         *----------------------------------------
+         * Load Saved User Preferences
+         *----------------------------------------
+         */
+        $saved = get_user_meta( $user_id, 'dns_notify_prefs', true );
+        $saved = is_array( $saved ) ? $saved : [];
 
-        // Make sure the keys exist so we can safely use them later.
+        // Ensure keys exist.
         $saved = array_merge(
             [
                 'listing_types'     => [],
@@ -68,177 +101,170 @@ class Shortcode {
             $saved
         );
 
-        /*----------------------------------------
-        | Handle Form Submission
-        ----------------------------------------*/
+        /*
+         *----------------------------------------
+         * Handle Form Submission
+         *----------------------------------------
+         */
         $msg = '';
 
-        if (!empty($_POST['np_save']) && check_admin_referer('np_save_prefs', 'np_nonce')) {
+        if ( ! empty( $_POST['np_save'] ) && check_admin_referer( 'np_save_prefs', 'np_nonce' ) ) {
 
-            // Sanitize submitted data
-            $selected_types     = isset($_POST['listing_types'])     ? array_map('intval', (array) $_POST['listing_types'])     : [];
-            $selected_locations = isset($_POST['listing_locations']) ? array_map('intval', (array) $_POST['listing_locations']) : [];
-            $selected_listings  = isset($_POST['listing_posts'])     ? array_map('intval', (array) $_POST['listing_posts'])     : [];
+            $selected_types     = isset( $_POST['listing_types'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_types'] ) ) : [];
+            $selected_locations = isset( $_POST['listing_locations'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_locations'] ) ) : [];
+            $selected_listings  = isset( $_POST['listing_posts'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_posts'] ) ) : [];
 
-            // Save preferences in user meta
+            // Save preferences in user meta.
             $saved = [
                 'listing_types'     => $selected_types,
                 'listing_locations' => $selected_locations,
                 'listing_posts'     => $selected_listings,
             ];
 
-            update_user_meta($user_id, 'dns_notify_prefs', $saved);
+            update_user_meta( $user_id, 'dns_notify_prefs', $saved );
 
-            /*----------------------------------------
-            | Sync User Subscriptions with Term Meta
-            ----------------------------------------*/
+            /*
+             *----------------------------------------
+             * Sync User Subscriptions with Term Meta
+             *----------------------------------------
+             */
             $taxonomies = [
                 'atbdp_listing_types' => $listing_types,
                 'at_biz_dir-location' => $locations,
             ];
 
-            foreach ($taxonomies as $taxonomy => $terms) {
-                if (!empty($terms) && !is_wp_error($terms)) {
+            foreach ( $taxonomies as $taxonomy => $terms ) {
 
-                    $selected = ($taxonomy === 'atbdp_listing_types')
-                        ? $selected_types
-                        : $selected_locations;
+                if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
 
-                    foreach ($terms as $term) {
+                    $selected = ( 'atbdp_listing_types' === $taxonomy ) ? $selected_types : $selected_locations;
+
+                    foreach ( $terms as $term ) {
 
                         $meta_key = 'subscribed_users';
-                        $users    = get_term_meta($term->term_id, $meta_key, true);
-                        $users    = is_array($users) ? $users : [];
+                        $users    = get_term_meta( $term->term_id, $meta_key, true );
+                        $users    = is_array( $users ) ? $users : [];
 
-                        // Add user to selected terms
-                        if (in_array($term->term_id, $selected, true)) {
-                            if (!in_array($user_id, $users, true)) {
+                        // Add user to selected terms.
+                        if ( in_array( $term->term_id, $selected, true ) ) {
+                            if ( ! in_array( $user_id, $users, true ) ) {
                                 $users[] = $user_id;
                             }
                         } else {
-                            // Remove user from terms that are no longer selected
-                            $users = array_diff($users, [$user_id]);
+                            // Remove user from terms that are no longer selected.
+                            $users = array_diff( $users, [ $user_id ] );
                         }
 
-                        update_term_meta($term->term_id, $meta_key, $users);
+                        update_term_meta( $term->term_id, $meta_key, $users );
                     }
                 }
             }
 
-            $msg = '<p class="dns-message dns-message--success">Preferences saved successfully.</p>';
+            $msg = '<div class="notice updated">' . esc_html__( 'Preferences saved successfully.', 'dns' ) . '</div>';
         }
 
-        /*----------------------------------------
-        | Output HTML
-        ----------------------------------------*/
-        ob_start(); ?>
-
+        /*
+         *----------------------------------------
+         * Output HTML
+         *----------------------------------------
+         */
+        ob_start();
+        ?>
         <div class="dns-wrap">
             <div class="dns-card">
 
-                <h3 class="dns-title">Notification Preferences</h3>
-                <p class="dns-sub">Choose which listing types or listings and locations you want updates for.</p>
+                <h3 class="dns-title"><?php esc_html_e( 'Notification Preferences', 'dns' ); ?></h3>
+                <p class="dns-sub"><?php esc_html_e( 'Choose which listing types or listings and locations you want updates for.', 'dns' ); ?></p>
 
-                <?= $msg; ?>
+                <?php echo $msg; ?>
 
                 <form method="post">
-                    <?php wp_nonce_field('np_save_prefs','np_nonce'); ?>
+                    <?php wp_nonce_field( 'np_save_prefs', 'np_nonce' ); ?>
 
                     <!-- Tabs -->
                     <div class="dns-tabs">
-                        <button type="button" class="dns-tab" data-tab="types">Listing Types</button>
-                        <button type="button" class="dns-tab" data-tab="locations">Locations</button>
-                        <button type="button" class="dns-tab" data-tab="listings">Listings</button>
+                        <button type="button" class="dns-tab" data-tab="types"><?php esc_html_e( 'Listing Types', 'dns' ); ?></button>
+                        <button type="button" class="dns-tab" data-tab="locations"><?php esc_html_e( 'Locations', 'dns' ); ?></button>
+                        <button type="button" class="dns-tab" data-tab="listings"><?php esc_html_e( 'Listings', 'dns' ); ?></button>
                     </div>
 
                     <!-- Tab: Types -->
                     <div class="dns-tab-content" id="tab-types">
-                        <?php if (!empty($listing_types) && !is_wp_error($listing_types)) : ?>
-                            <?php foreach ($listing_types as $type) : ?>
+                        <?php if ( ! empty( $listing_types ) && ! is_wp_error( $listing_types ) ) : ?>
+                            <?php foreach ( $listing_types as $type ) : ?>
                                 <label class="dns-checkbox">
                                     <input
                                         type="checkbox"
                                         name="listing_types[]"
-                                        value="<?= esc_attr($type->term_id); ?>"
-                                        <?= in_array($type->term_id, $saved['listing_types'], true) ? 'checked' : ''; ?>
+                                        value="<?php echo esc_attr( $type->term_id ); ?>"
+                                        <?php checked( in_array( $type->term_id, $saved['listing_types'], true ) ); ?>
                                     >
-                                    <?= esc_html($type->name); ?>
+                                    <?php echo esc_html( $type->name ); ?>
                                 </label>
                             <?php endforeach; ?>
                         <?php else : ?>
-                            <p>No listing types found.</p>
+                            <p><?php esc_html_e( 'No listing types found.', 'dns' ); ?></p>
                         <?php endif; ?>
                     </div>
 
                     <!-- Tab: Locations -->
                     <div class="dns-tab-content" id="tab-locations">
-
-                        <?php if (!empty($locations) && !is_wp_error($locations)) : ?>
-
+                        <?php if ( ! empty( $locations ) && ! is_wp_error( $locations ) ) : ?>
                             <div class="dns-search-box">
-                                <input type="text" id="dns-location-search" placeholder="Search location...">
+                                <input type="text" id="dns-location-search" placeholder="<?php esc_attr_e( 'Search location...', 'dns' ); ?>">
                             </div>
-
                             <div class="dns-location-list">
-                                <?php foreach ($locations as $loc) : ?>
+                                <?php foreach ( $locations as $loc ) : ?>
                                     <label class="dns-checkbox">
                                         <input
                                             type="checkbox"
                                             name="listing_locations[]"
-                                            value="<?= esc_attr($loc->term_id); ?>"
-                                            <?= in_array($loc->term_id, $saved['listing_locations'], true) ? 'checked' : ''; ?>
+                                            value="<?php echo esc_attr( $loc->term_id ); ?>"
+                                            <?php checked( in_array( $loc->term_id, $saved['listing_locations'], true ) ); ?>
                                         >
-                                        <?= esc_html($loc->name); ?>
+                                        <?php echo esc_html( $loc->name ); ?>
                                     </label>
                                 <?php endforeach; ?>
                             </div>
-
                         <?php else : ?>
-                            <p>No locations found.</p>
+                            <p><?php esc_html_e( 'No locations found.', 'dns' ); ?></p>
                         <?php endif; ?>
-
                     </div>
 
                     <!-- Tab: Listings -->
                     <div class="dns-tab-content" id="tab-listings">
-
-                        <?php if (!empty($listings)) : ?>
-
+                        <?php if ( ! empty( $listings ) ) : ?>
                             <div class="dns-search-box">
-                                <input type="text" id="dns-listing-search" placeholder="Search listings...">
+                                <input type="text" id="dns-listing-search" placeholder="<?php esc_attr_e( 'Search listings...', 'dns' ); ?>">
                             </div>
-
                             <div class="dns-listing-list">
-                                <?php foreach ($listings as $item) : ?>
+                                <?php foreach ( $listings as $item ) : ?>
                                     <label class="dns-checkbox">
                                         <input
                                             type="checkbox"
                                             name="listing_posts[]"
-                                            value="<?= esc_attr($item->ID); ?>"
-                                            <?= in_array($item->ID, $saved['listing_posts'], true) ? 'checked' : ''; ?>
+                                            value="<?php echo esc_attr( $item->ID ); ?>"
+                                            <?php checked( in_array( $item->ID, $saved['listing_posts'], true ) ); ?>
                                         >
-                                        <?= esc_html($item->post_title); ?>
+                                        <?php echo esc_html( $item->post_title ); ?>
                                     </label>
                                 <?php endforeach; ?>
                             </div>
-
                         <?php else : ?>
-                            <p>No listings found.</p>
+                            <p><?php esc_html_e( 'No listings found.', 'dns' ); ?></p>
                         <?php endif; ?>
-
                     </div>
 
                     <!-- Submit -->
                     <div class="dns-actions">
                         <button class="dns-btn dns-btn--primary" type="submit" name="np_save" value="1">
-                            Save Preferences
+                            <?php esc_html_e( 'Save Preferences', 'dns' ); ?>
                         </button>
                     </div>
 
                 </form>
             </div>
         </div>
-
         <?php
         return ob_get_clean();
     }
