@@ -11,7 +11,17 @@ class Frontend {
     }
 
     public function head(){
-        
+        $listings = get_posts([
+                'post_type'      => 'at_biz_dir',
+                'posts_per_page' => -1,
+                'orderby'        => 'title',
+                'order'          => 'ASC',
+            ]);
+
+        // if ( ! empty( $listings )){
+        //     Messages::pri( $listings );
+        // }
+
     }
 
     public function show_notification() {
