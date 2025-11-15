@@ -134,13 +134,11 @@
 /* Lists (locations / listings) */
 .dns-location-list,
 .dns-listing-list {
-    max-height: 220px;
-    min-height: 220px;  /* <-- prevents shrinking */
-    overflow-y: auto;
+    max-height: 260px;
     padding-right: 4px;
-    box-sizing: border-box;
+    overflow-y: auto;
+    margin-top: 4px;
 }
-
 
 /* Custom scrollbar (WebKit) */
 .dns-location-list::-webkit-scrollbar,

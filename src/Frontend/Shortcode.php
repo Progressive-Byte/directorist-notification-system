@@ -1,9 +1,9 @@
 <?php
 namespace DNS\Frontend;
-use DNS\Helper\Messages;
 
-if (!defined('ABSPATH')) exit;
-
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 class Shortcode {
 
@@ -12,10 +12,13 @@ class Shortcode {
     }
 
     /**
-     * Render shortcode
+     * Render shortcode output.
+     *
+     * @return string
      */
     public function render() {
 
+        // Require login
         if (!is_user_logged_in()) {
             return '<div class="dns-card"><p>You must be logged in to save preferences.</p></div>';
         }
@@ -28,8 +31,8 @@ class Shortcode {
         $listing_types = get_terms([
             'taxonomy'   => 'atbdp_listing_types',
             'hide_empty' => false,
-            'orderby'    => 'date',
-            'order'      => 'DESC',
+            'orderby'    => 'name',
+            'order'      => 'ASC',
         ]);
 
         $locations = get_terms([
@@ -40,7 +43,7 @@ class Shortcode {
         ]);
 
         /*----------------------------------------
-        | Fetch All Listings (Always Needed)
+        | Fetch All Listings
         ----------------------------------------*/
         $listings = get_posts([
             'post_type'      => 'at_biz_dir',
@@ -55,6 +58,16 @@ class Shortcode {
         $saved = get_user_meta($user_id, 'dns_notify_prefs', true);
         $saved = is_array($saved) ? $saved : [];
 
+        // Make sure the keys exist so we can safely use them later.
+        $saved = array_merge(
+            [
+                'listing_types'     => [],
+                'listing_locations' => [],
+                'listing_posts'     => [],
+            ],
+            $saved
+        );
+
         /*----------------------------------------
         | Handle Form Submission
         ----------------------------------------*/
@@ -62,9 +75,10 @@ class Shortcode {
 
         if (!empty($_POST['np_save']) && check_admin_referer('np_save_prefs', 'np_nonce')) {
 
-            $selected_types     = isset($_POST['listing_types'])      ? array_map('intval', (array)$_POST['listing_types'])      : [];
-            $selected_locations = isset($_POST['listing_locations'])  ? array_map('intval', (array)$_POST['listing_locations'])  : [];
-            $selected_listings  = isset($_POST['listing_posts'])      ? array_map('intval', (array)$_POST['listing_posts'])      : [];
+            // Sanitize submitted data
+            $selected_types     = isset($_POST['listing_types'])     ? array_map('intval', (array) $_POST['listing_types'])     : [];
+            $selected_locations = isset($_POST['listing_locations']) ? array_map('intval', (array) $_POST['listing_locations']) : [];
+            $selected_listings  = isset($_POST['listing_posts'])     ? array_map('intval', (array) $_POST['listing_posts'])     : [];
 
             // Save preferences in user meta
             $saved = [
@@ -93,17 +107,16 @@ class Shortcode {
                     foreach ($terms as $term) {
 
                         $meta_key = 'subscribed_users';
-                        $users = get_term_meta($term->term_id, $meta_key, true);
-                        $users = is_array($users) ? $users : [];
+                        $users    = get_term_meta($term->term_id, $meta_key, true);
+                        $users    = is_array($users) ? $users : [];
 
-                        // Add user to term
-                        if (in_array($term->term_id, $selected)) {
-                            if (!in_array($user_id, $users)) {
+                        // Add user to selected terms
+                        if (in_array($term->term_id, $selected, true)) {
+                            if (!in_array($user_id, $users, true)) {
                                 $users[] = $user_id;
                             }
-                        } 
-                        // Remove user from term
-                        else {
+                        } else {
+                            // Remove user from terms that are no longer selected
                             $users = array_diff($users, [$user_id]);
                         }
 
@@ -111,6 +124,8 @@ class Shortcode {
                     }
                 }
             }
+
+            $msg = '<p class="dns-message dns-message--success">Preferences saved successfully.</p>';
         }
 
         /*----------------------------------------
@@ -122,7 +137,8 @@ class Shortcode {
             <div class="dns-card">
 
                 <h3 class="dns-title">Notification Preferences</h3>
-                <p class="dns-sub">Choose which listing types and locations you want updates for.</p>
+                <p class="dns-sub">Choose which listing types or listings and locations you want updates for.</p>
+
                 <?= $msg; ?>
 
                 <form method="post">
@@ -130,24 +146,26 @@ class Shortcode {
 
                     <!-- Tabs -->
                     <div class="dns-tabs">
-                        <button type="button" class="dns-tab " data-tab="types">Listing Types</button>
+                        <button type="button" class="dns-tab" data-tab="types">Listing Types</button>
                         <button type="button" class="dns-tab" data-tab="locations">Locations</button>
                         <button type="button" class="dns-tab" data-tab="listings">Listings</button>
                     </div>
 
                     <!-- Tab: Types -->
-                    <div class="dns-tab-content " id="tab-types">
-                        <?php if (!empty($listing_types) && !is_wp_error($listing_types)): ?>
-                            <?php foreach ($listing_types as $type): ?>
+                    <div class="dns-tab-content" id="tab-types">
+                        <?php if (!empty($listing_types) && !is_wp_error($listing_types)) : ?>
+                            <?php foreach ($listing_types as $type) : ?>
                                 <label class="dns-checkbox">
-                                    <input type="checkbox" 
-                                           name="listing_types[]" 
-                                           value="<?= esc_attr($type->term_id); ?>"
-                                           <?= isset($saved['listing_types']) && in_array($type->term_id, $saved['listing_types']) ? 'checked' : ''; ?>>
+                                    <input
+                                        type="checkbox"
+                                        name="listing_types[]"
+                                        value="<?= esc_attr($type->term_id); ?>"
+                                        <?= in_array($type->term_id, $saved['listing_types'], true) ? 'checked' : ''; ?>
+                                    >
                                     <?= esc_html($type->name); ?>
-                                </label><br>
+                                </label>
                             <?php endforeach; ?>
-                        <?php else: ?>
+                        <?php else : ?>
                             <p>No listing types found.</p>
                         <?php endif; ?>
                     </div>
@@ -155,25 +173,27 @@ class Shortcode {
                     <!-- Tab: Locations -->
                     <div class="dns-tab-content" id="tab-locations">
 
-                        <?php if (!empty($locations) && !is_wp_error($locations)): ?>
+                        <?php if (!empty($locations) && !is_wp_error($locations)) : ?>
 
                             <div class="dns-search-box">
                                 <input type="text" id="dns-location-search" placeholder="Search location...">
                             </div>
 
                             <div class="dns-location-list">
-                                <?php foreach ($locations as $loc): ?>
+                                <?php foreach ($locations as $loc) : ?>
                                     <label class="dns-checkbox">
-                                        <input type="checkbox" 
-                                               name="listing_locations[]" 
-                                               value="<?= esc_attr($loc->term_id); ?>"
-                                               <?= isset($saved['listing_locations']) && in_array($loc->term_id, $saved['listing_locations']) ? 'checked' : ''; ?>>
+                                        <input
+                                            type="checkbox"
+                                            name="listing_locations[]"
+                                            value="<?= esc_attr($loc->term_id); ?>"
+                                            <?= in_array($loc->term_id, $saved['listing_locations'], true) ? 'checked' : ''; ?>
+                                        >
                                         <?= esc_html($loc->name); ?>
-                                    </label><br>
+                                    </label>
                                 <?php endforeach; ?>
                             </div>
 
-                        <?php else: ?>
+                        <?php else : ?>
                             <p>No locations found.</p>
                         <?php endif; ?>
 
@@ -182,25 +202,27 @@ class Shortcode {
                     <!-- Tab: Listings -->
                     <div class="dns-tab-content" id="tab-listings">
 
-                        <?php if (!empty($listings)): ?>
+                        <?php if (!empty($listings)) : ?>
 
                             <div class="dns-search-box">
                                 <input type="text" id="dns-listing-search" placeholder="Search listings...">
                             </div>
 
                             <div class="dns-listing-list">
-                                <?php foreach ($listings as $item): ?>
+                                <?php foreach ($listings as $item) : ?>
                                     <label class="dns-checkbox">
-                                        <input type="checkbox" 
-                                               name="listing_posts[]" 
-                                               value="<?= esc_attr($item->ID); ?>"
-                                               <?= isset($saved['listing_posts']) && in_array($item->ID, $saved['listing_posts']) ? 'checked' : ''; ?>>
+                                        <input
+                                            type="checkbox"
+                                            name="listing_posts[]"
+                                            value="<?= esc_attr($item->ID); ?>"
+                                            <?= in_array($item->ID, $saved['listing_posts'], true) ? 'checked' : ''; ?>
+                                        >
                                         <?= esc_html($item->post_title); ?>
-                                    </label><br>
+                                    </label>
                                 <?php endforeach; ?>
                             </div>
 
-                        <?php else: ?>
+                        <?php else : ?>
                             <p>No listings found.</p>
                         <?php endif; ?>
 
@@ -220,5 +242,4 @@ class Shortcode {
         <?php
         return ob_get_clean();
     }
-
 }
