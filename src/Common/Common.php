@@ -112,7 +112,7 @@ class Common {
 
             $queue[] = [
                 'to'      => $user_info->user_email,
-                'subject' => 'New Post Published: ' . get_the_title( $post_id ),
+                'subject' => 'New Listing Match Found: ' . get_the_title( $post_id ),
                 'message' => $message,
                 'headers' => ['Content-Type: text/html; charset=UTF-8'], // Important for HTML
             ];
