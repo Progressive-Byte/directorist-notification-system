@@ -35,7 +35,7 @@ class Shortcode {
         $taxonomies = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
         $terms_with_users = dns_get_terms_with_subscribers( $taxonomies );
 
-        Messages::pri( $terms_with_users );
+        // Messages::pri( $terms_with_users );
     }
 
     /**
