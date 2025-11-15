@@ -142,19 +142,27 @@ class Shortcode {
             }
 
             // Sync User Subscriptions with Post Meta.
-            if ( ! empty( $selected_listings ) ) {
-                foreach ( $selected_listings as $listing_id ) {
-                    $meta_key = 'subscribed_users';
-                    $users    = get_post_meta( $listing_id, $meta_key, true );
-                    $users    = is_array( $users ) ? $users : [];
+            if ( ! empty( $listings ) ) {
+                foreach ( $listings as $item ) {
+                    $listing_id = $item->ID;
+                    $meta_key   = 'subscribed_users';
+                    $users      = get_post_meta( $listing_id, $meta_key, true );
+                    $users      = is_array( $users ) ? $users : [];
 
-                    if ( ! in_array( $user_id, $users, true ) ) {
-                        $users[] = $user_id;
+                    if ( in_array( $listing_id, $selected_listings, true ) ) {
+                        // Add user if selected
+                        if ( ! in_array( $user_id, $users, true ) ) {
+                            $users[] = $user_id;
+                        }
+                    } else {
+                        // Remove user if not selected
+                        $users = array_diff( $users, [ $user_id ] );
                     }
 
                     update_post_meta( $listing_id, $meta_key, $users );
                 }
             }
+
         }
 
         // Output HTML.

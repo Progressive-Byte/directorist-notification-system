@@ -104,15 +104,13 @@ function dns_get_post_data( $post_id ) {
             $data['terms'][ $taxonomy ] = [];
 
             foreach ( $terms as $term ) {
-                $term_data = [
-                    'term_id' => $term->term_id,
-                ];
+               
 
                 // Get users subscribed to this term
                 $term_users = get_term_meta( $term->term_id, 'subscribed_users', true );
                 $term_data['subscribed_users'] = is_array( $term_users ) ? $term_users : [];
 
-                $data['terms'][ $taxonomy ][] = $term_data;
+                $data['terms'][ $taxonomy ]['subscribed_users'] = $term_users;
             }
         }
     }
@@ -173,52 +171,72 @@ function dns_get_terms_data( $taxonomies = [] ) {
     return $data;
 }
 
-/**
- * Get all terms with at least one subscribed user.
- *
- * @param array $taxonomies Array of taxonomy slugs.
- * @return array Filtered terms data with non-empty subscribed_users.
- */
-function dns_get_terms_with_subscribers( $taxonomies = [] ) {
+    /**
+     * Get all terms with at least one subscribed user.
+     *
+     * @param array $taxonomies Array of taxonomy slugs.
+     * @return array Filtered terms data with non-empty subscribed_users.
+     */
+    function dns_get_terms_with_subscribers( $taxonomies = [] ) {
 
-    if ( empty( $taxonomies ) || ! is_array( $taxonomies ) ) {
-        return [];
-    }
-
-    $data = [];
-
-    foreach ( $taxonomies as $taxonomy ) {
-
-        if ( ! taxonomy_exists( $taxonomy ) ) {
-            continue;
+        if ( empty( $taxonomies ) || ! is_array( $taxonomies ) ) {
+            return [];
         }
 
-        $terms = get_terms(
-            [
-                'taxonomy'   => $taxonomy,
-                'hide_empty' => false,
-                'orderby'    => 'name',
-                'order'      => 'ASC',
-            ]
-        );
+        $data = [];
 
-        if ( is_wp_error( $terms ) || empty( $terms ) ) {
-            continue;
-        }
+        foreach ( $taxonomies as $taxonomy ) {
 
-        foreach ( $terms as $term ) {
+            if ( ! taxonomy_exists( $taxonomy ) ) {
+                continue;
+            }
 
-            $subscribed_users = get_term_meta( $term->term_id, 'subscribed_users', true );
-            $subscribed_users = is_array( $subscribed_users ) ? $subscribed_users : [];
+            $terms = get_terms(
+                [
+                    'taxonomy'   => $taxonomy,
+                    'hide_empty' => false,
+                    'orderby'    => 'name',
+                    'order'      => 'ASC',
+                ]
+            );
 
-            // Only include terms with subscribed users
-            if ( ! empty( $subscribed_users ) ) {
-                $data[ $taxonomy ]['subscribed_users'] = 
-                $subscribed_users
-                ;
+            if ( is_wp_error( $terms ) || empty( $terms ) ) {
+                continue;
+            }
+
+            $all_users = [];
+
+            foreach ( $terms as $term ) {
+                $subscribed_users = get_term_meta( $term->term_id, 'subscribed_users', true );
+                $subscribed_users = is_array( $subscribed_users ) ? $subscribed_users : [];
+
+                if ( ! empty( $subscribed_users ) ) {
+                    $all_users = array_merge( $all_users, $subscribed_users );
+                }
+            }
+
+            // Only include taxonomy if there are subscribed users
+            if ( ! empty( $all_users ) ) {
+                $data[ $taxonomy ]['subscribed_users'] = array_unique( $all_users );
             }
         }
+
+        return $data;
     }
 
-    return $data;
+function dns_extract_user_ids_from_taxonomy_data( $taxonomy_data ) {
+    $user_ids = [];
+
+    if ( empty( $taxonomy_data ) ) {
+        return $user_ids;
+    }
+
+    foreach ( $taxonomy_data as $taxonomy => $data ) {
+        if ( ! empty( $data['subscribed_users'] ) ) {
+            $user_ids = array_merge( $user_ids, $data['subscribed_users'] );
+        }
+    }
+
+    return array_unique( $user_ids );
 }
+
