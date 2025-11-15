@@ -1,63 +1,52 @@
 <?php
 namespace DNS\Common;
-use DNS\Helper\Messages;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Common {
 
-    /**
-     * Constructor.
-     */
     public function __construct() {
 
         // Hook into post save
         add_action( 'save_post', [ $this, 'save_at_biz_dir' ], 999, 3 );
 
-        // Hook for background email processing
+        // Background email processing
         add_action( 'dns_process_email_queue', [ $this, 'process_email_queue' ] );
+
+        // Unsubscribe link handler
+        add_action( 'template_redirect', [ $this, 'check_unsubscribe' ] );
     }
 
     /**
-     * Fires when a post is created or updated.
-     *
-     * @param int     $post_id Post ID.
-     * @param WP_Post $post    Post object.
-     * @param bool    $update  Whether this is an update or new post.
+     * Fires when a post is created or updated
      */
     public function save_at_biz_dir( $post_id, $post, $update ) {
 
-        // Avoid auto-saves and revisions
         if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
             return;
         }
 
-        // Only target specific post types
         if ( ! in_array( $post->post_type, [ 'post', 'page', 'at_biz_dir' ], true ) ) {
             return;
         }
 
-        // Only run when post is published
         if ( 'publish' !== $post->post_status ) {
             return;
         }
 
-        // Check if emails were already sent
+        // Avoid duplicate email queue
         if ( get_post_meta( $post_id, '_dns_email_sent', true ) ) {
-            return; // Already sent
+            return;
         }
 
-        // Get all subscribed users
+        // Get subscribed users
         $data = dns_get_post_data( $post_id );
-
         $user_ids = [];
 
-        // From post meta
         if ( ! empty( $data['subscribed_users'] ) ) {
             $user_ids = array_merge( $user_ids, $data['subscribed_users'] );
         }
 
-        // From terms
         if ( ! empty( $data['terms'] ) ) {
             foreach ( $data['terms'] as $taxonomy => $terms ) {
                 foreach ( $terms as $term_id => $term_data ) {
@@ -68,26 +57,23 @@ class Common {
             }
         }
 
-        // Remove duplicates
         $user_ids = array_unique( $user_ids );
 
-        // If still empty → get default taxonomy subscribers
         if ( empty( $user_ids ) ) {
-            $taxonomies     = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
-            $taxonomy_data  = dns_get_terms_with_subscribers( $taxonomies );
-            $user_ids       = dns_extract_user_ids_from_taxonomy_data( $taxonomy_data );
+            $taxonomies    = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
+            $taxonomy_data = dns_get_terms_with_subscribers( $taxonomies );
+            $user_ids      = dns_extract_user_ids_from_taxonomy_data( $taxonomy_data );
         }
 
-        // Still empty? nothing to send
         if ( empty( $user_ids ) ) {
             return;
         }
 
-        // Queue emails instead of sending immediately
+        // Queue emails for background processing
         $this->queue_subscription_emails( $post_id, $user_ids );
 
-        // Mark as sent
-        update_post_meta( $post_id, '_dns_email_sent', 1 );
+        // Mark as queued
+        // update_post_meta( $post_id, '_dns_email_sent', 1 );
     }
 
     /**
@@ -106,14 +92,29 @@ class Common {
                 continue;
             }
 
+            // Global unsubscribe link
+            $unsubscribe_url = add_query_arg(
+                [
+                    'dns_unsubscribe' => 1,
+                    'user_id'        => $user_id,
+                    'nonce'          => wp_create_nonce( 'dns_unsubscribe_' . $user_id ),
+                ],
+                site_url()
+            );
+
+            // HTML message
+            $message  = '<p>Hello ' . esc_html( $user_info->display_name ) . ',</p>';
+            $message .= '<p>A new post has been published that matches your subscription preferences:</p>';
+            $message .= '<p><a href="' . get_permalink( $post_id ) . '">' . get_the_title( $post_id ) . '</a></p>';
+            $message .= '<p>If you wish to unsubscribe from all notifications, click the button below:</p>';
+            $message .= '<p><a href="' . esc_url( $unsubscribe_url ) . '" style="display:inline-block;padding:10px 20px;color:#ffffff;background-color:#0073aa;text-decoration:none;border-radius:5px;">Unsubscribe</a></p>';
+            $message .= '<p>Thank you!</p>';
+
             $queue[] = [
-                'post_id' => $post_id,
-                'user_id' => $user_id,
                 'to'      => $user_info->user_email,
                 'subject' => 'New Post Published: ' . get_the_title( $post_id ),
-                'message' => 'Hello ' . $user_info->display_name . ",\n\n"
-                           . 'A new post has been published that matches your subscription preferences:' . "\n"
-                           . get_permalink( $post_id ) . "\n\nThank you!",
+                'message' => $message,
+                'headers' => ['Content-Type: text/html; charset=UTF-8'], // Important for HTML
             ];
         }
 
@@ -121,12 +122,13 @@ class Common {
 
         // Schedule background processing
         if ( ! wp_next_scheduled( 'dns_process_email_queue' ) ) {
-            wp_schedule_single_event( time() + 60, 'dns_process_email_queue' ); // run after 30s
+            wp_schedule_single_event( time() + 30, 'dns_process_email_queue' );
         }
     }
 
+
     /**
-     * Process queued emails in the background.
+     * Process queued emails in the background
      */
     public function process_email_queue() {
         $queue = get_transient( 'dns_email_queue' );
@@ -135,12 +137,47 @@ class Common {
         }
 
         foreach ( $queue as $key => $email_data ) {
-            wp_mail( $email_data['to'], $email_data['subject'], $email_data['message'] );
-            unset( $queue[$key] ); // remove from queue
+            // Send HTML email
+            wp_mail(
+                $email_data['to'],
+                $email_data['subject'],
+                $email_data['message'],
+                isset($email_data['headers']) ? $email_data['headers'] : ['Content-Type: text/html; charset=UTF-8']
+            );
+
+            // Remove email from queue
+            unset( $queue[$key] );
         }
 
         // Save updated queue
         set_transient( 'dns_email_queue', $queue, HOUR_IN_SECONDS );
     }
+
+
+    /**
+     * Handle global unsubscribe requests
+     */
+        
+    public function check_unsubscribe() {
+
+        if ( ! isset( $_GET['dns_unsubscribe'], $_GET['user_id'], $_GET['nonce'] ) ) {
+            return;
+        }
+
+        $user_id = absint( $_GET['user_id'] );
+        $nonce   = sanitize_text_field( $_GET['nonce'] );
+
+        if ( ! wp_verify_nonce( $nonce, 'dns_unsubscribe_' . $user_id ) ) {
+            wp_die( 'Invalid request.' );
+        }
+
+        // Remove user from all subscriptions
+        remove_user_from_subscriptions( $user_id );
+
+        // Optional: redirect with confirmation
+        wp_redirect( home_url( '?unsubscribed=1' ) );
+        exit;
+    }
+
 
 }

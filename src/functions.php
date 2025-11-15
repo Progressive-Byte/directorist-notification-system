@@ -240,3 +240,43 @@ function dns_extract_user_ids_from_taxonomy_data( $taxonomy_data ) {
     return array_unique( $user_ids );
 }
 
+function remove_user_from_subscriptions( $user_id ) {
+
+    // Remove from post meta
+    $posts = get_posts( [
+        'post_type'      => 'at_biz_dir',
+        'posts_per_page' => -1,
+        'meta_query'     => [
+            [
+                'key'     => 'subscribed_users',
+                'value'   => $user_id,
+                'compare' => 'LIKE',
+            ],
+        ],
+    ] );
+
+    foreach ( $posts as $post ) {
+        $users = get_post_meta( $post->ID, 'subscribed_users', true );
+        if ( is_array( $users ) && in_array( $user_id, $users, true ) ) {
+            $users = array_diff( $users, [ $user_id ] );
+            update_post_meta( $post->ID, 'subscribed_users', $users );
+        }
+    }
+
+    // Remove from terms
+    $taxonomies = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
+    foreach ( $taxonomies as $taxonomy ) {
+        $terms = get_terms( [ 'taxonomy' => $taxonomy, 'hide_empty' => false ] );
+        foreach ( $terms as $term ) {
+            $users = get_term_meta( $term->term_id, 'subscribed_users', true );
+            if ( is_array( $users ) && in_array( $user_id, $users, true ) ) {
+                $users = array_diff( $users, [ $user_id ] );
+                update_term_meta( $term->term_id, 'subscribed_users', $users );
+            }
+        }
+    }
+
+    // Optional: remove user meta preferences
+    delete_user_meta( $user_id, 'dns_notify_prefs' );
+}
+
