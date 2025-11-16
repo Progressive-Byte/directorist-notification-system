@@ -30,8 +30,6 @@ class Shortcode {
     public function head() {
         $post_id = 672;
 
-        // $post_data = dns_get_post_data( $post_id );
-
         $taxonomies = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
         $terms_with_users = dns_get_terms_with_subscribers( $taxonomies );
 
@@ -45,85 +43,79 @@ class Shortcode {
      */
     public function render() {
 
-        // Require login.
+        // Require login
         if ( ! is_user_logged_in() ) {
             return '<div class="dns-card"><p>' . esc_html__( 'You must be logged in to save preferences.', 'dns' ) . '</p></div>';
         }
 
         $user_id = get_current_user_id();
 
-        // Fetch Taxonomy Terms.
-        $listing_types = get_terms(
-            [
-                'taxonomy'   => 'atbdp_listing_types',
-                'hide_empty' => false,
-                'orderby'    => 'name',
-                'order'      => 'ASC',
-            ]
-        );
+        // --- HANDLE UNSUBSCRIBE FIRST ---
+        if ( isset( $_POST['np_unsubscribe'] ) ) {
+            dns_remove_user_from_subscriptions( $user_id );
+            echo '<script>window.location.href="' . esc_url( get_permalink() ) . '"</script>';
+            exit;
+        }
 
-        $locations = get_terms(
-            [
-                'taxonomy'   => 'at_biz_dir-location',
-                'hide_empty' => false,
-                'orderby'    => 'name',
-                'order'      => 'ASC',
-            ]
-        );
 
-        // Fetch All Listings.
-        $listings = get_posts(
-            [
-                'post_type'      => 'at_biz_dir',
-                'posts_per_page' => -1,
-                'orderby'        => 'title',
-                'order'          => 'ASC',
-            ]
-        );
+        // --- LOAD TAXONOMY TERMS AND LISTINGS ---
+        $listing_types = get_terms([
+            'taxonomy'   => 'atbdp_listing_types',
+            'hide_empty' => false,
+            'orderby'    => 'name',
+            'order'      => 'ASC',
+        ]);
 
-        // Load Saved User Preferences.
+        $locations = get_terms([
+            'taxonomy'   => 'at_biz_dir-location',
+            'hide_empty' => false,
+            'orderby'    => 'name',
+            'order'      => 'ASC',
+        ]);
+
+        $listings = get_posts([
+            'post_type'      => 'at_biz_dir',
+            'posts_per_page' => -1,
+            'orderby'        => 'title',
+            'order'          => 'ASC',
+        ]);
+
+        // --- LOAD SAVED USER PREFERENCES ---
         $saved = get_user_meta( $user_id, 'dns_notify_prefs', true );
         $saved = is_array( $saved ) ? $saved : [];
-        $saved = array_merge(
-            [
-                'listing_types'     => [],
-                'listing_locations' => [],
-                'listing_posts'     => [],
-            ],
-            $saved
-        );
+        $saved = array_merge([
+            'listing_types'     => [],
+            'listing_locations' => [],
+            'listing_posts'     => [],
+        ], $saved);
 
         $msg = '';
 
-        if ( ! empty( $_POST['np_save'] ) && check_admin_referer( 'np_save_prefs', 'np_nonce' ) ) {
+        // --- HANDLE SUBSCRIBE FORM ---
+        if ( isset( $_POST['np_save'] ) && check_admin_referer( 'np_save_prefs', 'np_nonce' ) ) {
 
             $selected_types     = isset( $_POST['listing_types'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_types'] ) ) : [];
             $selected_locations = isset( $_POST['listing_locations'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_locations'] ) ) : [];
             $selected_listings  = isset( $_POST['listing_posts'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_posts'] ) ) : [];
 
-            // Save preferences in user meta.
+            // Save preferences
             $saved = [
                 'listing_types'     => $selected_types,
                 'listing_locations' => $selected_locations,
                 'listing_posts'     => $selected_listings,
             ];
-
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
 
-            // Sync User Subscriptions with Term Meta.
+            // --- SYNC TERM META ---
             $taxonomies = [
                 'atbdp_listing_types' => $listing_types,
                 'at_biz_dir-location' => $locations,
             ];
 
             foreach ( $taxonomies as $taxonomy => $terms ) {
-
                 if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-
                     $selected = ( 'atbdp_listing_types' === $taxonomy ) ? $selected_types : $selected_locations;
-
                     foreach ( $terms as $term ) {
-
                         $meta_key = 'subscribed_users';
                         $users    = get_term_meta( $term->term_id, $meta_key, true );
                         $users    = is_array( $users ) ? $users : [];
@@ -141,7 +133,7 @@ class Shortcode {
                 }
             }
 
-            // Sync User Subscriptions with Post Meta.
+            // --- SYNC POST META ---
             if ( ! empty( $listings ) ) {
                 foreach ( $listings as $item ) {
                     $listing_id = $item->ID;
@@ -150,32 +142,23 @@ class Shortcode {
                     $users      = is_array( $users ) ? $users : [];
 
                     if ( in_array( $listing_id, $selected_listings, true ) ) {
-                        // Add user if selected
                         if ( ! in_array( $user_id, $users, true ) ) {
                             $users[] = $user_id;
                         }
                     } else {
-                        // Remove user if not selected
                         $users = array_diff( $users, [ $user_id ] );
                     }
 
                     update_post_meta( $listing_id, $meta_key, $users );
                 }
             }
-
         }
 
-        if ( isset($_POST['np_unsubscribe']) && is_user_logged_in() ) {
-            dns_remove_user_from_subscriptions( $user_id );
-
-        }
-
-        // Output HTML.
+        // --- OUTPUT HTML ---
         ob_start();
         ?>
         <div class="dns-wrap">
             <div class="dns-card">
-
                 <h3 class="dns-title"><?php esc_html_e( 'Notification Preferences', 'dns' ); ?></h3>
                 <p class="dns-sub"><?php esc_html_e( 'Choose which listing types or listings and locations you want updates for.', 'dns' ); ?></p>
 
@@ -267,12 +250,14 @@ class Shortcode {
                             <?php esc_html_e( 'Unsubscribe', 'dns' ); ?>
                         </button>
                     </div>
-
                 </form>
             </div>
         </div>
         <?php
+
         return ob_get_clean();
     }
+
+
 
 }
