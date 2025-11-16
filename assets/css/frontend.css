@@ -310,20 +310,22 @@
     background-color: #145a86;
 }
 
-/* Unsubscribe button style */
-.dns-btn.dns-btn--secondary {
-    background-color: #f44336; /* Red background */
-    color: #fff;               /* White text */
-    border: 1px solid #f44336;
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 4px;
+.dns-btn--secondary {
+    background: linear-gradient(135deg, #ef4444, #f87171); /* red gradient */
+    color: #ffffff;
+    box-shadow: 0 12px 22px rgba(239, 68, 68, 0.25); /* matching shadow */
+    margin-left: 10px;
+    border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
-    margin-right: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.dns-btn.dns-btn--secondary:hover {
-    background-color: #d32f2f; /* Darker red on hover */
-    border-color: #d32f2f;
+.dns-btn--secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 28px rgba(239, 68, 68, 0.35);
+}
+
+.dns-btn--secondary:active {
+    transform: translateY(1px);
+    box-shadow: 0 8px 16px rgba(239, 68, 68, 0.2);
 }
