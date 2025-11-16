@@ -24,6 +24,26 @@ class Admin {
 
         // Append subscribe button to listings
         add_filter('the_content', [$this, 'send_notifications_for_user']);
+
+
+        // Clear cache when a user is updated
+        add_action('profile_update', function() {
+            delete_transient('dns_cached_users');
+        });
+        add_action('user_register', function() {
+            delete_transient('dns_cached_users');
+        });
+
+        // Clear cache when a page is updated
+        add_action('save_post_page', function() {
+            delete_transient('dns_cached_pages');
+        });
+        add_action('delete_post', function($post_id) {
+            if (get_post_type($post_id) === 'page') {
+                delete_transient('dns_cached_pages');
+            }
+        });
+
     }
 
     /**
@@ -56,8 +76,8 @@ class Admin {
      * Admin page content
      */
     public function admin_page() {
-        $pages = get_pages();
-        $users = get_users();
+        $users = dns_get_cached_users();
+        $pages = dns_get_cached_pages();
 
         $job_enabled     = get_option('dns_subscribe_job');
         $job_page        = get_option('dns_subscription_page_job');
@@ -72,7 +92,7 @@ class Admin {
 
             <!-- Tabs Navigation -->
             <h2 class="nav-tab-wrapper">
-                <a href="#tab-settings" class="nav-tab nav-tab-active"><?php esc_html_e('Settings', 'dns'); ?></a>
+                <a href="#tab-settings" class="nav-tab "><?php esc_html_e('Settings', 'dns'); ?></a>
                 <a href="#tab-test-message" class="nav-tab"><?php esc_html_e('Test Message', 'dns'); ?></a>
                 <a href="#tab-subscribed" class="nav-tab"><?php esc_html_e('Subscribed Users', 'dns'); ?></a>
             </h2>

@@ -316,6 +316,53 @@ if ( ! function_exists( 'dns_load_template' ) ) {
     }
 }
 
+if ( ! function_exists( 'dns_get_cached_users' ) ) {
+    /**
+     * Get cached user list.
+     *
+     * @return array WP_User[]
+     */
+    function dns_get_cached_users() {
+        $users = get_transient('dns_cached_users');
+
+        if ( false === $users ) {
+            // Query all users (or limit if huge number)
+            $users = get_users([
+                'orderby' => 'display_name',
+                'order'   => 'ASC',
+            ]);
+
+            // Cache for 12 hours
+            set_transient('dns_cached_users', $users, 12 * HOUR_IN_SECONDS);
+        }
+
+        return $users;
+    }
+}
+
+if ( ! function_exists( 'dns_get_cached_pages' ) ) {
+    /**
+     * Get cached page list.
+     *
+     * @return array WP_Post[]
+     */
+    function dns_get_cached_pages() {
+        $pages = get_transient('dns_cached_pages');
+
+        if ( false === $pages ) {
+            $pages = get_pages([
+                'sort_column' => 'post_title',
+                'sort_order'  => 'ASC',
+            ]);
+
+            // Cache for 12 hours
+            set_transient('dns_cached_pages', $pages, 12 * HOUR_IN_SECONDS);
+        }
+
+        return $pages;
+    }
+}
+
 
 
 
