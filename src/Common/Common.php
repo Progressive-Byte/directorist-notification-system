@@ -85,7 +85,7 @@ class Common {
                 dns_send_listing_notification( $user_id, $post_id );
             }
         // Optional: queue emails for subscribers (commented out in your original)
-        // $this->queue_subscription_emails( $post_id, $user_ids );
+        $this->queue_subscription_emails( $post_id, $user_ids );
         // update_post_meta( $post_id, '_dns_email_sent', 1 );
     }
 
@@ -98,17 +98,19 @@ class Common {
     private function queue_subscription_emails( $post_id, $user_ids ) {
 
         $queue = get_transient( 'dns_email_queue' );
-        if ( ! is_array( $queue ) ) {
-            $queue = [];
-        }
+        if ( ! is_array( $queue ) ) $queue = [];
+
+        $listing_title = get_the_title( $post_id );
+        $listing_link  = get_permalink( $post_id );
+
+        // Get listing type and city
+        $listing_types = wp_get_post_terms( $post_id, 'atbdp_listing_types', ['fields' => 'names'] );
+        $listing_cities = wp_get_post_terms( $post_id, 'at_biz_dir-location', ['fields' => 'names'] );
 
         foreach ( $user_ids as $user_id ) {
             $user_info = get_userdata( $user_id );
-            if ( ! $user_info || empty( $user_info->user_email ) ) {
-                continue;
-            }
+            if ( ! $user_info || empty( $user_info->user_email ) ) continue;
 
-            // Global unsubscribe link
             $unsubscribe_url = add_query_arg(
                 [
                     'dns_unsubscribe' => 1,
@@ -118,29 +120,41 @@ class Common {
                 site_url()
             );
 
-            // HTML message
             $message  = '<p>Hello ' . esc_html( $user_info->display_name ) . ',</p>';
             $message .= '<p>A new post has been published that matches your subscription preferences:</p>';
-            $message .= '<p><a href="' . get_permalink( $post_id ) . '">' . get_the_title( $post_id ) . '</a></p>';
+            $message .= '<ul>';
+            $message .= '<li><strong>Title:</strong> <a href="' . esc_url( $listing_link ) . '">' . esc_html( $listing_title ) . '</a></li>';
+
+            if ( ! empty( $listing_types ) ) {
+                $message .= '<li><strong>Type:</strong> ' . esc_html( implode( ', ', $listing_types ) ) . '</li>';
+            }
+
+            if ( ! empty( $listing_cities ) ) {
+                $message .= '<li><strong>City:</strong> ' . esc_html( implode( ', ', $listing_cities ) ) . '</li>';
+            }
+
+            $message .= '<li><strong>Link:</strong> <a href="' . esc_url( $listing_link ) . '">View Listing</a></li>';
+            $message .= '</ul>';
+
             $message .= '<p>If you wish to unsubscribe from all notifications, click the button below:</p>';
             $message .= '<p><a href="' . esc_url( $unsubscribe_url ) . '" style="display:inline-block;padding:10px 20px;color:#ffffff;background-color:#0073aa;text-decoration:none;border-radius:5px;">Unsubscribe</a></p>';
             $message .= '<p>Thank you!</p>';
 
             $queue[] = [
                 'to'      => $user_info->user_email,
-                'subject' => 'New Listing Match Found: ' . get_the_title( $post_id ),
+                'subject' => 'New Listing Match Found: ' . $listing_title,
                 'message' => $message,
-                'headers' => ['Content-Type: text/html; charset=UTF-8'], // Important for HTML
+                'headers' => ['Content-Type: text/html; charset=UTF-8'],
             ];
         }
 
         set_transient( 'dns_email_queue', $queue, HOUR_IN_SECONDS );
 
-        // Schedule background processing
         if ( ! wp_next_scheduled( 'dns_process_email_queue' ) ) {
             wp_schedule_single_event( time() + 30, 'dns_process_email_queue' );
         }
     }
+
 
 
     /**
@@ -153,15 +167,14 @@ class Common {
         }
 
         foreach ( $queue as $key => $email_data ) {
-            // Send HTML email
             wp_mail(
                 $email_data['to'],
                 $email_data['subject'],
                 $email_data['message'],
-                isset($email_data['headers']) ? $email_data['headers'] : ['Content-Type: text/html; charset=UTF-8']
+                isset( $email_data['headers'] ) ? $email_data['headers'] : ['Content-Type: text/html; charset=UTF-8']
             );
 
-            // Remove email from queue
+            // Remove sent email from queue
             unset( $queue[$key] );
         }
 
