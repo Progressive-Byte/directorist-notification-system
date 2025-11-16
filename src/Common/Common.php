@@ -9,7 +9,7 @@ class Common {
     public function __construct() {
 
         // Hook into post save
-        add_action( 'save_post', [ $this, 'save_at_biz_dir' ], 999, 3 );
+        add_action( 'save_post_at_biz_dir', [ $this, 'save_at_biz_dir' ], 999, 3 );
 
         // Background email processing
         add_action( 'dns_process_email_queue', [ $this, 'process_email_queue' ] );
@@ -18,22 +18,7 @@ class Common {
         add_action( 'template_redirect', [ $this, 'check_unsubscribe' ] );
         add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'send_notifications_for_user', 10, 3 ] );
 
-        // add_action( 'bp_init', [ $this, 'budyboss_notification'] );
-    }
-
-    public function budyboss_notification(){
-        // bp_notifications_update_meta( 11, 'message', '$message' );
-        // Message::pri( 'Mahbub_mr' );
-        $user_id = get_current_user_id();
-        $listing_id = 11180647;     
-
-        error_log( $user_id );
-
-        dns_notify_new_listing_match( $user_id, $listing_id );
-
-        // Message::pri( '$notification_id');
-
-        // dns_notify_new_listing_match( $user_id, $listing_id );
+        
     }
 
     /**
@@ -46,7 +31,7 @@ class Common {
             if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) return;
 
             // Only target specific post types
-            if ( ! in_array( $post->post_type, [ 'post', 'page', 'at_biz_dir' ], true ) ) return;
+            if ( ! in_array( $post->post_type, [ 'at_biz_dir' ], true ) ) return;
 
             // Only published posts
             if ( 'publish' !== $post->post_status ) return;
