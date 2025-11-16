@@ -13,7 +13,7 @@
 
 /* Layout wrapper */
 .dns-wrap {
-    min-height: 100vh;
+    /*min-height: 100vh;*/
     display: flex;
     align-items: center;
     justify-content: center;
@@ -245,6 +245,7 @@
     background: linear-gradient(135deg, #2563eb, #22c55e);
     color: #ffffff;
     box-shadow: 0 12px 22px rgba(37, 99, 235, 0.25);
+    margin-right: 10px;
 }
 
 .dns-btn--primary:hover {
@@ -307,4 +308,21 @@
 }
 .dns-subscribe-button:hover {
     background-color: #145a86;
+}
+
+/* Unsubscribe button style */
+.dns-btn.dns-btn--secondary {
+    background-color: #f44336; /* Red background */
+    color: #fff;               /* White text */
+    border: 1px solid #f44336;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dns-btn.dns-btn--secondary:hover {
+    background-color: #d32f2f; /* Darker red on hover */
+    border-color: #d32f2f;
 }

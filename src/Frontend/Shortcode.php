@@ -261,7 +261,7 @@ class Shortcode {
                     <!-- Submit -->
                     <div class="dns-actions">
                         <button class="dns-btn dns-btn--primary" type="submit" name="np_save" value="1">
-                            <?php esc_html_e( 'Save Preferences', 'dns' ); ?>
+                            <?php esc_html_e( 'Subscribe', 'dns' ); ?>
                         </button>
                         <button class="dns-btn dns-btn--secondary" type="submit" name="np_unsubscribe" value="1">
                             <?php esc_html_e( 'Unsubscribe', 'dns' ); ?>
