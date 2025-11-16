@@ -15,8 +15,8 @@ class System {
 
     public function __construct() {
         // Enqueue assets
-        add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
-        add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
+        add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ]);
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
         // Initialize classes
         add_action('init', [$this, 'init_classes']);
