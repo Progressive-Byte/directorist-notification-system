@@ -97,213 +97,48 @@ class Admin {
                 <a href="#tab-subscribed" class="nav-tab"><?php esc_html_e('Subscribed Users', 'dns'); ?></a>
             </h2>
 
-            <!-- SETTINGS TAB -->
             <div id="tab-settings" class="tab-content" style="display:block;">
-                <form method="post" action="options.php">
-                    <?php
-                    settings_fields('dns_notifications_settings');
-                    do_settings_sections('dns_notifications_settings');
-                    ?>
+                <?php
+                dns_load_template(
+                    DNS_PLUGIN_DIR . 'src/Template/Admin/admin-settings-users.php',
+                    [
+                        'users'           => $users,
+                        'pages'           => $pages,
+                        'job_enabled'     => $job_enabled,
+                        'job_page'        => $job_page,
+                        'product_enabled' => $product_enabled,
+                        'product_page'    => $product_page,
+                        'selected_page'   => $selected_page,
+                    ],
+                    true
+                );
 
-                    <h2><?php esc_html_e('Subscribe Button Settings', 'dns'); ?></h2>
+                ?>
 
-                    <table class="form-table">
-                        <!-- JOB LISTINGS -->
-                        <tr>
-                            <th scope="row"><?php esc_html_e('Subscribe Button on Job Listings', 'dns'); ?></th>
-                            <td>
-                                <label class="dns-toggle-wrapper">
-                                    <span class="dns-toggle">
-                                        <input type="checkbox" id="dns_subscribe_job" name="dns_subscribe_job" value="1" <?php checked($job_enabled, 1); ?> />
-                                        <span class="dns-toggle-slider"></span>
-                                    </span>
-                                    <span><?php esc_html_e('Enable subscribe button on Job Listing pages', 'dns'); ?></span>
-                                </label>
-
-                                <div id="dns_job_page_select" style="margin-top:10px; <?php echo $job_enabled ? '' : 'display:none;'; ?>">
-                                    <label><?php esc_html_e('Select Subscription Page:', 'dns'); ?></label>
-                                    <select name="dns_subscription_page_job">
-                                        <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
-                                        <?php foreach ($pages as $page) : ?>
-                                            <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($job_page, $page->ID); ?>>
-                                                <?php echo esc_html($page->post_title); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- PRODUCT LISTINGS -->
-                        <tr>
-                            <th scope="row"><?php esc_html_e('Subscribe Button on Product Listings', 'dns'); ?></th>
-                            <td>
-                                <label class="dns-toggle-wrapper">
-                                    <span class="dns-toggle">
-                                        <input type="checkbox" id="dns_subscribe_product" name="dns_subscribe_product" value="1" <?php checked($product_enabled, 1); ?> />
-                                        <span class="dns-toggle-slider"></span>
-                                    </span>
-                                    <span><?php esc_html_e('Enable subscribe button on Product Listing pages', 'dns'); ?></span>
-                                </label>
-
-                                <div id="dns_product_page_select" style="margin-top:10px; <?php echo $product_enabled ? '' : 'display:none;'; ?>">
-                                    <label><?php esc_html_e('Select Subscription Page:', 'dns'); ?></label>
-                                    <select name="dns_subscription_page_product">
-                                        <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
-                                        <?php foreach ($pages as $page) : ?>
-                                            <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($product_page, $page->ID); ?>>
-                                                <?php echo esc_html($page->post_title); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- GENERAL SUB PAGE -->
-                        <tr>
-                            <th scope="row"><?php esc_html_e('Default Subscription Page', 'dns'); ?></th>
-                            <td>
-                                <select name="dns_subscription_page_id">
-                                    <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
-                                    <?php foreach ($pages as $page) : ?>
-                                        <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($selected_page, $page->ID); ?>>
-                                            <?php echo esc_html($page->post_title); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <p class="description"><?php esc_html_e('Used if no specific page is assigned.', 'dns'); ?></p>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <?php submit_button(); ?>
-                </form>
             </div>
+           
 
             <!-- TEST MESSAGE TAB -->
             <div id="tab-test-message" class="tab-content" style="display:none;">
-                <h2><?php esc_html_e('Test Message', 'dns'); ?></h2>
-
-                <form method="post">
-                    <table class="form-table">
-                        <tr>
-                            <th><label for="user_id"><?php esc_html_e('Select User', 'dns'); ?></label></th>
-                            <td>
-                                <select name="user_id" id="user_id" required>
-                                    <option value="">-- <?php esc_html_e('Select User', 'dns'); ?> --</option>
-                                    <?php foreach ($users as $user) : ?>
-                                        <option value="<?php echo esc_attr($user->ID); ?>">
-                                            <?php echo esc_html($user->display_name); ?> (<?php echo esc_html($user->user_email); ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <th><label for="message"><?php esc_html_e('Message', 'dns'); ?></label></th>
-                            <td>
-                                <textarea name="message" id="message" rows="5" cols="50" required></textarea>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <th><?php esc_html_e('Send Method', 'dns'); ?></th>
-                            <td>
-                                <label><input type="checkbox" name="send_email" value="1"> <?php esc_html_e('Email', 'dns'); ?></label><br>
-                                <label><input type="checkbox" name="send_bp" value="1"> <?php esc_html_e('BuddyPress Notification', 'dns'); ?></label>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <p>
-                        <input type="submit" name="test_message_submit" class="button button-primary" value="<?php esc_attr_e('Send Test', 'dns'); ?>">
-                    </p>
-                </form>
+                <?php
+                dns_load_template(
+                    DNS_PLUGIN_DIR . 'src/Template/Admin/admin-test-message.php',
+                    [ 'users' => $users ],
+                    true
+                );
+                ?>
             </div>
 
             <!-- SUBSCRIBED USERS TAB -->
             <div id="tab-subscribed" class="tab-content" style="display:none;">
-                <h2><?php esc_html_e('Subscribed Users', 'dns'); ?></h2>
-
                 <?php
-                $subscribed_users = get_users(['meta_key' => 'dns_notify_prefs']);
-
-                if (empty($subscribed_users)) :
-                    echo '<p>' . esc_html__('No subscribed users found.', 'dns') . '</p>';
-                else :
+                $subscribed_users = get_users( [ 'meta_key' => 'dns_notify_prefs' ] );
+                dns_load_template(
+                    DNS_PLUGIN_DIR . 'src/Template/Admin/admin-subscribed-users.php',
+                    [ 'subscribed_users' => $subscribed_users ],
+                    true
+                );
                 ?>
-                <table class="widefat fixed striped">
-                    <thead>
-                        <tr>
-                            <th><?php esc_html_e('User', 'dns'); ?></th>
-                            <th><?php esc_html_e('Listing Types', 'dns'); ?></th>
-                            <th><?php esc_html_e('Locations', 'dns'); ?></th>
-                            <th><?php esc_html_e('Listings', 'dns'); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($subscribed_users as $user) :
-                            $prefs = get_user_meta($user->ID, 'dns_notify_prefs', true);
-                            $prefs = wp_parse_args($prefs, [
-                                'listing_types'     => [],
-                                'listing_locations' => [],
-                                'listing_posts'     => [],
-                            ]);
-                        ?>
-                        <tr>
-                            <td>
-                                <strong><?php echo esc_html($user->display_name); ?></strong><br>
-                                <small><?php echo esc_html($user->user_email); ?></small>
-                            </td>
-                            <td>
-                                <?php
-                                if (!empty($prefs['listing_types'])) {
-                                    foreach ($prefs['listing_types'] as $tid) {
-                                        $term = get_term($tid);
-                                        if ($term) {
-                                            echo esc_html($term->name) . '<br>';
-                                        }
-                                    }
-                                } else {
-                                    echo '<em>' . esc_html__('None', 'dns') . '</em>';
-                                }
-                                ?>
-                            </td>
-                            <td>
-                                <?php
-                                if (!empty($prefs['listing_locations'])) {
-                                    foreach ($prefs['listing_locations'] as $lid) {
-                                        $term = get_term($lid);
-                                        if ($term) {
-                                            echo esc_html($term->name) . '<br>';
-                                        }
-                                    }
-                                } else {
-                                    echo '<em>' . esc_html__('None', 'dns') . '</em>';
-                                }
-                                ?>
-                            </td>
-                            <td>
-                                <?php
-                                if (!empty($prefs['listing_posts'])) {
-                                    foreach ($prefs['listing_posts'] as $pid) {
-                                        $post = get_post($pid);
-                                        if ($post) {
-                                            echo esc_html($post->post_title) . '<br>';
-                                        }
-                                    }
-                                } else {
-                                    echo '<em>' . esc_html__('None', 'dns') . '</em>';
-                                }
-                                ?>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-                <?php endif; ?>
             </div>
         </div>
 
