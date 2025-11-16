@@ -288,6 +288,35 @@ if ( ! function_exists( 'dns_send_listing_notification' ) ) {
     }
 }
 
+/* ============================================================
+ * ✅ Template Loader
+ * ============================================================ */
+
+if ( ! function_exists( 'dns_load_template' ) ) {
+    /**
+     * Load a PHP template file and pass data to it.
+     */
+    function dns_load_template( $file, $args = [], $echo = true ) {
+        if ( ! file_exists( $file ) ) return;
+
+        if ( is_array( $args ) && ! empty( $args ) ) {
+            extract( $args, EXTR_SKIP );
+        }
+
+        ob_start();
+        include $file;
+        $output = ob_get_clean();
+
+        if ( $echo ) {
+            echo $output;
+            return null;
+        }
+
+        return $output;
+    }
+}
+
+
 
 
 ?>
