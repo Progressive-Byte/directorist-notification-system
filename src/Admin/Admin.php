@@ -37,6 +37,7 @@ class Admin {
         register_setting( 'dns_notifications_settings', 'dns_subscription_page_job' );
         register_setting( 'dns_notifications_settings', 'dns_subscribe_product' );
         register_setting( 'dns_notifications_settings', 'dns_subscription_page_product' );
+        register_setting( 'dns_notifications_settings', 'dns_subscription_page_id' );
     }
 
 
