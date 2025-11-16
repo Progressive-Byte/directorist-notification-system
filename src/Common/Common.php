@@ -189,7 +189,7 @@ class Common {
         dns_remove_user_from_subscriptions( $user_id );
 
         // Optional: redirect with confirmation
-        wp_redirect( home_url( '?unsubscribed=1' ) );
+        wp_redirect( home_url(  ) );
         exit;
     }
 
