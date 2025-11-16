@@ -196,8 +196,8 @@ if ( ! function_exists( 'dns_extract_user_ids_from_taxonomy_data' ) ) {
 /**
  * Remove a user from all post + term subscriptions.
  */
-if ( ! function_exists( 'remove_user_from_subscriptions' ) ) {
-    function remove_user_from_subscriptions( $user_id ) {
+if ( ! function_exists( 'dns_remove_user_from_subscriptions' ) ) {
+    function dns_remove_user_from_subscriptions( $user_id ) {
 
         $posts = get_posts([
             'post_type'      => 'at_biz_dir',
@@ -238,30 +238,56 @@ if ( ! function_exists( 'remove_user_from_subscriptions' ) ) {
 
 
 /**
- * BuddyBoss notification helper.
+ * Send BuddyBoss + Push Notification to a single user for a listing.
+ *
+ * @param int $user_id    ID of the user to notify.
+ * @param int $listing_id ID of the listing post.
  */
-if ( ! function_exists( 'bb_send_notification' ) ) {
-    function bb_send_notification( $user_id, $msg, $link = '' ) {
+if ( ! function_exists( 'dns_send_listing_notification' ) ) {
+    function dns_send_listing_notification( $user_id, $listing_id ) {
 
-        $notification_id = bp_notifications_add_notification([
-            'user_id'           => $user_id,
-            'item_id'           => time(),
-            'secondary_item_id' => 0,
-            'component_name'    => 'custom_component',
-            'component_action'  => 'custom_action',
-            'is_new'            => 1,
-            'allow_duplicate'   => true,
-        ]);
 
-        if ( $notification_id ) {
-            bp_notifications_update_meta( $notification_id, 'message', $msg );
-            if ( $link ) {
-                bp_notifications_update_meta( $notification_id, 'link', $link );
+        $user_id    = (int) $user_id;
+        $listing_id = (int) $listing_id;
+
+        if ( ! $user_id || ! $listing_id ) return false;
+
+        $listing_title = get_the_title( $listing_id );
+        $listing_link  = get_permalink( $listing_id );
+
+        // --- BuddyBoss Notification ---
+        if ( function_exists( 'bp_notifications_add_notification' ) ) {
+
+            $notification_id = bp_notifications_add_notification( [
+                'user_id'           => $user_id,
+                'item_id'           => $listing_id,
+                'secondary_item_id' => 0,
+                'component_name'    => 'dns_matches',
+                'component_action'  => 'new_listing_match',
+                'is_new'            => 1,
+                'allow_duplicate'   => false,
+            ] );
+
+            if ( $notification_id ) {
+                bp_notifications_update_meta( $notification_id, 'message', "New Listing Match Found: $listing_title" );
+                bp_notifications_update_meta( $notification_id, 'link', $listing_link );
             }
         }
 
-        return $notification_id;
+        // --- Push Notification ---
+        if ( function_exists( 'bp_push_notification_send' ) ) {
+            bp_push_notification_send( [
+                'user_id' => $user_id,
+                'title'   => 'New Listing Match Found!',
+                'message' => "A new listing matches your preferences: $listing_title",
+                'url'     => $listing_link,
+            ] );
+        }
+
+        return true;
     }
 }
+
+
 
 ?>
