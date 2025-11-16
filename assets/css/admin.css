@@ -1,152 +1,183 @@
-/* DNS Directory Notifications – Admin Styles */
+/* General Admin Wrapper */
 .dns-admin-wrap {
-    max-width: 1100px;
-    margin-top: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9f9f9;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    max-width: 900px;
+    margin: 20px auto;
 }
 
-/* Page title & description */
+/* Headings */
 .dns-admin-wrap h1 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 5px;
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 10px;
 }
 
-.dns-admin-wrap > p {
-    color: #555;
-    font-size: 14px;
+.dns-admin-wrap h2 {
+    font-size: 20px;
+    color: #444;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+/* Tabs */
+.nav-tab-wrapper {
+    border-bottom: 2px solid #e2e2e2;
     margin-bottom: 20px;
 }
 
-/* Card-style box around the form */
-.dns-admin-wrap form {
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 20px 24px 24px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-    border: 1px solid #e0e4ea;
+.nav-tab {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-right: 5px;
+    border-radius: 8px 8px 0 0;
+    background: #f0f0f0;
+    color: #555;
+    text-decoration: none;
+    transition: all 0.3s ease;
 }
 
-/* Section title */
-.dns-admin-wrap h2 {
-    margin-top: 0;
-    margin-bottom: 16px;
-    font-size: 18px;
+.nav-tab:hover {
+    background: #e0e0e0;
+}
+
+.nav-tab-active {
+    background: #0073aa;
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Tab Content */
+.tab-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 0 12px 12px 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Form Table */
+.form-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 15px;
+}
+
+.form-table th {
+    text-align: left;
+    padding: 10px 15px;
+    font-weight: 600;
+    color: #333;
+    width: 35%;
+}
+
+.form-table td {
+    padding: 10px 15px;
+    background: #f7f7f7;
+    border-radius: 8px;
+}
+
+/* Toggle Switch */
+.dns-toggle-wrapper {
     display: flex;
     align-items: center;
-    gap: 8px;
-}
-
-/* Table styling */
-.dns-admin-wrap .form-table {
-    margin-top: 0;
-}
-
-.dns-admin-wrap .form-table th {
-    width: 260px;
-    padding: 12px 10px 10px 0;
-    font-weight: 600;
-    font-size: 14px;
-    vertical-align: top;
-}
-
-.dns-admin-wrap .form-table td {
-    padding: 8px 10px 16px 0;
-}
-
-/* Descriptions */
-.dns-admin-wrap .form-table .description {
-    font-size: 12px;
-    color: #666;
-    margin-top: 4px;
-    max-width: 460px;
-}
-
-/* Checkbox toggle */
-.dns-admin-wrap .dns-toggle-wrapper {
-    display: inline-flex;
-    align-items: center;
+    cursor: pointer;
     gap: 10px;
+    font-size: 14px;
 }
 
-.dns-admin-wrap .dns-toggle {
+.dns-toggle {
     position: relative;
     display: inline-block;
-    width: 46px;
+    width: 50px;
     height: 24px;
 }
 
-.dns-admin-wrap .dns-toggle input {
+.dns-toggle input {
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-.dns-admin-wrap .dns-toggle-slider {
+.dns-toggle-slider {
     position: absolute;
     cursor: pointer;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #d0d7e2;
-    transition: 0.2s;
-    border-radius: 999px;
+    background-color: #ccc;
+    border-radius: 24px;
+    transition: 0.4s;
 }
 
-.dns-admin-wrap .dns-toggle-slider:before {
+.dns-toggle-slider:before {
     position: absolute;
     content: "";
-    height: 18px;
-    width: 18px;
-    left: 4px;
-    top: 3px;
-    background-color: #fff;
-    transition: 0.2s;
-    border-radius: 999px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.3);
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
 }
 
-.dns-admin-wrap .dns-toggle input:checked + .dns-toggle-slider {
-    background-color: #2271b1;
+.dns-toggle input:checked + .dns-toggle-slider {
+    background-color: #0073aa;
 }
 
-.dns-admin-wrap .dns-toggle input:checked + .dns-toggle-slider:before {
-    transform: translateX(20px);
+.dns-toggle input:checked + .dns-toggle-slider:before {
+    transform: translateX(26px);
 }
 
-/* Select styling */
-.dns-admin-wrap select[name="dns_subscription_page_id"] {
-    min-width: 260px;
-    padding: 6px 8px;
-    border-radius: 4px;
-    border: 1px solid #ccd0d4;
-    background-color: #fff;
-    font-size: 13px;
+/* Select Dropdown */
+select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    transition: all 0.3s ease;
 }
 
-.dns-admin-wrap select[name="dns_subscription_page_id"]:focus {
+select:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 5px rgba(0, 115, 170, 0.3);
     outline: none;
-    border-color: #2271b1;
-    box-shadow: 0 0 0 1px #2271b1;
 }
 
-/* Submit button spacing */
-.dns-admin-wrap .submit {
-    margin-top: 10px;
+/* Submit Button */
+input[type="submit"], .button-primary {
+    background-color: #0073aa;
+    color: #fff;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.3s ease;
 }
 
-/* Responsive tweaks */
-@media (max-width: 782px) {
-    .dns-admin-wrap .form-table th,
-    .dns-admin-wrap .form-table td {
-        display: block;
-        width: 100%;
-        padding-right: 0;
-    }
+input[type="submit"]:hover, .button-primary:hover {
+    background-color: #005f8d;
+}
 
-    .dns-admin-wrap .form-table th {
-        padding-bottom: 4px;
-    }
+/* Description Text */
+.description {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Notification Log Box */
+#dns-log-output {
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    min-height: 100px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #333;
 }
