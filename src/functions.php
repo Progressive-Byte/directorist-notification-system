@@ -330,6 +330,7 @@ if ( ! function_exists( 'dns_get_cached_users' ) ) {
             $users = get_users([
                 'orderby' => 'display_name',
                 'order'   => 'ASC',
+                'role'    => 'membre'
             ]);
 
             // Cache for 12 hours
