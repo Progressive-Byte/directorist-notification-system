@@ -1,11 +1,50 @@
 <?php
-/**
- * Test Message Tab Template
- *
- * Variables passed:
- *   $users - array of WP_User objects
- */
+// Handle Test Message form submission
+if ( isset( $_POST['test_message_submit'] ) ) {
+
+    $user_id    = intval( $_POST['user_id'] ?? 0 );
+    $message    = sanitize_textarea_field( $_POST['message'] ?? '' );
+    $send_email = ! empty( $_POST['send_email'] );
+    $send_bp    = ! empty( $_POST['send_bp'] );
+
+    if ( $user_id && $message ) {
+
+        // --- BuddyPress Notification ---
+        if ( $send_bp && function_exists('bp_notifications_add_notification') ) {
+            bp_notifications_add_notification([
+                'user_id'           => $user_id,
+                'item_id'           => 0,
+                'secondary_item_id' => 0,
+                'component_name'    => 'dns_matches',
+                'component_action'  => 'test_message',
+                'is_new'            => 1,
+                'allow_duplicate'   => false,
+            ]);
+
+            // Optionally update meta
+            $notifications = bp_notifications_get_notifications_for_user( $user_id, 'object' );
+            if ( ! empty( $notifications ) ) {
+                $last = reset( $notifications );
+                bp_notifications_update_meta( $last->id, 'message', $message );
+            }
+        }
+
+        // --- Email ---
+        if ( $send_email ) {
+            $user = get_user_by( 'ID', $user_id );
+            if ( $user && is_email( $user->user_email ) ) {
+                wp_mail( $user->user_email, 'Test Notification', $message );
+            }
+        }
+
+        echo '<div class="notice notice-success"><p>' . esc_html__( 'Test message sent!', 'dns' ) . '</p></div>';
+
+    } else {
+        echo '<div class="notice notice-error"><p>' . esc_html__( 'Please select a user and enter a message.', 'dns' ) . '</p></div>';
+    }
+}
 ?>
+
 
 <h2><?php esc_html_e('Test Message', 'dns'); ?></h2>
 

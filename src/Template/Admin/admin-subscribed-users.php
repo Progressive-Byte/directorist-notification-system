@@ -7,7 +7,7 @@
  */
 ?>
 
-<h2><?php esc_html_e('Subscribed Users', 'dns'); ?></h2>
+<h2><?php esc_html_e('View all subscriptions', 'dns'); ?></h2>
 
 <?php if ( empty( $subscribed_users ) ) : ?>
     <p><?php esc_html_e( 'No subscribed users found.', 'dns' ); ?></p>
