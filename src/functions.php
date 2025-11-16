@@ -199,6 +199,9 @@ if ( ! function_exists( 'dns_extract_user_ids_from_taxonomy_data' ) ) {
 if ( ! function_exists( 'dns_remove_user_from_subscriptions' ) ) {
     function dns_remove_user_from_subscriptions( $user_id ) {
 
+        error_log( "Starting dns_remove_user_from_subscriptions for user_id: {$user_id}" );
+
+        // Remove user from posts
         $posts = get_posts([
             'post_type'      => 'at_biz_dir',
             'posts_per_page' => -1,
@@ -216,9 +219,11 @@ if ( ! function_exists( 'dns_remove_user_from_subscriptions' ) ) {
             if ( is_array( $users ) ) {
                 $users = array_diff( $users, [ $user_id ] );
                 update_post_meta( $post->ID, 'subscribed_users', $users );
+                error_log( "Removed user {$user_id} from post ID {$post->ID}" );
             }
         }
 
+        // Remove user from term meta
         $taxonomies = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
         foreach ( $taxonomies as $taxonomy ) {
             $terms = get_terms([ 'taxonomy' => $taxonomy, 'hide_empty' => false ]);
@@ -228,13 +233,19 @@ if ( ! function_exists( 'dns_remove_user_from_subscriptions' ) ) {
                 if ( is_array( $users ) ) {
                     $users = array_diff( $users, [ $user_id ] );
                     update_term_meta( $term->term_id, 'subscribed_users', $users );
+                    error_log( "Removed user {$user_id} from term {$term->term_id} ({$taxonomy})" );
                 }
             }
         }
 
+        // Delete user meta
         delete_user_meta( $user_id, 'dns_notify_prefs' );
+        error_log( "Deleted dns_notify_prefs for user_id: {$user_id}" );
+
+        error_log( "Finished dns_remove_user_from_subscriptions for user_id: {$user_id}" );
     }
 }
+
 
 
 /**

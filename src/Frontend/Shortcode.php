@@ -165,6 +165,11 @@ class Shortcode {
 
         }
 
+        if ( isset($_POST['np_unsubscribe']) && is_user_logged_in() ) {
+            dns_remove_user_from_subscriptions( $user_id );
+
+        }
+
         // Output HTML.
         ob_start();
         ?>
@@ -257,6 +262,9 @@ class Shortcode {
                     <div class="dns-actions">
                         <button class="dns-btn dns-btn--primary" type="submit" name="np_save" value="1">
                             <?php esc_html_e( 'Save Preferences', 'dns' ); ?>
+                        </button>
+                        <button class="dns-btn dns-btn--secondary" type="submit" name="np_unsubscribe" value="1">
+                            <?php esc_html_e( 'Unsubscribe', 'dns' ); ?>
                         </button>
                     </div>
 
