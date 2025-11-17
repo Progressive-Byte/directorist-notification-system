@@ -23,7 +23,7 @@
     <table class="form-table">
         <!-- JOB LISTINGS -->
         <tr>
-            <th scope="row"><?php esc_html_e('Subscribe Button on Job Listings', 'dns'); ?></th>
+            <th scope="row"><?php esc_html_e('Job Listings page', 'dns'); ?></th>
             <td>
                 <label class="dns-toggle-wrapper">
                     <span class="dns-toggle">
@@ -34,7 +34,7 @@
                 </label>
 
                 <div id="dns_job_page_select" style="margin-top:10px; <?php echo $job_enabled ? '' : 'display:none;'; ?>">
-                    <label><?php esc_html_e('Select Subscription Page:', 'dns'); ?></label>
+                    <label><?php esc_html_e('Select your job listing page:', 'dns'); ?></label>
                     <select name="dns_subscription_page_job">
                         <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
                         <?php foreach ($pages as $page) : ?>
@@ -49,7 +49,7 @@
 
         <!-- PRODUCT LISTINGS -->
         <tr>
-            <th scope="row"><?php esc_html_e('Subscribe Button on Product Listings', 'dns'); ?></th>
+            <th scope="row"><?php esc_html_e('Product Listings page', 'dns'); ?></th>
             <td>
                 <label class="dns-toggle-wrapper">
                     <span class="dns-toggle">
@@ -60,7 +60,7 @@
                 </label>
 
                 <div id="dns_product_page_select" style="margin-top:10px; <?php echo $product_enabled ? '' : 'display:none;'; ?>">
-                    <label><?php esc_html_e('Select Subscription Page:', 'dns'); ?></label>
+                    <label><?php esc_html_e('Select your product listing page:', 'dns'); ?></label>
                     <select name="dns_subscription_page_product">
                         <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
                         <?php foreach ($pages as $page) : ?>
@@ -75,7 +75,7 @@
 
         <!-- GENERAL SUB PAGE -->
         <tr>
-            <th scope="row"><?php esc_html_e('Default Subscription Page', 'dns'); ?></th>
+            <th scope="row"><?php esc_html_e('Notification Preferences Page', 'dns'); ?></th>
             <td>
                 <select name="dns_subscription_page_id">
                     <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
@@ -85,7 +85,7 @@
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <p class="description"><?php esc_html_e('Used if no specific page is assigned.', 'dns'); ?></p>
+                <p class="description"><?php esc_html_e('Select your notification preferences page.', 'dns'); ?></p>
             </td>
         </tr>
     </table>
