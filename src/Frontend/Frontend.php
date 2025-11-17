@@ -31,7 +31,7 @@ class Frontend {
 	    $subscription_id = get_option( 'dns_subscription_page_id' );
 
 	    // Get current page ID
-	    $current_page = get_the_ID();
+	    $current_page_id = get_the_ID();
 
 	    // Exit if no subscription page selected
 	    if ( empty( $subscription_id ) ) {
@@ -39,12 +39,12 @@ class Frontend {
 	    }
 
 	    // Show button on Product Listing page
-	    if ( $show_product && $current_page === $product_page ) {
+	    if ( $show_product && $current_page_id === $product_page ) {
 	        echo '<a href="' . esc_url( get_permalink( $subscription_id ) ) . '" class="dns-subscribe-button">Subscribe <br> to Notifications</a>';
 	    }
 
 	    // Show button on Job Listing page
-	    if ( $show_job && $current_page === $job_page ) {
+	    if ( $show_job && $current_page_id === $job_page ) {
 	        echo '<a href="' . esc_url( get_permalink( $subscription_id ) ) . '" class="dns-subscribe-button">Subscribe <br> to Notifications</a>';
 	    }
 	}
