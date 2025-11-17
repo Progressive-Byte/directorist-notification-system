@@ -21,6 +21,23 @@
     <h2><?php esc_html_e('Subscribe Button Settings', 'dns'); ?></h2>
 
     <table class="form-table">
+        <tr>
+            <th scope="row">
+                <?php esc_html_e('Notification Preferences Page', 'dns'); ?>
+                <span style="color:#e11d48;font-weight:bold;">*</span>
+            </th>
+            <td>
+                <select name="dns_subscription_page_id">
+                    <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
+                    <?php foreach ($pages as $page) : ?>
+                        <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($selected_page, $page->ID); ?>>
+                            <?php echo esc_html($page->post_title); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="description"><?php esc_html_e('Select your notification preferences page.', 'dns'); ?></p>
+            </td>
+        </tr>
         <!-- JOB LISTINGS -->
         <tr>
             <th scope="row"><?php esc_html_e('Job Listings page', 'dns'); ?></th>
@@ -74,20 +91,7 @@
         </tr>
 
         <!-- GENERAL SUB PAGE -->
-        <tr>
-            <th scope="row"><?php esc_html_e('Notification Preferences Page', 'dns'); ?></th>
-            <td>
-                <select name="dns_subscription_page_id">
-                    <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
-                    <?php foreach ($pages as $page) : ?>
-                        <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($selected_page, $page->ID); ?>>
-                            <?php echo esc_html($page->post_title); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="description"><?php esc_html_e('Select your notification preferences page.', 'dns'); ?></p>
-            </td>
-        </tr>
+        
     </table>
 
     <?php submit_button(); ?>
