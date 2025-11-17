@@ -35,6 +35,10 @@ if ( ! defined( 'DNS_TEXT_DOMAIN' ) ) {
 
 if ( ! defined( 'DNS_ASSETS_URL' ) ) {
 	define( 'DNS_ASSETS_URL', DNS_PLUGIN_URL . 'assets/' );    
+}if 
+
+( ! defined( 'DNS_PLUGIN_TEMPLATE' ) ) {
+    define( 'DNS_PLUGIN_TEMPLATE', DNS_PLUGIN_DIR . 'src/Template/' );    
 }
 
 // Composer autoload

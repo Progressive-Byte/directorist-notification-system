@@ -100,7 +100,7 @@ class Admin {
             <div id="tab-settings" class="tab-content" style="display:block;">
                 <?php
                 dns_load_template(
-                    DNS_PLUGIN_DIR . 'src/Template/Admin/admin-settings-users.php',
+                    DNS_PLUGIN_TEMPLATE . 'Admin/admin-settings-users.php',
                     [
                         'users'           => $users,
                         'pages'           => $pages,
@@ -122,7 +122,7 @@ class Admin {
             <div id="tab-test-message" class="tab-content" style="display:none;">
                 <?php
                 dns_load_template(
-                    DNS_PLUGIN_DIR . 'src/Template/Admin/admin-test-message.php',
+                    DNS_PLUGIN_TEMPLATE . 'Admin/admin-test-message.php',
                     [ 'users' => $users ],
                     true
                 );
@@ -134,7 +134,7 @@ class Admin {
                 <?php
                 $subscribed_users = get_users( [ 'meta_key' => 'dns_notify_prefs' ] );
                 dns_load_template(
-                    DNS_PLUGIN_DIR . 'src/Template/Admin/admin-subscribed-users.php',
+                    DNS_PLUGIN_TEMPLATE . 'Admin/admin-subscribed-users.php',
                     [ 'subscribed_users' => $subscribed_users ],
                     true
                 );

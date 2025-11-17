@@ -50,7 +50,7 @@ class Shortcode {
 
         $user_id = get_current_user_id();
 
-        // --- HANDLE UNSUBSCRIBE FIRST ---
+        // --- HANDLE UNSUBSCRIBE ---
         if ( isset( $_POST['np_unsubscribe'] ) ) {
             dns_remove_user_from_subscriptions( $user_id );
             echo '<script>window.location.href="' . esc_url( get_permalink() ) . '"</script>';
@@ -58,7 +58,7 @@ class Shortcode {
         }
 
 
-        // --- LOAD TAXONOMY TERMS AND LISTINGS ---
+        // --- LOAD TAXONOMY TERMS & LISTINGS ---
         $listing_types = get_terms([
             'taxonomy'   => 'atbdp_listing_types',
             'hide_empty' => false,
@@ -80,7 +80,8 @@ class Shortcode {
             'order'          => 'ASC',
         ]);
 
-        // --- LOAD SAVED USER PREFERENCES ---
+
+        // --- LOAD SAVED USER PREFS ---
         $saved = get_user_meta( $user_id, 'dns_notify_prefs', true );
         $saved = is_array( $saved ) ? $saved : [];
         $saved = array_merge([
@@ -91,20 +92,22 @@ class Shortcode {
 
         $msg = '';
 
-        // --- HANDLE SUBSCRIBE FORM ---
+
+        // --- HANDLE SAVE FORM ---
         if ( isset( $_POST['np_save'] ) && check_admin_referer( 'np_save_prefs', 'np_nonce' ) ) {
 
-            $selected_types     = isset( $_POST['listing_types'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_types'] ) ) : [];
-            $selected_locations = isset( $_POST['listing_locations'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_locations'] ) ) : [];
-            $selected_listings  = isset( $_POST['listing_posts'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_posts'] ) ) : [];
+            $selected_types     = isset($_POST['listing_types']) ? array_map('intval', (array) wp_unslash($_POST['listing_types'])) : [];
+            $selected_locations = isset($_POST['listing_locations']) ? array_map('intval', (array) wp_unslash($_POST['listing_locations'])) : [];
+            $selected_listings  = isset($_POST['listing_posts']) ? array_map('intval', (array) wp_unslash($_POST['listing_posts'])) : [];
 
-            // Save preferences
+            // Save prefs
             $saved = [
                 'listing_types'     => $selected_types,
                 'listing_locations' => $selected_locations,
                 'listing_posts'     => $selected_listings,
             ];
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
+
 
             // --- SYNC TERM META ---
             $taxonomies = [
@@ -116,9 +119,10 @@ class Shortcode {
                 if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
                     $selected = ( 'atbdp_listing_types' === $taxonomy ) ? $selected_types : $selected_locations;
                     foreach ( $terms as $term ) {
+
                         $meta_key = 'subscribed_users';
-                        $users    = get_term_meta( $term->term_id, $meta_key, true );
-                        $users    = is_array( $users ) ? $users : [];
+                        $users = get_term_meta( $term->term_id, $meta_key, true );
+                        $users = is_array( $users ) ? $users : [];
 
                         if ( in_array( $term->term_id, $selected, true ) ) {
                             if ( ! in_array( $user_id, $users, true ) ) {
@@ -133,13 +137,16 @@ class Shortcode {
                 }
             }
 
+
             // --- SYNC POST META ---
             if ( ! empty( $listings ) ) {
                 foreach ( $listings as $item ) {
+
                     $listing_id = $item->ID;
                     $meta_key   = 'subscribed_users';
-                    $users      = get_post_meta( $listing_id, $meta_key, true );
-                    $users      = is_array( $users ) ? $users : [];
+
+                    $users = get_post_meta( $listing_id, $meta_key, true );
+                    $users = is_array( $users ) ? $users : [];
 
                     if ( in_array( $listing_id, $selected_listings, true ) ) {
                         if ( ! in_array( $user_id, $users, true ) ) {
@@ -154,109 +161,19 @@ class Shortcode {
             }
         }
 
-        // --- OUTPUT HTML ---
-        ob_start();
-        ?>
-        <div class="dns-wrap">
-            <div class="dns-card">
-                <h3 class="dns-title"><?php esc_html_e( 'Notification Preferences', 'dns' ); ?></h3>
-                <p class="dns-sub"><?php esc_html_e( 'Choose which listing types or listings and locations you want updates for.', 'dns' ); ?></p>
 
-                <?php echo wp_kses_post( $msg ); ?>
+        // --- LOAD TEMPLATE ---
+        $template = DNS_PLUGIN_TEMPLATE . 'Front/notify-preferences.php';
 
-                <form method="post">
-                    <?php wp_nonce_field( 'np_save_prefs', 'np_nonce' ); ?>
-
-                    <!-- Tabs -->
-                    <div class="dns-tabs">
-                        <button type="button" class="dns-tab" data-tab="types"><?php esc_html_e( 'Listing Types', 'dns' ); ?></button>
-                        <button type="button" class="dns-tab" data-tab="locations"><?php esc_html_e( 'Locations', 'dns' ); ?></button>
-                        <button type="button" class="dns-tab" data-tab="listings"><?php esc_html_e( 'Listings', 'dns' ); ?></button>
-                    </div>
-
-                    <!-- Tab: Types -->
-                    <div class="dns-tab-content" id="tab-types">
-                        <?php if ( ! empty( $listing_types ) && ! is_wp_error( $listing_types ) ) : ?>
-                            <?php foreach ( $listing_types as $type ) : ?>
-                                <label class="dns-checkbox">
-                                    <input
-                                        type="checkbox"
-                                        name="listing_types[]"
-                                        value="<?php echo esc_attr( $type->term_id ); ?>"
-                                        <?php checked( in_array( $type->term_id, $saved['listing_types'], true ) ); ?>
-                                    >
-                                    <?php echo esc_html( $type->name ); ?>
-                                </label>
-                            <?php endforeach; ?>
-                        <?php else : ?>
-                            <p><?php esc_html_e( 'No listing types found.', 'dns' ); ?></p>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Tab: Locations -->
-                    <div class="dns-tab-content" id="tab-locations">
-                        <?php if ( ! empty( $locations ) && ! is_wp_error( $locations ) ) : ?>
-                            <div class="dns-search-box">
-                                <input type="text" id="dns-location-search" placeholder="<?php esc_attr_e( 'Search location...', 'dns' ); ?>">
-                            </div>
-                            <div class="dns-location-list">
-                                <?php foreach ( $locations as $index => $loc ) : ?>
-                                    <label class="dns-checkbox">
-                                        <input
-                                            type="checkbox"
-                                            name="listing_locations[]"
-                                            value="<?php echo esc_attr( $loc->term_id ); ?>"
-                                            <?php checked( in_array( $loc->term_id, $saved['listing_locations'], true ) ); ?>
-                                        >
-                                        <?php echo esc_html( $index + 1 . '. ' . $loc->name ); ?>
-                                    </label>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else : ?>
-                            <p><?php esc_html_e( 'No locations found.', 'dns' ); ?></p>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Tab: Listings -->
-                    <div class="dns-tab-content" id="tab-listings">
-                        <?php if ( ! empty( $listings ) ) : ?>
-                            <div class="dns-search-box">
-                                <input type="text" id="dns-listing-search" placeholder="<?php esc_attr_e( 'Search listings...', 'dns' ); ?>">
-                            </div>
-                            <div class="dns-listing-list">
-                                <?php foreach ( $listings as $index => $item ) : ?>
-                                    <label class="dns-checkbox">
-                                        <input
-                                            type="checkbox"
-                                            name="listing_posts[]"
-                                            value="<?php echo esc_attr( $item->ID ); ?>"
-                                            <?php checked( in_array( $item->ID, $saved['listing_posts'], true ) ); ?>
-                                        >
-                                        <?php echo esc_html( $index + 1 . '. ' . $item->post_title ); ?>
-                                    </label>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else : ?>
-                            <p><?php esc_html_e( 'No listings found.', 'dns' ); ?></p>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Submit -->
-                    <div class="dns-actions">
-                        <button class="dns-btn dns-btn--primary" type="submit" name="np_save" value="1">
-                            <?php esc_html_e( 'Subscribe', 'dns' ); ?>
-                        </button>
-                        <button class="dns-btn dns-btn--secondary" type="submit" name="np_unsubscribe" value="1">
-                            <?php esc_html_e( 'Unsubscribe', 'dns' ); ?>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <?php
-
-        return ob_get_clean();
+        return dns_load_template( $template, [
+            'listing_types' => $listing_types,
+            'locations'     => $locations,
+            'listings'      => $listings,
+            'saved'         => $saved,
+            'msg'           => $msg,
+        ], false );
     }
+
 
 
 
