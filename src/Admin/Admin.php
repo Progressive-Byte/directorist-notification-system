@@ -50,14 +50,14 @@ class Admin {
      * Add admin menu page
      */
     public function add_admin_menu() {
-        add_menu_page(
+        // Add submenu under Directorist
+        add_submenu_page(
+            'edit.php?post_type=at_biz_dir', 
             esc_html__('Directory Notifications', 'dns'),
-            esc_html__('Notifications', 'dns'),
-            'manage_options',
-            'dns-notifications',
-            [$this, 'admin_page'],
-            'dashicons-bell',
-            25
+            esc_html__('Notifications', 'dns'), 
+            'manage_options', 
+            'dns-notifications', 
+            [$this, 'admin_page'] 
         );
     }
 
