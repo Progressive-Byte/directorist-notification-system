@@ -93,8 +93,9 @@ class Admin {
             <!-- Tabs Navigation -->
             <h2 class="nav-tab-wrapper">
                 <a href="#tab-settings" class="nav-tab "><?php esc_html_e('Settings', 'dns'); ?></a>
-                <a href="#tab-test-message" class="nav-tab"><?php esc_html_e('Test Message', 'dns'); ?></a>
                 <a href="#tab-subscribed" class="nav-tab"><?php esc_html_e('Subscribed Users', 'dns'); ?></a>
+                <a href="#tab-test-message" class="nav-tab"><?php esc_html_e('Test Message', 'dns'); ?></a>
+                
             </h2>
 
             <div id="tab-settings" class="tab-content" style="display:block;">
