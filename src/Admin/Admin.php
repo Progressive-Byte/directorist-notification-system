@@ -22,11 +22,10 @@ class Admin {
         // Register settings
         add_action('admin_init', [$this, 'register_settings']);
 
-        // Append subscribe button to listings
-        add_filter('the_content', [$this, 'send_notifications_for_user']);
+        // Hook to custom notifications filter
+        add_filter('dns_notifications', [$this, 'send_notifications_for_user'], 10, 3);
 
-
-        // Clear cache when a user is updated
+        // Clear cache when a user is updated or created
         add_action('profile_update', function() {
             delete_transient('dns_cached_users');
         });
@@ -34,7 +33,7 @@ class Admin {
             delete_transient('dns_cached_users');
         });
 
-        // Clear cache when a page is updated
+        // Clear cache when a page is updated or deleted
         add_action('save_post_page', function() {
             delete_transient('dns_cached_pages');
         });
@@ -43,14 +42,12 @@ class Admin {
                 delete_transient('dns_cached_pages');
             }
         });
-
     }
 
     /**
-     * Add admin menu page
+     * Add admin submenu under Directorist
      */
     public function add_admin_menu() {
-        // Add submenu under Directorist
         add_submenu_page(
             'edit.php?post_type=at_biz_dir', 
             esc_html__('Directory Notifications', 'dns'),
@@ -92,12 +89,12 @@ class Admin {
 
             <!-- Tabs Navigation -->
             <h2 class="nav-tab-wrapper">
-                <a href="#tab-settings" class="nav-tab "><?php esc_html_e('Settings', 'dns'); ?></a>
+                <a href="#tab-settings" class="nav-tab nav-tab-active"><?php esc_html_e('Settings', 'dns'); ?></a>
                 <a href="#tab-subscribed" class="nav-tab"><?php esc_html_e('Subscribed Users', 'dns'); ?></a>
                 <a href="#tab-test-message" class="nav-tab"><?php esc_html_e('Test Message', 'dns'); ?></a>
-                
             </h2>
 
+            <!-- Settings Tab -->
             <div id="tab-settings" class="tab-content" style="display:block;">
                 <?php
                 dns_load_template(
@@ -113,30 +110,27 @@ class Admin {
                     ],
                     true
                 );
-
                 ?>
-
             </div>
-           
 
-            <!-- TEST MESSAGE TAB -->
-            <div id="tab-test-message" class="tab-content" style="display:none;">
+            <!-- Subscribed Users Tab -->
+            <div id="tab-subscribed" class="tab-content" style="display:none;">
                 <?php
+                $subscribed_users = get_users(['meta_key' => 'dns_notify_prefs']);
                 dns_load_template(
-                    DNS_PLUGIN_TEMPLATE . 'Admin/admin-test-message.php',
-                    [ 'users' => $users ],
+                    DNS_PLUGIN_TEMPLATE . 'Admin/admin-subscribed-users.php',
+                    ['subscribed_users' => $subscribed_users],
                     true
                 );
                 ?>
             </div>
 
-            <!-- SUBSCRIBED USERS TAB -->
-            <div id="tab-subscribed" class="tab-content" style="display:none;">
+            <!-- Test Message Tab -->
+            <div id="tab-test-message" class="tab-content" style="display:none;">
                 <?php
-                $subscribed_users = get_users( [ 'meta_key' => 'dns_notify_prefs' ] );
                 dns_load_template(
-                    DNS_PLUGIN_TEMPLATE . 'Admin/admin-subscribed-users.php',
-                    [ 'subscribed_users' => $subscribed_users ],
+                    DNS_PLUGIN_TEMPLATE . 'Admin/admin-test-message.php',
+                    ['users' => $users],
                     true
                 );
                 ?>
@@ -147,27 +141,29 @@ class Admin {
     }
 
     /**
-     * Append subscribe button to listings
+     * Process notifications for users
      *
-     * @param string $content
-     * @return string
+     * @param array $notifications Array of notification objects
+     * @param int   $user_id       User ID
+     * @param string $format       Output format ('string' or 'html')
+     * @return array
      */
-    public function send_notifications_for_user( $notifications, $user_id, $format ){
-          foreach ( $notifications as &$n ) {
+    public function send_notifications_for_user($notifications, $user_id, $format) {
+        foreach ($notifications as &$n) {
 
-            // Only our notification
-            if ( $n->component_action !== 'new_listing_match' ) {
+            // Only process notifications for new listing matches
+            if ($n->component_action !== 'new_listing_match') {
                 continue;
             }
 
-            $msg  = bp_notifications_get_meta( $n->id, 'message', true );
-            $link = bp_notifications_get_meta( $n->id, 'link', true );
+            $msg  = bp_notifications_get_meta($n->id, 'message', true);
+            $link = bp_notifications_get_meta($n->id, 'link', true);
 
-            if ( $format === 'string' ) {
-                $n->content = '<a href="' . esc_url( $link ) . '">' . esc_html( $msg ) . '</a>';
+            if ($format === 'string') {
+                $n->content = '<a href="' . esc_url($link) . '">' . esc_html($msg) . '</a>';
             }
         }
 
-        return $notifications;  
+        return $notifications;
     }
 }
