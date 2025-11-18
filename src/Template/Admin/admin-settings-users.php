@@ -21,6 +21,8 @@
     <h2><?php esc_html_e('Subscribe Button Settings', 'dns'); ?></h2>
 
     <table class="form-table">
+
+        <!-- Notification Preferences Page -->
         <tr>
             <th scope="row">
                 <?php esc_html_e('Notification Preferences Page', 'dns'); ?>
@@ -39,22 +41,22 @@
             </td>
         </tr>
 
+        <!-- Market Place Listing Type -->
         <tr>
-            <th scope="row"><?php esc_html_e('Market Place Listing Type', 'dns'); ?></th>
+            <th scope="row"><?php esc_html_e('Market Place Listing Type', 'dns'); ?>
+                <span style="color:#e11d48;font-weight:bold;">*</span>
+            </th>
             <td>
                 <?php
                 $directory_types = get_terms(array(
                     'taxonomy'   => ATBDP_DIRECTORY_TYPE,
                     'hide_empty' => false,
                 ));
-
-                // Get saved option and ensure it's a single value
                 $selected_market_term = get_option('dns_market_terms', '');
                 if (is_array($selected_market_term)) {
                     $selected_market_term = reset($selected_market_term);
                 }
                 ?>
-
                 <select name="dns_market_terms">
                     <option value="">-- <?php esc_html_e('Select Market Place Type', 'dns'); ?> --</option>
                     <?php foreach ($directory_types as $type) : ?>
@@ -66,22 +68,18 @@
             </td>
         </tr>
 
+        <!-- Job Listing Type -->
         <tr>
-            <th scope="row"><?php esc_html_e('Job Listing Type', 'dns'); ?></th>
+            <th scope="row"><?php esc_html_e('Job Listing Type', 'dns'); ?>
+                <span style="color:#e11d48;font-weight:bold;">*</span>
+            </th>
             <td>
                 <?php
-                $directory_types = get_terms(array(
-                    'taxonomy'   => ATBDP_DIRECTORY_TYPE,
-                    'hide_empty' => false,
-                ));
-
-                // Get saved option and ensure it's a single value
                 $selected_job_term = get_option('dns_job_terms', '');
                 if (is_array($selected_job_term)) {
                     $selected_job_term = reset($selected_job_term);
                 }
                 ?>
-
                 <select name="dns_job_terms">
                     <option value="">-- <?php esc_html_e('Select Job Listing Type', 'dns'); ?> --</option>
                     <?php foreach ($directory_types as $type) : ?>
@@ -93,13 +91,9 @@
             </td>
         </tr>
 
-
-
-
-
-        <!-- JOB LISTINGS -->
+        <!-- Job Listings Page -->
         <tr>
-            <th scope="row"><?php esc_html_e('Job Listings page', 'dns'); ?></th>
+            <th scope="row"><?php esc_html_e('Job Listings Page', 'dns'); ?></th>
             <td>
                 <label class="dns-toggle-wrapper">
                     <span class="dns-toggle">
@@ -123,12 +117,9 @@
             </td>
         </tr>
 
-
-
-
-        <!-- PRODUCT LISTINGS -->
+        <!-- Product Listings Page -->
         <tr>
-            <th scope="row"><?php esc_html_e('Product Listings page', 'dns'); ?></th>
+            <th scope="row"><?php esc_html_e('Product Listings Page', 'dns'); ?></th>
             <td>
                 <label class="dns-toggle-wrapper">
                     <span class="dns-toggle">
@@ -152,8 +143,6 @@
             </td>
         </tr>
 
-        <!-- GENERAL SUB PAGE -->
-        
     </table>
 
     <?php submit_button(); ?>
