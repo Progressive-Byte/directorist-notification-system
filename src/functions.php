@@ -370,10 +370,10 @@ if ( ! function_exists( 'dns_get_cached_pages' ) ) {
 }
 
 /**
- * Get all term names for a directory type ID (returns all even if some have no posts).
+ * Get all term objects for a directory type ID.
  *
  * @param int $type_id The directory type ID (e.g., 357)
- * @return array List of term names
+ * @return array List of WP_Term objects
  */
 function get_all_terms_by_directory_type( $type_id ) {
     global $wpdb;
@@ -394,17 +394,17 @@ function get_all_terms_by_directory_type( $type_id ) {
         return [];
     }
 
-    $term_names = [];
-
+    $terms = [];
     foreach ( $term_ids as $term_id ) {
-        $term = get_term( $term_id ); // fetch individual term
+        $term = get_term( $term_id ); // Get full WP_Term object
         if ( $term && ! is_wp_error( $term ) ) {
-            $term_names[$term->term_id] = $term->name;
+            $terms[] = $term;
         }
     }
 
-    return array_unique( $term_names );
+    return $terms;
 }
+
 
 
 

@@ -9,7 +9,7 @@
             <?php wp_nonce_field( 'np_save_prefs', 'np_nonce' ); ?>
 
             <?php
-            $selected_market_term = get_option( 'dns_market_terms', '' );
+            $selected_market_term = (int) get_option( 'dns_market_terms', '' );
             $selected_job_term    = get_option( 'dns_job_terms', '' );
             ?>
 
@@ -27,34 +27,38 @@
             </div>
 
             <!-- Market Place Listing Tab -->
-            <div class="dns-tab-content" id="tab-market">
+             <div class="dns-tab-content" id="tab-market">
                 <?php
                 $market_types = [];
 
                 if ( ! empty( $selected_market_term ) ) {
-                    $market_types = array_filter(
-                        $listing_types,
-                        fn( $type ) => (int) $selected_market_term === (int) $type->term_id
-                    );
+                    $market_types = get_all_terms_by_directory_type( $selected_market_term );
                 }
 
                 if ( empty( $selected_market_term ) || empty( $market_types ) ) :
                     ?>
                     <p><?php esc_html_e( 'Please select Market listing.', 'dns' ); ?></p>
                 <?php else : ?>
-                    <?php foreach ( $market_types as $type ) : ?>
+                    <?php 
+                    $serial = 1; // initialize serial number
+                    foreach ( $market_types as $type ) : ?>
                         <label class="dns-checkbox">
                             <input
                                 type="checkbox"
                                 name="listing_types[]"
                                 value="<?php echo esc_attr( $type->term_id ); ?>"
-                                <?php checked( in_array( $type->term_id, $saved['listing_types'], true ) ); ?>
+                                <?php checked( in_array( $type->term_id, $saved['listing_types'] ?? [], true ) ); ?>
                             >
-                            <?php echo esc_html( $type->name ); ?>
+                            <?php echo esc_html( $serial . '. ' . $type->name ); ?>
                         </label>
-                    <?php endforeach; ?>
+                    <?php 
+                    $serial++; // increment serial
+                    endforeach; ?>
                 <?php endif; ?>
             </div>
+
+
+
 
             <!-- Job Listing Tab -->
             <div class="dns-tab-content" id="tab-job">
