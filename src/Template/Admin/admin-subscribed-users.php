@@ -18,7 +18,6 @@
                 <th><?php esc_html_e('User', 'dns'); ?></th>
                 <th><?php esc_html_e('Listing Types', 'dns'); ?></th>
                 <th><?php esc_html_e('Locations', 'dns'); ?></th>
-                <th><?php esc_html_e('Listings', 'dns'); ?></th>
             </tr>
         </thead>
         <tbody>
@@ -27,7 +26,6 @@
                 $prefs = wp_parse_args( $prefs, [
                     'listing_types'     => [],
                     'listing_locations' => [],
-                    'listing_posts'     => [],
                 ] );
             ?>
             <tr>
@@ -56,20 +54,6 @@
                             $term = get_term( $lid );
                             if ( $term ) {
                                 echo esc_html( $term->name ) . '<br>';
-                            }
-                        }
-                    } else {
-                        echo '<em>' . esc_html__( 'None', 'dns' ) . '</em>';
-                    }
-                    ?>
-                </td>
-                <td>
-                    <?php
-                    if ( ! empty( $prefs['listing_posts'] ) ) {
-                        foreach ( $prefs['listing_posts'] as $pid ) {
-                            $post = get_post( $pid );
-                            if ( $post ) {
-                                echo esc_html( $post->post_title ) . '<br>';
                             }
                         }
                     } else {
