@@ -8,24 +8,46 @@
         <form method="post">
             <?php wp_nonce_field( 'np_save_prefs', 'np_nonce' ); ?>
 
+            <!-- Tabs -->
             <div class="dns-tabs">
-                <button type="button" class="dns-tab" data-tab="types"><?php esc_html_e( 'Listing Types', 'dns' ); ?></button>
-                <button type="button" class="dns-tab" data-tab="locations"><?php esc_html_e( 'Locations', 'dns' ); ?></button>
-                <button type="button" class="dns-tab" data-tab="listings"><?php esc_html_e( 'Listings', 'dns' ); ?></button>
+                <button type="button" class="dns-tab" data-tab="market"><?php esc_html_e( 'Market Place Listing', 'dns' ); ?></button>
+                <button type="button" class="dns-tab" data-tab="job"><?php esc_html_e( 'Job Listing', 'dns' ); ?></button>
+                <button type="button" class="dns-tab" data-tab="locations"><?php esc_html_e( 'Location', 'dns' ); ?></button>
             </div>
 
-            <div class="dns-tab-content" id="tab-types">
-                <?php foreach ( $listing_types as $type ) : ?>
+            <!-- Market Place Listing Tab -->
+            <div class="dns-tab-content" id="tab-market">
+                <?php
+                $market_types = array_filter( $listing_types, fn($type) => $type->term_id == 316 );
+
+                foreach ( $market_types as $type ) : ?>
                     <label class="dns-checkbox">
                         <input type="checkbox"
-                            name="listing_types[]"
-                            value="<?php echo esc_attr( $type->term_id ); ?>"
-                            <?php checked( in_array( $type->term_id, $saved['listing_types'], true ) ); ?>>
+                               name="listing_types[]"
+                               value="<?php echo esc_attr( $type->term_id ); ?>"
+                               <?php checked( in_array( $type->term_id, $saved['listing_types'], true ) ); ?>>
                         <?php echo esc_html( $type->name ); ?>
                     </label>
                 <?php endforeach; ?>
             </div>
 
+            <!-- Job Listing Tab -->
+            <div class="dns-tab-content" id="tab-job">
+                <?php
+                $job_types = array_filter( $listing_types, fn($type) => $type->term_id == 357 );
+
+                foreach ( $job_types as $type ) : ?>
+                    <label class="dns-checkbox">
+                        <input type="checkbox"
+                               name="listing_types[]"
+                               value="<?php echo esc_attr( $type->term_id ); ?>"
+                               <?php checked( in_array( $type->term_id, $saved['listing_types'], true ) ); ?>>
+                        <?php echo esc_html( $type->name ); ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Location Tab -->
             <div class="dns-tab-content" id="tab-locations">
                 <div class="dns-search-box">
                     <input type="text" id="dns-location-search" placeholder="<?php esc_attr_e( 'Search location...', 'dns' ); ?>">
@@ -33,35 +55,17 @@
                 <div class="dns-location-list">
                     <?php foreach ( $locations as $index => $loc ) : ?>
                         <label class="dns-checkbox">
-                            <input
-                                type="checkbox"
-                                name="listing_locations[]"
-                                value="<?php echo esc_attr( $loc->term_id ); ?>"
-                                <?php checked( in_array( $loc->term_id, $saved['listing_locations'], true ) ); ?>>
-                            <?php echo esc_html( $index + 1 . '. ' . $loc->name ); ?>
+                            <input type="checkbox"
+                                   name="listing_locations[]"
+                                   value="<?php echo esc_attr( $loc->term_id ); ?>"
+                                   <?php checked( in_array( $loc->term_id, $saved['listing_locations'], true ) ); ?>>
+                            <?php echo esc_html( ($index + 1) . '. ' . $loc->name ); ?>
                         </label>
                     <?php endforeach; ?>
                 </div>
             </div>
 
-            <div class="dns-tab-content" id="tab-listings">
-                <div class="dns-search-box">
-                    <input type="text" id="dns-listing-search" placeholder="<?php esc_attr_e( 'Search listings...', 'dns' ); ?>">
-                </div>
-                <div class="dns-listing-list">
-                    <?php foreach ( $listings as $index => $item ) : ?>
-                        <label class="dns-checkbox">
-                            <input
-                                type="checkbox"
-                                name="listing_posts[]"
-                                value="<?php echo esc_attr( $item->ID ); ?>"
-                                <?php checked( in_array( $item->ID, $saved['listing_posts'], true ) ); ?>>
-                            <?php echo esc_html( $index + 1 . '. ' . $item->post_title ); ?>
-                        </label>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-
+            <!-- Actions -->
             <div class="dns-actions">
                 <button class="dns-btn dns-btn--primary" type="submit" name="np_save" value="1">
                     <?php esc_html_e( 'Subscribe', 'dns' ); ?>

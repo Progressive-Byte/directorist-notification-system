@@ -49,6 +49,7 @@ class Shortcode {
         }
 
         $user_id = get_current_user_id();
+        $msg     = '';
 
         // --- HANDLE UNSUBSCRIBE ---
         if ( isset( $_POST['np_unsubscribe'] ) ) {
@@ -57,57 +58,41 @@ class Shortcode {
             exit;
         }
 
-
-        // --- LOAD TAXONOMY TERMS & LISTINGS ---
-        $listing_types = get_terms([
+        // --- LOAD TAXONOMY TERMS ---
+        $listing_types = get_terms( [
             'taxonomy'   => 'atbdp_listing_types',
             'hide_empty' => false,
             'orderby'    => 'name',
             'order'      => 'ASC',
-        ]);
+        ] );
 
-        $locations = get_terms([
+        $locations = get_terms( [
             'taxonomy'   => 'at_biz_dir-location',
             'hide_empty' => false,
             'orderby'    => 'name',
             'order'      => 'ASC',
-        ]);
-
-        $listings = get_posts([
-            'post_type'      => 'at_biz_dir',
-            'posts_per_page' => -1,
-            'orderby'        => 'title',
-            'order'          => 'ASC',
-        ]);
-
+        ] );
 
         // --- LOAD SAVED USER PREFS ---
         $saved = get_user_meta( $user_id, 'dns_notify_prefs', true );
         $saved = is_array( $saved ) ? $saved : [];
-        $saved = array_merge([
+        $saved = array_merge( [
             'listing_types'     => [],
             'listing_locations' => [],
-            'listing_posts'     => [],
-        ], $saved);
-
-        $msg = '';
-
+        ], $saved );
 
         // --- HANDLE SAVE FORM ---
         if ( isset( $_POST['np_save'] ) && check_admin_referer( 'np_save_prefs', 'np_nonce' ) ) {
 
-            $selected_types     = isset($_POST['listing_types']) ? array_map('intval', (array) wp_unslash($_POST['listing_types'])) : [];
-            $selected_locations = isset($_POST['listing_locations']) ? array_map('intval', (array) wp_unslash($_POST['listing_locations'])) : [];
-            $selected_listings  = isset($_POST['listing_posts']) ? array_map('intval', (array) wp_unslash($_POST['listing_posts'])) : [];
+            $selected_types     = isset( $_POST['listing_types'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_types'] ) ) : [];
+            $selected_locations = isset( $_POST['listing_locations'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_locations'] ) ) : [];
 
-            // Save prefs
+            // Save preferences
             $saved = [
                 'listing_types'     => $selected_types,
                 'listing_locations' => $selected_locations,
-                'listing_posts'     => $selected_listings,
             ];
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
-
 
             // --- SYNC TERM META ---
             $taxonomies = [
@@ -118,11 +103,11 @@ class Shortcode {
             foreach ( $taxonomies as $taxonomy => $terms ) {
                 if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
                     $selected = ( 'atbdp_listing_types' === $taxonomy ) ? $selected_types : $selected_locations;
-                    foreach ( $terms as $term ) {
 
+                    foreach ( $terms as $term ) {
                         $meta_key = 'subscribed_users';
-                        $users = get_term_meta( $term->term_id, $meta_key, true );
-                        $users = is_array( $users ) ? $users : [];
+                        $users    = get_term_meta( $term->term_id, $meta_key, true );
+                        $users    = is_array( $users ) ? $users : [];
 
                         if ( in_array( $term->term_id, $selected, true ) ) {
                             if ( ! in_array( $user_id, $users, true ) ) {
@@ -136,31 +121,7 @@ class Shortcode {
                     }
                 }
             }
-
-
-            // --- SYNC POST META ---
-            if ( ! empty( $listings ) ) {
-                foreach ( $listings as $item ) {
-
-                    $listing_id = $item->ID;
-                    $meta_key   = 'subscribed_users';
-
-                    $users = get_post_meta( $listing_id, $meta_key, true );
-                    $users = is_array( $users ) ? $users : [];
-
-                    if ( in_array( $listing_id, $selected_listings, true ) ) {
-                        if ( ! in_array( $user_id, $users, true ) ) {
-                            $users[] = $user_id;
-                        }
-                    } else {
-                        $users = array_diff( $users, [ $user_id ] );
-                    }
-
-                    update_post_meta( $listing_id, $meta_key, $users );
-                }
-            }
         }
-
 
         // --- LOAD TEMPLATE ---
         $template = DNS_PLUGIN_TEMPLATE . 'Front/notify-preferences.php';
@@ -168,11 +129,12 @@ class Shortcode {
         return dns_load_template( $template, [
             'listing_types' => $listing_types,
             'locations'     => $locations,
-            'listings'      => $listings,
             'saved'         => $saved,
             'msg'           => $msg,
         ], false );
     }
+
+
 
 
 
