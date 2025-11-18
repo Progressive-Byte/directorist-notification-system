@@ -41,5 +41,13 @@ jQuery(document).ready(function($) {
     });
 });
 
-
-
+jQuery(document).ready(function($){
+    // Show/hide pages list when toggle is clicked
+    $('#dns_subscribe_pages').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#dns_pages_select').slideDown();
+        } else {
+            $('#dns_pages_select').slideUp();
+        }
+    });
+});

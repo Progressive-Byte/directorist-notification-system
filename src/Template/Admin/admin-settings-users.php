@@ -1,4 +1,6 @@
 <?php
+
+use DNS\Helper\Messages;
 /**
  * Admin Settings Tab Template
  *
@@ -91,57 +93,45 @@
             </td>
         </tr>
 
-        <!-- Job Listings Page -->
-        <tr>
-            <th scope="row"><?php esc_html_e('Job Listings Page', 'dns'); ?></th>
-            <td>
-                <label class="dns-toggle-wrapper">
-                    <span class="dns-toggle">
-                        <input type="checkbox" id="dns_subscribe_job" name="dns_subscribe_job" value="1" <?php checked($job_enabled, 1); ?> />
-                        <span class="dns-toggle-slider"></span>
-                    </span>
-                    <span><?php esc_html_e('Enable subscribe button on Job Listing pages', 'dns'); ?></span>
-                </label>
+        <!-- Notificaton button -->
+       <tr>
+        <th scope="row"><?php esc_html_e('Show Subscribe Button', 'dns'); ?></th>
+        <td>
+            <label class="dns-toggle-wrapper">
+                <span class="dns-toggle">
+                    <input type="checkbox" id="dns_subscribe_pages" name="dns_subscribe_pages_enabled" value="1" <?php checked( $job_enabled || $product_enabled, 1 ); ?> />
+                    <span class="dns-toggle-slider"></span>
+                </span>
+                <span><?php esc_html_e('Enable subscribe button on selected pages', 'dns'); ?></span>
+            </label>
 
-                <div id="dns_job_page_select" style="margin-top:10px; <?php echo $job_enabled ? '' : 'display:none;'; ?>">
-                    <label><?php esc_html_e('Select your job listing page:', 'dns'); ?></label>
-                    <select name="dns_subscription_page_job">
-                        <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
-                        <?php foreach ($pages as $page) : ?>
-                            <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($job_page, $page->ID); ?>>
-                                <?php echo esc_html($page->post_title); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+            <div id="dns_pages_select" style="margin-top:10px; <?php echo ($job_enabled || $product_enabled) ? '' : 'display:none;'; ?>">
+                <label><?php esc_html_e('Select pages to enable subscribe button:', 'dns'); ?></label>
+                <div style="margin-top:5px; max-height:200px; overflow-y:auto; border:1px solid #ddd; padding:5px;">
+                    <?php
+                    // Ensure saved pages are integers
+                    $saved_pages = get_option('dns_subscription_pages', []);
+                    $saved_pages = is_array($saved_pages) ? array_map('intval', $saved_pages) : [];
+
+                    foreach ($pages as $page) :
+                        $is_checked = in_array((int) $page->ID, $saved_pages, true);
+                    ?>
+                        <label style="display:block; margin-bottom:3px;">
+                            <input
+                                type="checkbox"
+                                name="dns_subscription_pages[]"
+                                value="<?php echo esc_attr($page->ID); ?>"
+                                <?php checked($is_checked); ?>
+                            >
+                            <?php echo esc_html($page->post_title); ?>
+                        </label>
+                    <?php endforeach; ?>
                 </div>
-            </td>
-        </tr>
+            </div>
 
-        <!-- Product Listings Page -->
-        <tr>
-            <th scope="row"><?php esc_html_e('Product Listings Page', 'dns'); ?></th>
-            <td>
-                <label class="dns-toggle-wrapper">
-                    <span class="dns-toggle">
-                        <input type="checkbox" id="dns_subscribe_product" name="dns_subscribe_product" value="1" <?php checked($product_enabled, 1); ?> />
-                        <span class="dns-toggle-slider"></span>
-                    </span>
-                    <span><?php esc_html_e('Enable subscribe button on Product Listing pages', 'dns'); ?></span>
-                </label>
+        </td>
+    </tr>
 
-                <div id="dns_product_page_select" style="margin-top:10px; <?php echo $product_enabled ? '' : 'display:none;'; ?>">
-                    <label><?php esc_html_e('Select your product listing page:', 'dns'); ?></label>
-                    <select name="dns_subscription_page_product">
-                        <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
-                        <?php foreach ($pages as $page) : ?>
-                            <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($product_page, $page->ID); ?>>
-                                <?php echo esc_html($page->post_title); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </td>
-        </tr>
 
     </table>
 

@@ -59,30 +59,22 @@ class Admin {
     }
 
     /**
-     * Register plugin settings
+     * Register settings
      */
     public function register_settings() {
-
-        $this->register_dns_notification_settings([
-            'dns_subscribe_job', 
-            'dns_subscription_page_job', 
-            'dns_subscribe_product', 
-            'dns_subscription_page_product', 
-            'dns_subscription_page_id', 
+        $settings = [
+            'dns_subscribe_pages_enabled',
             'dns_job_terms',
             'dns_market_terms',
-        ]);
+            'dns_subscription_pages',
+            'dns_subscription_page_id',
+        ];
 
-        // register_setting('dns_notifications_settings', 'dns_subscribe_job');
-        // register_setting('dns_notifications_settings', 'dns_subscription_page_job');
-        // register_setting('dns_notifications_settings', 'dns_subscribe_product');
-        // register_setting('dns_notifications_settings', 'dns_subscription_page_product');
-        // register_setting('dns_notifications_settings', 'dns_subscription_page_id');
+        foreach ($settings as $setting) {
+            register_setting('dns_notifications_settings', $setting);
+        }
+}
 
-        // register_setting('dns_notifications_settings', 'dns_job_terms');
-        // register_setting('dns_notifications_settings', 'dns_market_terms');
-
-    }
 
     /**
      * Admin page content
@@ -91,9 +83,7 @@ class Admin {
         $users = dns_get_cached_users();
         $pages = dns_get_cached_pages();
 
-        $job_enabled     = get_option('dns_subscribe_job');
-        $job_page        = get_option('dns_subscription_page_job');
-        $product_enabled = get_option('dns_subscribe_product');
+        $job_enabled     = get_option('dns_subscribe_pages_enabled');
         $product_page    = get_option('dns_subscription_page_product');
         $selected_page   = get_option('dns_subscription_page_id');
         ?>
@@ -118,8 +108,6 @@ class Admin {
                         'users'           => $users,
                         'pages'           => $pages,
                         'job_enabled'     => $job_enabled,
-                        'job_page'        => $job_page,
-                        'product_enabled' => $product_enabled,
                         'product_page'    => $product_page,
                         'selected_page'   => $selected_page,
                     ],
@@ -180,18 +168,5 @@ class Admin {
         }
 
         return $notifications;
-    }
-
-    /**
-     * Register a DNS Notifications setting
-     *
-     * @param string $setting_key Option name to register
-     */
-    public function register_dns_notification_settings( $settings = [] ) {
-        foreach ( $settings as $setting ) {
-            if ( ! empty( $setting ) ) {
-                register_setting( 'dns_notifications_settings', $setting );
-            }
-        }
     }
 }

@@ -181,3 +181,34 @@ input[type="submit"]:hover, .button-primary:hover {
     font-size: 13px;
     color: #333;
 }
+
+/* Container for the page checkboxes */
+#dns_pages_select > div {
+    max-height: 200px; /* Minimum height you want, adjust as needed */
+    overflow-y: auto;  /* Vertical scrollbar */
+    padding: 5px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+/* Style individual checkboxes */
+#dns_pages_select label {
+    display: block;
+    margin-bottom: 3px;
+    cursor: pointer;
+}
+
+/* Optional: style the scrollbar (Webkit browsers) */
+#dns_pages_select > div::-webkit-scrollbar {
+    width: 8px;
+}
+
+#dns_pages_select > div::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+#dns_pages_select > div::-webkit-scrollbar-track {
+    background-color: transparent;
+}
