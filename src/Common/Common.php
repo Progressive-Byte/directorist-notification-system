@@ -19,7 +19,7 @@ class Common {
         add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'send_notifications_for_user', 10, 3 ] );
 
 
-        add_action( 'wp_head', [$this, 'head' ] );
+        // add_action( 'wp_head', [$this, 'head' ] );
 
         
     }
