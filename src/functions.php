@@ -369,6 +369,46 @@ if ( ! function_exists( 'dns_get_cached_pages' ) ) {
     }
 }
 
+/**
+ * Get all term names for a directory type ID (returns all even if some have no posts).
+ *
+ * @param int $type_id The directory type ID (e.g., 357)
+ * @return array List of term names
+ */
+function get_all_terms_by_directory_type( $type_id ) {
+    global $wpdb;
+
+    if ( ! $type_id ) {
+        return [];
+    }
+
+    $meta_key = '_directory_type_' . intval( $type_id );
+
+    // Get all term IDs from wp_termmeta
+    $term_ids = $wpdb->get_col( $wpdb->prepare(
+        "SELECT term_id FROM {$wpdb->termmeta} WHERE meta_key = %s AND meta_value = 1",
+        $meta_key
+    ) );
+
+    if ( empty( $term_ids ) ) {
+        return [];
+    }
+
+    $term_names = [];
+
+    foreach ( $term_ids as $term_id ) {
+        $term = get_term( $term_id ); // fetch individual term
+        if ( $term && ! is_wp_error( $term ) ) {
+            $term_names[$term->term_id] = $term->name;
+        }
+    }
+
+    return array_unique( $term_names );
+}
+
+
+
+
 
 
 

@@ -41,9 +41,14 @@ class Frontend {
 		    'hide_empty' => false, // set true if you only want types assigned to posts
 		) );
 
-		$term_ids = wp_list_pluck( $directory_types, 'term_id' );
+		// $term_ids = wp_list_pluck( $directory_types, 'term_id' );
 
-		// Messages::pri( $term_ids );
+		// $type_id = 357;
+
+		// $term_names = get_all_terms_by_directory_type( $type_id );
+
+
+		// Messages::pri( $term_names );
 
 
 	}
