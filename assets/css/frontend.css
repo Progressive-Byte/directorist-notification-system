@@ -329,3 +329,53 @@
     transform: translateY(1px);
     box-shadow: 0 8px 16px rgba(239, 68, 68, 0.2);
 }
+
+/* Search + Button Wrapper */
+.dns-search-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Search input */
+#dns-location-search {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#dns-location-search:focus {
+    border-color: #0073aa; /* WordPress blue */
+    box-shadow: 0 0 5px rgba(0, 115, 170, 0.3);
+    outline: none;
+}
+
+/* Show Selected button */
+#dns-show-selected-locations {
+    padding: 8px 12px;
+    font-size: 14px;
+    background-color: #0073aa;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#dns-show-selected-locations:hover {
+    background-color: #005177;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 480px) {
+    .dns-search-wrapper {
+        flex-direction: column;
+    }
+
+    #dns-show-selected-locations {
+        width: 100%;
+    }
+}

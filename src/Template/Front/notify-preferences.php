@@ -88,51 +88,50 @@
 
             <!-- Location Tab -->
             <div class="dns-tab-content" id="tab-locations">
-                <?php if ( empty( $locations ) ) : ?>
-                    <p><?php esc_html_e( 'No locations available.', 'dns' ); ?></p>
-                <?php else : ?>
-                    <div class="dns-search-box">
-                        <input
-                            type="text"
-                            id="dns-location-search"
-                            placeholder="<?php esc_attr_e( 'Search location...', 'dns' ); ?>"
-                        >
-                    </div>
+                    <?php if ( empty( $locations ) ) : ?>
+                        <p><?php esc_html_e( 'No locations available.', 'dns' ); ?></p>
+                    <?php else : ?>
+                        <!-- Search + Button Wrapper -->
+                        <div class="dns-search-wrapper" style="display:flex; gap:10px; margin-bottom:10px;">
+                            <input
+                                type="text"
+                                id="dns-location-search"
+                                placeholder="<?php esc_attr_e( 'Search location...', 'dns' ); ?>"
+                                style="flex:1;" 
+                            >
+                            <button 
+                                type="button" 
+                                id="dns-show-selected-locations" 
+                                class="dns-btn dns-btn--mini"
+                            >
+                                <?php esc_html_e( 'Show Selected', 'dns' ); ?>
+                            </button>
+                        </div>
 
-                    <!-- Show Selected Button -->
-                    <button 
-                        type="button" 
-                        id="dns-show-selected-locations" 
-                        class="dns-btn dns-btn--mini"
-                        style="margin-bottom:10px;"
-                    >
-                        <?php esc_html_e( 'Show Selected', 'dns' ); ?>
-                    </button>
+                        <!-- Selected Preview Box -->
+                        <div 
+                            id="dns-selected-preview" 
+                            style="display:none; margin-bottom:15px; padding:10px; background:#f7f7f7; border:1px solid #ddd;"
+                        ></div>
 
-                    <!-- Selected Preview Box -->
-                    <div 
-                        id="dns-selected-preview" 
-                        style="display:none; margin-bottom:15px; padding:10px; background:#f7f7f7; border:1px solid #ddd;"
-                    ></div>
-
-                    <div class="dns-location-list">
-                        <?php foreach ( $locations as $index => $loc ) : 
-                            $is_checked = in_array( $loc->term_id, $saved['listing_locations'], true );
-                        ?>
-                            <label class="dns-checkbox <?php echo $is_checked ? 'dns-checked' : ''; ?>">
-                                <input
-                                    type="checkbox"
-                                    name="listing_locations[]"
-                                    value="<?php echo esc_attr( $loc->term_id ); ?>"
-                                    <?php checked( $is_checked ); ?>
-                                >
-                                <?php echo esc_html( ( $index + 1 ) . '. ' . $loc->name ); ?>
-                            </label>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-
+                        <!-- Locations List -->
+                        <div class="dns-location-list">
+                            <?php foreach ( $locations as $index => $loc ) : 
+                                $is_checked = in_array( $loc->term_id, $saved['listing_locations'], true );
+                            ?>
+                                <label class="dns-checkbox <?php echo $is_checked ? 'dns-checked' : ''; ?>">
+                                    <input
+                                        type="checkbox"
+                                        name="listing_locations[]"
+                                        value="<?php echo esc_attr( $loc->term_id ); ?>"
+                                        <?php checked( $is_checked ); ?>
+                                    >
+                                    <?php echo esc_html( ( $index + 1 ) . '. ' . $loc->name ); ?>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
 
             <!-- Form Actions -->
             <div class="dns-actions">
