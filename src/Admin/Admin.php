@@ -62,11 +62,26 @@ class Admin {
      * Register plugin settings
      */
     public function register_settings() {
-        register_setting('dns_notifications_settings', 'dns_subscribe_job');
-        register_setting('dns_notifications_settings', 'dns_subscription_page_job');
-        register_setting('dns_notifications_settings', 'dns_subscribe_product');
-        register_setting('dns_notifications_settings', 'dns_subscription_page_product');
-        register_setting('dns_notifications_settings', 'dns_subscription_page_id');
+
+        $this->register_dns_notification_settings([
+            'dns_subscribe_job', 
+            'dns_subscription_page_job', 
+            'dns_subscribe_product', 
+            'dns_subscription_page_product', 
+            'dns_subscription_page_id', 
+            'dns_job_terms',
+            'dns_market_terms',
+        ]);
+
+        // register_setting('dns_notifications_settings', 'dns_subscribe_job');
+        // register_setting('dns_notifications_settings', 'dns_subscription_page_job');
+        // register_setting('dns_notifications_settings', 'dns_subscribe_product');
+        // register_setting('dns_notifications_settings', 'dns_subscription_page_product');
+        // register_setting('dns_notifications_settings', 'dns_subscription_page_id');
+
+        // register_setting('dns_notifications_settings', 'dns_job_terms');
+        // register_setting('dns_notifications_settings', 'dns_market_terms');
+
     }
 
     /**
@@ -165,5 +180,18 @@ class Admin {
         }
 
         return $notifications;
+    }
+
+    /**
+     * Register a DNS Notifications setting
+     *
+     * @param string $setting_key Option name to register
+     */
+    public function register_dns_notification_settings( $settings = [] ) {
+        foreach ( $settings as $setting ) {
+            if ( ! empty( $setting ) ) {
+                register_setting( 'dns_notifications_settings', $setting );
+            }
+        }
     }
 }
