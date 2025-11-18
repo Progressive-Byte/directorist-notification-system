@@ -394,3 +394,19 @@
     font-size: 14px;
     line-height: 1.5;
 }
+
+/* Container for the job checkboxes */
+#tab-job {
+    min-height: 200px;        /* minimum height */
+    max-height: 300px;        /* maximum height before scroll appears */
+    overflow-y: auto;         /* vertical scrollbar */
+    padding: 10px;
+}
+
+/* Style for each checkbox label */
+#tab-job .dns-checkbox {
+    display: block;          /* each checkbox on its own line */
+    margin-bottom: 5px;
+    font-size: 14px;
+    line-height: 1.5;
+}

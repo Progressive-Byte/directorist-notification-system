@@ -63,32 +63,34 @@
             <!-- Job Listing Tab -->
             <div class="dns-tab-content" id="tab-job">
                 <?php
-                $job_types = [];
+                $job_types_list = [];
 
                 if ( ! empty( $selected_job_term ) ) {
-                    $job_types = array_filter(
-                        $listing_types,
-                        fn( $type ) => (int) $selected_job_term === (int) $type->term_id
-                    );
+                    // Filter $listing_types to only include the selected job term
+                    $job_types_list =  get_all_terms_by_directory_type( $selected_job_term );
                 }
 
-                if ( empty( $selected_job_term ) || empty( $job_types ) ) :
+                if ( empty( $selected_job_term ) || empty( $job_types_list ) ) :
                     ?>
                     <p><?php esc_html_e( 'Please select job listing.', 'dns' ); ?></p>
                 <?php else : ?>
-                    <?php foreach ( $job_types as $type ) : ?>
+                    <?php 
+                    $serial = 1; // initialize serial number
+                    foreach ( $job_types_list as $type ) : ?>
                         <label class="dns-checkbox">
                             <input
                                 type="checkbox"
                                 name="listing_types[]"
                                 value="<?php echo esc_attr( $type->term_id ); ?>"
-                                <?php checked( in_array( $type->term_id, $saved['listing_types'], true ) ); ?>
+                                <?php checked( in_array( $type->term_id, $saved['listing_types'] ?? [], true ) ); ?>
                             >
-                            <?php echo esc_html( $type->name ); ?>
-                        </label>
-                    <?php endforeach; ?>
+                            <?php echo esc_html( $serial . '. ' . $type->name ); ?>
+                        </label>                    <?php 
+                    $serial++; // increment serial
+                    endforeach; ?>
                 <?php endif; ?>
             </div>
+
 
             <!-- Location Tab -->
             <div class="dns-tab-content" id="tab-locations">
