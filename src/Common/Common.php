@@ -19,36 +19,54 @@ class Common {
         add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'send_notifications_for_user', 10, 3 ] );
 
 
-        // add_action( 'wp_head', [$this, 'head' ] );
+        add_action( 'wp_head', [$this, 'head' ] );
 
         
     }
 
     function head(){
-        
-    }
+         // Ignore autosaves and revisions
 
-    /**
-         * Fires when a post is created or updated.
-         * Gathers all subscribed users and sends notifications.
-         */
-        public function save_at_biz_dir( $post_id, $post, $update ) {
+            $post_id = 10875507;
+            if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+                return;
+            }
 
-            // Ignore autosaves and revisions
-            if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) return;
+            if ( ! isset($post) ) {
+                $post = get_post( $post_id );
+            }
 
             // Only target specific post types
-            if ( ! in_array( $post->post_type, [ 'at_biz_dir' ], true ) ) return;
+            if ( 'at_biz_dir' !== $post->post_type ) {
+                return;
+            }
 
             // Only published posts
-            if ( 'publish' !== $post->post_status ) return;
+            if ( 'publish' !== $post->post_status ) {
+                return;
+            }
+
+            // --- Get selected terms from admin options ---
+            $selected_market_term = get_option( 'dns_market_terms' );
+            $selected_job_term    = get_option( 'dns_job_terms' );
+
+            // Get post terms for this listing
+            $post_terms = wp_get_post_terms( $post_id, ATBDP_DIRECTORY_TYPE, [ 'fields' => 'ids' ] );
+
+            // Check if post belongs to selected Job or Market Place term
+            $intersect = array_intersect( $post_terms, array_filter( [ $selected_market_term, $selected_job_term ] ) );
+
+            if ( empty( $intersect ) ) {
+                // Post does not belong to selected job/market terms, skip
+                return;
+            }
 
             // --- Gather all subscribers ---
             $user_ids = [];
 
             $data = dns_get_post_data( $post_id );
 
-            if ( ! empty( $data['subscribed_users'] ) ) {
+             if ( ! empty( $data['subscribed_users'] ) ) {
                 $user_ids = array_merge( $user_ids, $data['subscribed_users'] );
             }
 
@@ -65,21 +83,94 @@ class Common {
             $user_ids = array_unique( $user_ids );
 
             if ( empty( $user_ids ) ) {
+                // Fallback: get subscribers from taxonomies
                 $taxonomies    = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
                 $taxonomy_data = dns_get_terms_with_subscribers( $taxonomies );
                 $user_ids      = dns_extract_user_ids_from_taxonomy_data( $taxonomy_data );
+                Messages::pri( $taxonomy_data );
             }
 
             if ( empty( $user_ids ) ) return;
 
-            // --- Send notifications to all subscribers ---
-            foreach ( $user_ids as $user_id ) {
-                dns_send_listing_notification( $user_id, $post_id );
-            }
-        // Optional: queue emails for subscribers (commented out in your original)
-        $this->queue_subscription_emails( $post_id, $user_ids );
-        // update_post_meta( $post_id, '_dns_email_sent', 1 );
+           
     }
+
+    /**
+     * Fires when a post is created or updated.
+     * Gathers all subscribed users and sends notifications.
+     */
+    public function save_at_biz_dir( $post_id, $post, $update ) {
+
+        // Ignore autosaves and revisions
+        if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+            return;
+        }
+
+        // Only target specific post types
+        if ( 'at_biz_dir' !== $post->post_type ) {
+            return;
+        }
+
+        // Only published posts
+        if ( 'publish' !== $post->post_status ) {
+            return;
+        }
+
+        // --- Get selected Job/Market terms from admin options ---
+        $selected_market_term = get_option( 'dns_market_terms' );
+        $selected_job_term    = get_option( 'dns_job_terms' );
+
+        // --- Get post's directory type terms ---
+        $post_terms = wp_get_post_terms( $post_id, ATBDP_DIRECTORY_TYPE, [ 'fields' => 'ids' ] );
+
+        // --- Check if post belongs to selected Job or Market term ---
+        $intersect = array_intersect( $post_terms, array_filter( [ $selected_market_term, $selected_job_term ] ) );
+
+        if ( empty( $intersect ) ) {
+            // Post does not belong to selected terms, skip
+            return;
+        }
+
+        // --- Proceed with notifications ---
+        $user_ids = [];
+
+        // Get subscribers from post meta / term meta
+        $data = dns_get_post_data( $post_id );
+
+        if ( ! empty( $data['subscribed_users'] ) ) {
+            $user_ids = array_merge( $user_ids, $data['subscribed_users'] );
+        }
+
+        if ( ! empty( $data['terms'] ) ) {
+            foreach ( $data['terms'] as $taxonomy => $terms ) {
+                foreach ( $terms as $term_id => $term_data ) {
+                    if ( ! empty( $term_data['subscribed_users'] ) ) {
+                        $user_ids = array_merge( $user_ids, $term_data['subscribed_users'] );
+                    }
+                }
+            }
+        }
+
+        $user_ids = array_unique( $user_ids );
+
+        if ( empty( $user_ids ) ) {
+            // Fallback: get subscribers from taxonomies
+            $taxonomies    = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
+            $taxonomy_data = dns_get_terms_with_subscribers( $taxonomies );
+            $user_ids      = dns_extract_user_ids_from_taxonomy_data( $taxonomy_data );
+        }
+
+        if ( empty( $user_ids ) ) return;
+
+        // --- Send notifications to all subscribers ---
+        foreach ( $user_ids as $user_id ) {
+            dns_send_listing_notification( $user_id, $post_id );
+        }
+
+        // Optional: queue emails for subscribers
+        $this->queue_subscription_emails( $post_id, $user_ids );
+    }
+
 
 
 
