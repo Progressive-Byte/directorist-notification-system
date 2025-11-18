@@ -11,52 +11,49 @@ jQuery(document).ready(function($){
 });
 
 jQuery(document).ready(function($) {
+
     const TAB_KEY = 'dns_active_tab';
 
-    // Utility: activate a tab by name (e.g. "types", "locations", "listings")
+    /**
+     * ---------------------------------------------
+     *  TAB HANDLING (your existing logic)
+     * ---------------------------------------------
+     */
+
     function activateTab(name) {
         if (!name) return;
 
         const $tabBtn = $('.dns-tab[data-tab="' + name + '"]');
         const $tabPanel = $('#tab-' + name);
 
-        // If either doesn't exist, abort
         if ($tabBtn.length === 0 || $tabPanel.length === 0) return;
 
-        // remove active from all
         $('.dns-tab').removeClass('active');
         $('.dns-tab-content').removeClass('active');
 
-        // set active
         $tabBtn.addClass('active');
         $tabPanel.addClass('active');
 
-        // Remember selection
         try {
             localStorage.setItem(TAB_KEY, name);
-        } catch (e) {
-            // ignore storage errors (e.g. Safari private mode)
-        }
+        } catch (e) {}
     }
 
-    // Init: restore saved tab, or keep existing 'active' button/panel if present
     (function initActiveTab() {
         let saved = null;
+
         try {
             saved = localStorage.getItem(TAB_KEY);
-        } catch (e) {
-            saved = null;
+        } catch (e) {}
+
+        if (saved &&
+            $('.dns-tab[data-tab="' + saved + '"]').length &&
+            $('#tab-' + saved).length
+        ) {
+            activateTab(saved);
+            return;
         }
 
-        if (saved) {
-            // If saved tab exists in DOM, activate it
-            if ($('.dns-tab[data-tab="' + saved + '"]').length && $('#tab-' + saved).length) {
-                activateTab(saved);
-                return;
-            }
-        }
-
-        // Otherwise ensure exactly one active tab/panel exists:
         const $activeBtn = $('.dns-tab.active').first();
         if ($activeBtn.length) {
             const t = $activeBtn.data('tab');
@@ -66,7 +63,6 @@ jQuery(document).ready(function($) {
             }
         }
 
-        // Fallback: activate first tab/button that matches a panel
         const $firstBtn = $('.dns-tab').filter(function() {
             return $('#tab-' + $(this).data('tab')).length;
         }).first();
@@ -76,37 +72,42 @@ jQuery(document).ready(function($) {
         }
     })();
 
-    // Click handler for tab buttons (delegated in case buttons are injected later)
     $(document).on('click', '.dns-tab', function(e) {
-        // If the button is inside a form and type="submit", prevent accidental submit
         if ($(this).attr('type') === 'submit') {
             e.preventDefault();
         }
-
-        const tabName = $(this).data('tab');
-        activateTab(tabName);
+        activateTab($(this).data('tab'));
     });
 
-    // Keyboard accessibility: allow Enter/Space to toggle when focused
     $(document).on('keydown', '.dns-tab', function(e) {
         const code = e.which || e.keyCode;
-        if (code === 13 || code === 32) { // Enter or Space
+        if (code === 13 || code === 32) {
             e.preventDefault();
             $(this).trigger('click');
         }
     });
 
-    // Auto-hide success message (if present)
+    /**
+     * ---------------------------------------------
+     *  AUTO HIDE ALERT MESSAGE
+     * ---------------------------------------------
+     */
     const $alert = $('.dns-alert');
     if ($alert.length) {
         setTimeout(function() {
-            $alert.fadeOut(400, function() { $(this).remove(); });
+            $alert.fadeOut(400, function() {
+                $(this).remove();
+            });
         }, 5000);
     }
 
-    // Optional: expose function to switch tab from elsewhere (callable)
+    /**
+     * Allow external tab switching
+     */
     window.dnsActivateTab = activateTab;
+
 });
+
 
 jQuery(function($) {
 
@@ -173,6 +174,44 @@ jQuery(function($) {
     });
 
 });
+
+jQuery(document).ready(function($) {
+    const $locationList = $('.dns-location-list');
+    const $toggleBtn = $('#dns-show-selected-locations');
+    let showingSelected = false; // Track toggle state
+
+    $toggleBtn.on('click', function(e) {
+        e.preventDefault();
+
+        if (!showingSelected) {
+            // Show only checked items
+            $locationList.children('.dns-checkbox').hide();
+            $locationList.children('.dns-checked').show();
+            $toggleBtn.text('Show All'); // Button shows 'Show All'
+        } else {
+            // Show all items
+            $locationList.children('.dns-checkbox').show();
+            $toggleBtn.text('Show Selected'); // Button shows 'Show Selected'
+        }
+
+        // Toggle state
+        showingSelected = !showingSelected;
+    });
+
+    // Dynamically add/remove dns-checked class when checkboxes are clicked
+    $locationList.on('change', 'input[type="checkbox"]', function() {
+        const $label = $(this).closest('.dns-checkbox');
+        if ($(this).is(':checked')) {
+            $label.addClass('dns-checked');
+        } else {
+            $label.removeClass('dns-checked');
+        }
+    });
+});
+
+
+
+
 
 
 
