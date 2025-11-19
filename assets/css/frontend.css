@@ -367,7 +367,7 @@
 
 #dns-show-selected-locations:hover, 
 #dns-select-all-locations:hover, 
-#dns-de-select-all-locations:hover {
+#dns-deselect-all-locations:hover {
     background-color: #005177;
     color: white;
 }

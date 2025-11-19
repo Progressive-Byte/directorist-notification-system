@@ -175,39 +175,74 @@ jQuery(function($) {
 
 });
 
-jQuery(document).ready(function($) {
-    const $locationList = $('.dns-location-list');
-    const $toggleBtn = $('#dns-show-selected-locations');
-    let showingSelected = false; // Track toggle state
+jQuery(document).ready(function ($) {
 
-    $toggleBtn.on('click', function(e) {
-        e.preventDefault();
+    // TAB SWITCHING
+    $('.dns-tab').on('click', function () {
+        const tab = $(this).data('tab');
+        $('.dns-tab').removeClass('active');
+        $(this).addClass('active');
 
-        if (!showingSelected) {
-            // Show only checked items
-            $locationList.children('.dns-checkbox').hide();
-            $locationList.children('.dns-checked').show();
-            $toggleBtn.text('Show All'); // Button shows 'Show All'
+        $('.dns-tab-content').hide();
+        $('#tab-' + tab).show();
+    });
+    $('.dns-tab').first().click();
+
+    // Auto add/remove .dns-checked
+    $(document).on("change", ".dns-checkbox-list input[type='checkbox']", function () {
+        $(this).closest(".dns-checkbox").toggleClass("dns-checked", this.checked);
+    });
+
+    // Select All
+    $(document).on("click", ".dns-select-all", function () {
+        let list = $(this).closest(".dns-tab-content").find(".dns-checkbox-list input[type='checkbox']");
+        list.prop("checked", true).trigger("change");
+        $(this).closest(".dns-tab-content").find(".dns-checkbox-list .dns-checkbox").show();
+        // Reset Show Selected toggle
+        $(this).closest(".dns-tab-content").data('show-selected', false);
+    });
+
+    // Deselect All
+    $(document).on("click", ".dns-deselect-all", function () {
+        let list = $(this).closest(".dns-tab-content").find(".dns-checkbox-list input[type='checkbox']");
+        list.prop("checked", false).trigger("change");
+        $(this).closest(".dns-tab-content").find(".dns-checkbox-list .dns-checkbox").show();
+        $(this).closest(".dns-tab-content").data('show-selected', false);
+    });
+
+    // Show Selected Toggle
+    $(document).on("click", ".dns-show-selected", function () {
+        let wrapper = $(this).closest(".dns-tab-content");
+        let allItems = wrapper.find(".dns-checkbox-list .dns-checkbox");
+        let isShowingSelected = wrapper.data('show-selected') || false;
+
+        if (!isShowingSelected) {
+            // Show only selected
+            allItems.hide();
+            wrapper.find(".dns-checkbox-list .dns-checkbox.dns-checked").show();
+            wrapper.data('show-selected', true);
+            $(this).text('Show All'); // Update button text
         } else {
             // Show all items
-            $locationList.children('.dns-checkbox').show();
-            $toggleBtn.text('Show Selected'); // Button shows 'Show Selected'
-        }
-
-        // Toggle state
-        showingSelected = !showingSelected;
-    });
-
-    // Dynamically add/remove dns-checked class when checkboxes are clicked
-    $locationList.on('change', 'input[type="checkbox"]', function() {
-        const $label = $(this).closest('.dns-checkbox');
-        if ($(this).is(':checked')) {
-            $label.addClass('dns-checked');
-        } else {
-            $label.removeClass('dns-checked');
+            allItems.show();
+            wrapper.data('show-selected', false);
+            $(this).text('Show Selected'); // Restore button text
         }
     });
+
+    // Search Filter
+    $(document).on("keyup", ".dns-search-input", function () {
+        let val = $(this).val().toLowerCase();
+        let items = $(this).closest(".dns-tab-content").find(".dns-checkbox-list .dns-checkbox");
+        items.each(function () {
+            let text = $(this).text().toLowerCase();
+            $(this).toggle(text.indexOf(val) !== -1);
+        });
+    });
+
 });
+
+
 
 
 
