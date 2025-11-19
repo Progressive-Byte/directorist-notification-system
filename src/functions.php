@@ -217,24 +217,35 @@ if ( ! function_exists( 'dns_extract_user_ids_from_taxonomy_data' ) ) {
 if ( ! function_exists( 'dns_remove_user_from_subscriptions' ) ) {
     function dns_remove_user_from_subscriptions( $user_id ) {
 
+        $meta_keys = [
+            'subscribed_users',
+            'listing_types',
+            'market_types',
+        ];
+
         // Remove user from posts
+        $meta_query = ['relation' => 'OR'];
+        foreach ( $meta_keys as $key ) {
+            $meta_query[] = [
+                'key'     => $key,
+                'value'   => '"' . $user_id . '"', // For serialized arrays
+                'compare' => 'LIKE',
+            ];
+        }
+
         $posts = get_posts([
             'post_type'      => 'at_biz_dir',
             'posts_per_page' => -1,
-            'meta_query'     => [
-                [
-                    'key'     => 'subscribed_users',
-                    'value'   => $user_id,
-                    'compare' => 'LIKE',
-                ],
-            ],
+            'meta_query'     => $meta_query,
         ]);
 
         foreach ( $posts as $post ) {
-            $users = get_post_meta( $post->ID, 'subscribed_users', true );
-            if ( is_array( $users ) ) {
-                $users = array_diff( $users, [ $user_id ] );
-                update_post_meta( $post->ID, 'subscribed_users', $users );
+            foreach ( $meta_keys as $key ) {
+                $users = get_post_meta( $post->ID, $key, true );
+                if ( is_array( $users ) ) {
+                    $users = array_diff( $users, [ $user_id ] );
+                    update_post_meta( $post->ID, $key, $users );
+                }
             }
         }
 
@@ -242,12 +253,13 @@ if ( ! function_exists( 'dns_remove_user_from_subscriptions' ) ) {
         $taxonomies = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
         foreach ( $taxonomies as $taxonomy ) {
             $terms = get_terms([ 'taxonomy' => $taxonomy, 'hide_empty' => false ]);
-
             foreach ( $terms as $term ) {
-                $users = get_term_meta( $term->term_id, 'subscribed_users', true );
-                if ( is_array( $users ) ) {
-                    $users = array_diff( $users, [ $user_id ] );
-                    update_term_meta( $term->term_id, 'subscribed_users', $users );
+                foreach ( $meta_keys as $key ) {
+                    $users = get_term_meta( $term->term_id, $key, true );
+                    if ( is_array( $users ) ) {
+                        $users = array_diff( $users, [ $user_id ] );
+                        update_term_meta( $term->term_id, $key, $users );
+                    }
                 }
             }
         }
@@ -256,6 +268,7 @@ if ( ! function_exists( 'dns_remove_user_from_subscriptions' ) ) {
         delete_user_meta( $user_id, 'dns_notify_prefs' );
     }
 }
+
 
 
 

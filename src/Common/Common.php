@@ -25,6 +25,8 @@ class Common {
     }
 
     function head(){
+
+        dns_remove_user_from_subscriptions( 1238 );
     }
 
     /**
