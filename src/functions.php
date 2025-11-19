@@ -142,37 +142,55 @@ if ( ! function_exists( 'dns_get_terms_data' ) ) {
  */
 if ( ! function_exists( 'dns_get_terms_with_subscribers' ) ) {
     function dns_get_terms_with_subscribers( $taxonomies = [] ) {
-        if ( empty( $taxonomies ) ) return [];
+        if ( empty( $taxonomies ) ) {
+            return [];
+        }
 
         $data = [];
 
         foreach ( $taxonomies as $taxonomy ) {
-            if ( ! taxonomy_exists( $taxonomy ) ) continue;
+
+            if ( ! taxonomy_exists( $taxonomy ) ) {
+                continue;
+            }
 
             $terms = get_terms([
                 'taxonomy'   => $taxonomy,
                 'hide_empty' => false,
             ]);
 
-            if ( is_wp_error( $terms ) || empty( $terms ) ) continue;
+            if ( is_wp_error( $terms ) || empty( $terms ) ) {
+                continue;
+            }
 
             $all_users = [];
 
+            // Only include meta keys that actually store user IDs
+            $meta_keys = [
+                'subscribed_users',
+                'listing_types',
+                'market_types',
+            ]; 
+
             foreach ( $terms as $term ) {
-                $users = get_term_meta( $term->term_id, 'subscribed_users', true );
-                if ( is_array( $users ) && ! empty( $users ) ) {
-                    $all_users = array_merge( $all_users, $users );
+                foreach ( $meta_keys as $meta ) {
+                    $users = get_term_meta( $term->term_id, $meta, true );
+                    if ( is_array( $users ) && ! empty( $users ) ) {
+                        $all_users = array_merge( $all_users, $users );
+                    }
                 }
             }
 
+
             if ( ! empty( $all_users ) ) {
-                $data[$taxonomy]['subscribed_users'] = array_unique( $all_users );
+                $data[ $taxonomy ]['subscribed_users'] = array_unique( $all_users );
             }
         }
 
         return $data;
     }
 }
+
 
 
 /**
