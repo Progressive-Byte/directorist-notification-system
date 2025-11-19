@@ -84,7 +84,7 @@
     transform: translateY(-1px);
 }
 
-/* Active tab state ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ add this class via JS */
+/* Active tab state ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ add this class via JS */
 .dns-tab.is-active,
 .dns-tab.active {
     background: var(--dns-accent);
@@ -97,7 +97,7 @@
     /* padding-top: 8px; */
 }
 
-/* Visible content ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ add .is-active or .active to the current tab panel */
+/* Visible content ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ add .is-active or .active to the current tab panel */
 .dns-tab-content.is-active,
 .dns-tab-content.active {
     display: block;
@@ -500,12 +500,14 @@
 .dns-checkbox.dns-checked {
     background: #e6f7ff66;
     border-color: #1890ff66;
+    margin-bottom: 5px;
 }
 
 /* --- Smooth hiding/showing for filtered items --- */
 .dns-checkbox {
     display: flex;
     transition: all 0.2s;
+    margin-bottom: 5px;
 }
 /* --- Location, Job, and Market checkbox list scroll --- */
 #tab-locations .dns-checkbox-list,
