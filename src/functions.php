@@ -446,4 +446,14 @@ function update_user_term_subscriptions( $term_ids = [], $meta_key = 'subscribed
 
 
 
+function get_taxonomy_by_term_id( $term_id ) {
+    $term = get_term( $term_id );
+
+    if ( ! $term || is_wp_error( $term ) ) {
+        return false; // Term not found
+    }
+
+    return $term->taxonomy; // Returns taxonomy name as string
+}
+
 ?>

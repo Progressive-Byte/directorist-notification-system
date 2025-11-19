@@ -25,8 +25,6 @@ class Common {
     }
 
     function head(){
-
-           
     }
 
     /**
