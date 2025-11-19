@@ -25,8 +25,6 @@ class Common {
     }
 
     function head(){
-
-        dns_remove_user_from_subscriptions( 1238 );
     }
 
     /**
@@ -40,13 +38,8 @@ class Common {
             return;
         }
 
-        // Only target specific post types
-        if ( 'at_biz_dir' !== $post->post_type ) {
-            return;
-        }
-
-        // Only published posts
-        if ( 'publish' !== $post->post_status ) {
+        // Only target specific post type and published posts
+        if ( 'at_biz_dir' !== $post->post_type || 'publish' !== $post->post_status ) {
             return;
         }
 
@@ -59,22 +52,21 @@ class Common {
 
         // --- Check if post belongs to selected Job or Market term ---
         $intersect = array_intersect( $post_terms, array_filter( [ $selected_market_term, $selected_job_term ] ) );
-
         if ( empty( $intersect ) ) {
-            // Post does not belong to selected terms, skip
-            return;
+            return; // Skip if post doesn't belong
         }
 
-        // --- Proceed with notifications ---
+        // --- Gather all subscribers ---
         $user_ids = [];
 
-        // Get subscribers from post meta / term meta
         $data = dns_get_post_data( $post_id );
 
+        // Subscribers from post meta
         if ( ! empty( $data['subscribed_users'] ) ) {
             $user_ids = array_merge( $user_ids, $data['subscribed_users'] );
         }
 
+        // Subscribers from terms
         if ( ! empty( $data['terms'] ) ) {
             foreach ( $data['terms'] as $taxonomy => $terms ) {
                 foreach ( $terms as $term_id => $term_data ) {
@@ -86,7 +78,6 @@ class Common {
         }
 
         $user_ids = array_unique( $user_ids );
-
         if ( empty( $user_ids ) ) {
             // Fallback: get subscribers from taxonomies
             $taxonomies    = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
@@ -96,14 +87,32 @@ class Common {
 
         if ( empty( $user_ids ) ) return;
 
-        // --- Send notifications to all subscribers ---
-        foreach ( $user_ids as $user_id ) {
-            dns_send_listing_notification( $user_id, $post_id );
+        // --- Get users already notified for this post ---
+        $notified_users = get_post_meta( $post_id, '_notified_users', true );
+        if ( ! is_array( $notified_users ) ) {
+            $notified_users = [];
         }
 
-        // Optional: queue emails for subscribers
+        // --- Send notifications only to users not notified yet ---
+        foreach ( $user_ids as $user_id ) {
+            if ( in_array( $user_id, $notified_users, true ) ) {
+                continue; // Already notified
+            }
+
+            // Send notification
+            dns_send_listing_notification( $user_id, $post_id );
+
+            // Add user to notified list
+            $notified_users[] = $user_id;
+        }
+
+        // --- Update post meta so we don't notify same users again ---
+        update_post_meta( $post_id, '_notified_users', array_unique( $notified_users ) );
+
+        // Optional: queue emails
         $this->queue_subscription_emails( $post_id, $user_ids );
     }
+
 
 
 
