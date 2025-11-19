@@ -51,13 +51,6 @@ class Shortcode {
         $user_id = get_current_user_id();
         $msg     = '';
 
-        // --- HANDLE UNSUBSCRIBE ---
-        if ( isset( $_POST['np_unsubscribe'] ) ) {
-            dns_remove_user_from_subscriptions( $user_id );
-            echo '<script>window.location.href="' . esc_url( get_permalink() ) . '"</script>';
-            exit;
-        }
-
         // --- LOAD TAXONOMY TERMS ---
         $listing_types = get_terms( [
             'taxonomy'   => 'atbdp_listing_types',

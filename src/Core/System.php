@@ -50,6 +50,7 @@ class System {
      * Enqueue frontend scripts and styles
      */
     public function enqueue_scripts() {
+        wp_enqueue_style('dashicons');
         // Frontend CSS
         wp_enqueue_style(
             'dns-notification-style',

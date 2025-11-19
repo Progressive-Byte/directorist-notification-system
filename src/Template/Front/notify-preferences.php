@@ -33,7 +33,10 @@
                     <input type="text" class="dns-search-input" placeholder="<?php esc_attr_e('Search...', 'dns'); ?>" style="flex:1;">
                     <button type="button" class="dns-btn dns-btn--mini dns-select-all"><?php esc_html_e('Select All', 'dns'); ?></button>
                     <button type="button" class="dns-btn dns-btn--mini dns-deselect-all"><?php esc_html_e('Deselect All', 'dns'); ?></button>
-                    <button type="button" class="dns-btn dns-btn--mini dns-show-selected"><?php esc_html_e('Show Selected', 'dns'); ?></button>
+                    <button type="button" class="dns-btn dns-btn--mini dns-show-selected">
+                        <span class="dns-show-selected-icon">👁️</span>
+                        <span class="dns-show-selected-text"><?php esc_html_e('Show Selected', 'dns'); ?></span>
+                    </button>
                 </div>
 
                 <div class="dns-selected-preview" style="display:none; margin-bottom:15px; padding:10px; background:#f7f7f7; border:1px solid #ddd;"></div>
@@ -64,7 +67,10 @@
                     <input type="text" class="dns-search-input" placeholder="<?php esc_attr_e('Search...', 'dns'); ?>" style="flex:1;">
                     <button type="button" class="dns-btn dns-btn--mini dns-select-all"><?php esc_html_e('Select All', 'dns'); ?></button>
                     <button type="button" class="dns-btn dns-btn--mini dns-deselect-all"><?php esc_html_e('Deselect All', 'dns'); ?></button>
-                    <button type="button" class="dns-btn dns-btn--mini dns-show-selected"><?php esc_html_e('Show Selected', 'dns'); ?></button>
+                    <button type="button" class="dns-btn dns-btn--mini dns-show-selected">
+                        <span class="dns-show-selected-icon">👁️</span>
+                        <span class="dns-show-selected-text"><?php esc_html_e('Show Selected', 'dns'); ?></span>
+                    </button>
                 </div>
 
                 <div class="dns-selected-preview" style="display:none; margin-bottom:15px; padding:10px; background:#f7f7f7; border:1px solid #ddd;"></div>
@@ -91,7 +97,10 @@
                         <input type="text" class="dns-search-input" placeholder="<?php esc_attr_e('Search...', 'dns'); ?>" style="flex:1;">
                         <button type="button" class="dns-btn dns-btn--mini dns-select-all"><?php esc_html_e('Select All', 'dns'); ?></button>
                         <button type="button" class="dns-btn dns-btn--mini dns-deselect-all"><?php esc_html_e('Deselect All', 'dns'); ?></button>
-                        <button type="button" class="dns-btn dns-btn--mini dns-show-selected"><?php esc_html_e('Show Selected', 'dns'); ?></button>
+                        <button type="button" class="dns-btn dns-btn--mini dns-show-selected">
+                            <span class="dns-show-selected-icon">👁️</span>
+                            <span class="dns-show-selected-text"><?php esc_html_e('Show Selected', 'dns'); ?></span>
+                        </button>
                     </div>
 
                     <div class="dns-selected-preview" style="display:none; margin-bottom:15px; padding:10px; background:#f7f7f7; border:1px solid #ddd;"></div>
@@ -111,8 +120,7 @@
 
             <!-- Form Actions -->
             <div class="dns-actions">
-                <button class="dns-btn dns-btn--primary" type="submit" name="np_save" value="1"><?php esc_html_e('Subscribe', 'dns'); ?></button>
-                <button class="dns-btn dns-btn--secondary" type="submit" name="np_unsubscribe" value="1"><?php esc_html_e('Unsubscribe', 'dns'); ?></button>
+                <button class="dns-btn dns-btn--primary" type="submit" name="np_save" value="1"><?php esc_html_e('Confirm', 'dns'); ?></button>
             </div>
 
         </form>

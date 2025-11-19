@@ -546,3 +546,10 @@
 #tab-market .dns-checkbox-list::-webkit-scrollbar-thumb:hover {
     background-color: #999;
 }
+.dns-btn.dns-show-selected {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px; /* space between emoji and text */
+}
+
+
