@@ -84,7 +84,7 @@
     transform: translateY(-1px);
 }
 
-/* Active tab state – add this class via JS */
+/* Active tab state ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ add this class via JS */
 .dns-tab.is-active,
 .dns-tab.active {
     background: var(--dns-accent);
@@ -94,10 +94,10 @@
 /* Tab content area */
 .dns-tab-content {
     display: none; /* hide by default, show active via JS */
-    padding-top: 8px;
+    /* padding-top: 8px; */
 }
 
-/* Visible content – add .is-active or .active to the current tab panel */
+/* Visible content ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ add .is-active or .active to the current tab panel */
 .dns-tab-content.is-active,
 .dns-tab-content.active {
     display: block;
@@ -384,10 +384,10 @@
 }
 /* Container for the market checkboxes */
 #tab-market {
-    min-height: 200px;        /* minimum height */
-    max-height: 300px;        /* maximum height before scroll */
-    overflow-y: auto;         /* vertical scrollbar */
-    padding: 10px;   
+    /* min-height: 200px; */        /* minimum height */
+    /* max-height: 300px; */        /* maximum height before scroll */
+    /* overflow-y: auto; */         /* vertical scrollbar */
+    /* padding: 10px; */
 }
 
 /* Style for each checkbox label */
@@ -400,10 +400,10 @@
 
 /* Container for the job checkboxes */
 #tab-job {
-    min-height: 200px;        /* minimum height */
-    max-height: 300px;        /* maximum height before scroll appears */
-    overflow-y: auto;         /* vertical scrollbar */
-    padding: 10px;
+    /* min-height: 200px; */        /* minimum height */
+    /* max-height: 300px; */        /* maximum height before scroll appears */
+    /* overflow-y: auto; */         /* vertical scrollbar */
+    /* padding: 10px; */
 }
 
 /* Style for each checkbox label */
@@ -416,13 +416,14 @@
 
 /* --- Search Input --- */
 .dns-search-wrapper input.dns-search-input {
-    width: 100%;
+    /*width: 100%;*/
     padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 25px; /* rounded */
     outline: none;
     font-size: 0.95rem;
     transition: border-color 0.2s, box-shadow 0.2s;
+    max-width: 50%;
 }
 
 .dns-search-wrapper input.dns-search-input:focus {
@@ -467,12 +468,12 @@
 }
 
 /* --- Checkbox List --- */
-.dns-checkbox-list {
+/*.dns-checkbox-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
     margin-top: 10px;
-}
+}*/
 
 .dns-checkbox {
     display: flex;
@@ -497,12 +498,49 @@
 }
 
 .dns-checkbox.dns-checked {
-    background: #e6f7ff;
-    border-color: #1890ff;
+    background: #e6f7ff66;
+    border-color: #1890ff66;
 }
 
 /* --- Smooth hiding/showing for filtered items --- */
 .dns-checkbox {
     display: flex;
     transition: all 0.2s;
+}
+/* --- Location, Job, and Market checkbox list scroll --- */
+#tab-locations .dns-checkbox-list,
+#tab-job .dns-checkbox-list,
+#tab-market .dns-checkbox-list {
+    max-height: 300px; /* Adjust as needed */
+    overflow-y: auto;
+    padding-right: 6px; /* For scrollbar spacing */
+    /* border: 1px solid #eee; */
+    border-radius: 8px;
+}
+
+/* Optional: Custom scrollbar for modern look (Webkit browsers) */
+#tab-locations .dns-checkbox-list::-webkit-scrollbar,
+#tab-job .dns-checkbox-list::-webkit-scrollbar,
+#tab-market .dns-checkbox-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+#tab-locations .dns-checkbox-list::-webkit-scrollbar-track,
+#tab-job .dns-checkbox-list::-webkit-scrollbar-track,
+#tab-market .dns-checkbox-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+#tab-locations .dns-checkbox-list::-webkit-scrollbar-thumb,
+#tab-job .dns-checkbox-list::-webkit-scrollbar-thumb,
+#tab-market .dns-checkbox-list::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 4px;
+}
+
+#tab-locations .dns-checkbox-list::-webkit-scrollbar-thumb:hover,
+#tab-job .dns-checkbox-list::-webkit-scrollbar-thumb:hover,
+#tab-market .dns-checkbox-list::-webkit-scrollbar-thumb:hover {
+    background-color: #999;
 }

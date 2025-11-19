@@ -24,9 +24,12 @@
             <div class="dns-tab-content" id="tab-market">
                 <?php
                 $market_types = !empty($selected_market_term) ? get_all_terms_by_directory_type($selected_market_term) : [];
-                ?>
+                ?>                
 
-                <div class="dns-search-wrapper" style="display:flex; gap:10px; margin-bottom:10px;">
+                <?php if (empty($market_types)) : ?>
+                    <p><?php esc_html_e('Please select Market listing.', 'dns'); ?></p>
+                <?php else : ?>
+                    <div class="dns-search-wrapper" style="display:flex; gap:10px; margin-bottom:10px;">
                     <input type="text" class="dns-search-input" placeholder="<?php esc_attr_e('Search...', 'dns'); ?>" style="flex:1;">
                     <button type="button" class="dns-btn dns-btn--mini dns-select-all"><?php esc_html_e('Select All', 'dns'); ?></button>
                     <button type="button" class="dns-btn dns-btn--mini dns-deselect-all"><?php esc_html_e('Deselect All', 'dns'); ?></button>
@@ -34,10 +37,6 @@
                 </div>
 
                 <div class="dns-selected-preview" style="display:none; margin-bottom:15px; padding:10px; background:#f7f7f7; border:1px solid #ddd;"></div>
-
-                <?php if (empty($market_types)) : ?>
-                    <p><?php esc_html_e('Please select Market listing.', 'dns'); ?></p>
-                <?php else : ?>
                     <div class="dns-checkbox-list">
                         <?php $serial = 1;
                         foreach ($market_types as $type) :
@@ -56,9 +55,12 @@
             <div class="dns-tab-content" id="tab-job">
                 <?php
                 $job_types_list = !empty($selected_job_term) ? get_all_terms_by_directory_type($selected_job_term) : [];
-                ?>
+                ?>                
 
-                <div class="dns-search-wrapper" style="display:flex; gap:10px; margin-bottom:10px;">
+                <?php if (empty($job_types_list)) : ?>
+                    <p><?php esc_html_e('Please select Job listing.', 'dns'); ?></p>
+                <?php else : ?>
+                    <div class="dns-search-wrapper" style="display:flex; gap:10px; margin-bottom:10px;">
                     <input type="text" class="dns-search-input" placeholder="<?php esc_attr_e('Search...', 'dns'); ?>" style="flex:1;">
                     <button type="button" class="dns-btn dns-btn--mini dns-select-all"><?php esc_html_e('Select All', 'dns'); ?></button>
                     <button type="button" class="dns-btn dns-btn--mini dns-deselect-all"><?php esc_html_e('Deselect All', 'dns'); ?></button>
@@ -66,10 +68,6 @@
                 </div>
 
                 <div class="dns-selected-preview" style="display:none; margin-bottom:15px; padding:10px; background:#f7f7f7; border:1px solid #ddd;"></div>
-
-                <?php if (empty($job_types_list)) : ?>
-                    <p><?php esc_html_e('Please select Job listing.', 'dns'); ?></p>
-                <?php else : ?>
                     <div class="dns-checkbox-list">
                         <?php $serial = 1;
                         foreach ($job_types_list as $type) :
