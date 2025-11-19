@@ -27,34 +27,7 @@ class Shortcode {
      *
      * @return void
      */
-    public function head() {
-
-        $term_ids = get_option( 'terms_test' );
-
-        $current_user_id = get_current_user_id();
-         // update_option( 'terms_test', $term_ids );
-
-        // foreach ( $term_ids as $term_id ) {
-        //     $term_id = intval( $term_id );
-
-        //     // Get existing meta
-        //     $subscribed_users = get_term_meta( $term_id, 'subscribed_users', true );
-
-        //     // Ensure always array
-        //     if ( ! is_array( $subscribed_users ) ) {
-        //         $subscribed_users = $subscribed_users ? [ $subscribed_users ] : [];
-        //     }
-
-        //     // If user not found → add
-        //     if ( ! in_array( $current_user_id, $subscribed_users, true ) ) {
-        //         $subscribed_users[] = $current_user_id;
-
-        //         // SAVE TO DATABASE
-        //         // update_term_meta( $term_id, 'subscribed_users', $subscribed_users );
-        //         Messages::pri( $term_id );
-        //     }
-        // }
-         
+    public function head() {        
 
     }
 
