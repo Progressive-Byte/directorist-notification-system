@@ -3,8 +3,6 @@
         <h3 class="dns-title"><?php esc_html_e('Notification Preferences', 'dns'); ?></h3>
         <p class="dns-sub"><?php esc_html_e('Choose which listing types or listings and locations you want updates for.', 'dns'); ?></p>
 
-        <?php echo wp_kses_post($msg); ?>
-
         <form method="post">
             <?php wp_nonce_field('np_save_prefs', 'np_nonce'); ?>
 

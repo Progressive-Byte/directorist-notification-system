@@ -49,7 +49,6 @@ class Shortcode {
         }
 
         $user_id = get_current_user_id();
-        $msg     = '';
 
         // --- LOAD TAXONOMY TERMS ---
         $listing_types = get_terms( [
@@ -125,7 +124,6 @@ class Shortcode {
             'listing_types' => $listing_types,
             'locations'     => $locations,
             'saved'         => $saved,
-            'msg'           => $msg,
         ], false );
     }
 

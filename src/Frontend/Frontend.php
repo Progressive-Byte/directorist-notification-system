@@ -20,34 +20,7 @@ class Frontend {
 	}
 
 	public function head(){
-		$args = array(
-		    'post_type'      => ATBDP_POST_TYPE,  // at_biz_dir
-		    'posts_per_page' => -1,               // all posts
-		    'post_status'    => 'publish',
-		    'tax_query'      => array(
-		        array(
-		            'taxonomy' => ATBDP_DIRECTORY_TYPE, // 'directory_type'
-		            'field'    => 'term_id',
-		            'terms'    => 316,
-		        ),
-		    ),
-		);
-
-
-		$query = new \WP_Query($args);
-
-		$directory_types = get_terms( array(
-		    'taxonomy'   => ATBDP_DIRECTORY_TYPE,
-		    'hide_empty' => false, // set true if you only want types assigned to posts
-		) );
-
-		// $term_ids = wp_list_pluck( $directory_types, 'term_id' );
-
-		// $type_id = 357;
-
-		// $term_names = get_all_terms_by_directory_type( $type_id );
-
-
+		
 		// Messages::pri( $term_names );
 
 
