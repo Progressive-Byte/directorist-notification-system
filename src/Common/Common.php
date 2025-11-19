@@ -25,8 +25,6 @@ class Common {
     }
 
     function head(){
-        $taxonomies    = [ 'at_biz_dir-location' ];
-        Messages::pri( dns_get_terms_with_subscribers( $taxonomies ) );
     }
 
     /**
