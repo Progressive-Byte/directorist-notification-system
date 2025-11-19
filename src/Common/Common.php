@@ -220,8 +220,10 @@ class Common {
         // Remove user from all subscriptions
         dns_remove_user_from_subscriptions( $user_id );
 
+        $subscription_id = get_option( 'dns_subscription_page_id' );
+
         // Optional: redirect with confirmation
-        wp_redirect( home_url(  ) );
+        wp_redirect( get_permalink( $subscription_id  ) );
         exit;
     }
 
