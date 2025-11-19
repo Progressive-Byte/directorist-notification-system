@@ -45,9 +45,9 @@
                         <label class="dns-checkbox">
                             <input
                                 type="checkbox"
-                                name="listing_types[]"
+                                name="market_types[]"
                                 value="<?php echo esc_attr( $type->term_id ); ?>"
-                                <?php checked( in_array( $type->term_id, $saved['listing_types'] ?? [], true ) ); ?>
+                                <?php checked( in_array( $type->term_id, $saved['market_types'] ?? [], true ) ); ?>
                             >
                             <?php echo esc_html( $serial . '. ' . $type->name ); ?>
                         </label>

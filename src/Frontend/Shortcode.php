@@ -85,11 +85,13 @@ class Shortcode {
         if ( isset( $_POST['np_save'] ) && check_admin_referer( 'np_save_prefs', 'np_nonce' ) ) {
 
             $selected_types     = isset( $_POST['listing_types'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_types'] ) ) : [];
+            $market_types       = isset( $_POST['market_types'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['market_types'] ) ) : [];
             $selected_locations = isset( $_POST['listing_locations'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_locations'] ) ) : [];
 
             // Save preferences
             $saved = [
                 'listing_types'     => $selected_types,
+                'market_types'      => $market_types,
                 'listing_locations' => $selected_locations,
             ];
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
