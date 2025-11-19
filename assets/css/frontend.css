@@ -413,3 +413,96 @@
     font-size: 14px;
     line-height: 1.5;
 }
+
+/* --- Search Input --- */
+.dns-search-wrapper input.dns-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 25px; /* rounded */
+    outline: none;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dns-search-wrapper input.dns-search-input:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 6px rgba(0, 115, 170, 0.3);
+}
+
+/* --- Search Buttons --- */
+.dns-search-wrapper .dns-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.dns-search-wrapper .dns-btn.dns-select-all {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.dns-search-wrapper .dns-btn.dns-select-all:hover {
+    background-color: #218838;
+}
+
+.dns-search-wrapper .dns-btn.dns-deselect-all {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.dns-search-wrapper .dns-btn.dns-deselect-all:hover {
+    background-color: #c82333;
+}
+
+.dns-search-wrapper .dns-btn.dns-show-selected {
+    background-color: #0073aa;
+    color: #fff;
+}
+
+.dns-search-wrapper .dns-btn.dns-show-selected:hover {
+    background-color: #005177;
+}
+
+/* --- Checkbox List --- */
+.dns-checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.dns-checkbox {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.dns-checkbox input[type="checkbox"] {
+    margin-right: 10px;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+.dns-checkbox:hover {
+    background: #f0f8ff;
+    border-color: #91d5ff;
+}
+
+.dns-checkbox.dns-checked {
+    background: #e6f7ff;
+    border-color: #1890ff;
+}
+
+/* --- Smooth hiding/showing for filtered items --- */
+.dns-checkbox {
+    display: flex;
+    transition: all 0.2s;
+}
