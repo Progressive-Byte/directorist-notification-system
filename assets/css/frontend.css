@@ -354,7 +354,7 @@
 }
 
 /* Show Selected button */
-#dns-show-selected-locations {
+/*#dns-show-selected-locations {
     padding: 8px 12px;
     font-size: 14px;
     background-color: #0073aa;
@@ -363,10 +363,13 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
-}
+}*/
 
-#dns-show-selected-locations:hover {
+#dns-show-selected-locations:hover, 
+#dns-select-all-locations:hover, 
+#dns-de-select-all-locations:hover {
     background-color: #005177;
+    color: white;
 }
 
 /* Responsive: stack on small screens */

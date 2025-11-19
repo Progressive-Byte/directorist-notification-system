@@ -112,6 +112,22 @@
                             >
                                 <?php esc_html_e( 'Show Selected', 'dns' ); ?>
                             </button>
+
+                            <button 
+                                type="button" 
+                                id="dns-select-all-locations" 
+                                class="dns-btn dns-btn--mini"
+                            >
+                                <?php esc_html_e( 'Select All', 'dns' ); ?>
+                            </button>
+
+                            <button 
+                                type="button" 
+                                id="dns-de-select-all-locations" 
+                                class="dns-btn dns-btn--mini"
+                            >
+                                <?php esc_html_e( 'Deselect All', 'dns' ); ?>
+                            </button>
                         </div>
 
                         <!-- Selected Preview Box -->
