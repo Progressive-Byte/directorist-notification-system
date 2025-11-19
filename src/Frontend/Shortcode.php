@@ -28,12 +28,34 @@ class Shortcode {
      * @return void
      */
     public function head() {
-        $post_id = 672;
 
-        $taxonomies = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
-        $terms_with_users = dns_get_terms_with_subscribers( $taxonomies );
+        $term_ids = get_option( 'terms_test' );
 
-        // Messages::pri( $terms_with_users );
+        $current_user_id = get_current_user_id();
+         // update_option( 'terms_test', $term_ids );
+
+        // foreach ( $term_ids as $term_id ) {
+        //     $term_id = intval( $term_id );
+
+        //     // Get existing meta
+        //     $subscribed_users = get_term_meta( $term_id, 'subscribed_users', true );
+
+        //     // Ensure always array
+        //     if ( ! is_array( $subscribed_users ) ) {
+        //         $subscribed_users = $subscribed_users ? [ $subscribed_users ] : [];
+        //     }
+
+        //     // If user not found → add
+        //     if ( ! in_array( $current_user_id, $subscribed_users, true ) ) {
+        //         $subscribed_users[] = $current_user_id;
+
+        //         // SAVE TO DATABASE
+        //         // update_term_meta( $term_id, 'subscribed_users', $subscribed_users );
+        //         Messages::pri( $term_id );
+        //     }
+        // }
+         
+
     }
 
     /**
@@ -80,6 +102,8 @@ class Shortcode {
             $market_types       = isset( $_POST['market_types'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['market_types'] ) ) : [];
             $selected_locations = isset( $_POST['listing_locations'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_locations'] ) ) : [];
 
+            // update_option( '$selected_types', $selected_types );
+
             // Save preferences
             $saved = [
                 'listing_types'     => $selected_types,
@@ -87,6 +111,14 @@ class Shortcode {
                 'listing_locations' => $selected_locations,
             ];
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
+
+            if ( ! empty( $saved['market_types'] ) ) {
+                update_user_term_subscriptions( $saved['market_types'], 'market_types' );
+            }
+
+            if ( ! empty( $saved['listing_types'] ) ) {
+                update_user_term_subscriptions( $saved['listing_types'], 'listing_types' );
+            }
 
             // --- SYNC TERM META ---
             $taxonomies = [

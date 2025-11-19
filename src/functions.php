@@ -405,12 +405,44 @@ function get_all_terms_by_directory_type( $type_id ) {
     return $terms;
 }
 
+/**
+ * Update term subscribed users for the current user.
+ *
+ * @param array $term_ids Array of term IDs to subscribe the current user to.
+ */
+function update_user_term_subscriptions( $term_ids = [], $meta_key = 'subscribed_users' ) {
+
+    if ( empty( $term_ids ) ) {
+        return;
+    }
+
+    // Convert objects to IDs automatically
+    $term_ids = array_map( function($t) {
+        return is_object($t) ? intval($t->term_id) : intval($t);
+    }, $term_ids );
+
+    $current_user_id = get_current_user_id();
+    if ( ! $current_user_id ) {
+        return;
+    }
 
 
+    foreach ( $term_ids as $term_id ) {
 
+        if ( $term_id <= 0 ) {
+            continue;
+        }
 
+        $subscribed_users = get_term_meta( $term_id, $meta_key, true );
+        $subscribed_users = is_array( $subscribed_users ) ? $subscribed_users : [];
 
-
+        if ( ! in_array( $current_user_id, $subscribed_users, true ) ) {
+            $subscribed_users[] = $current_user_id;
+            update_option( 'subscribed_users_'. $term_id , $subscribed_users );
+            update_term_meta( $term_id, $meta_key, $subscribed_users );
+        }
+    }
+}
 
 
 
