@@ -9,106 +9,6 @@ jQuery(document).ready(function($){
         }
     });
 });
-
-jQuery(document).ready(function($) {
-
-    const TAB_KEY = 'dns_active_tab';
-
-    /**
-     * ---------------------------------------------
-     *  TAB HANDLING (your existing logic)
-     * ---------------------------------------------
-     */
-
-    function activateTab(name) {
-        if (!name) return;
-
-        const $tabBtn = $('.dns-tab[data-tab="' + name + '"]');
-        const $tabPanel = $('#tab-' + name);
-
-        if ($tabBtn.length === 0 || $tabPanel.length === 0) return;
-
-        $('.dns-tab').removeClass('active');
-        $('.dns-tab-content').removeClass('active');
-
-        $tabBtn.addClass('active');
-        $tabPanel.addClass('active');
-
-        try {
-            localStorage.setItem(TAB_KEY, name);
-        } catch (e) {}
-    }
-
-    (function initActiveTab() {
-        let saved = null;
-
-        try {
-            saved = localStorage.getItem(TAB_KEY);
-        } catch (e) {}
-
-        if (saved &&
-            $('.dns-tab[data-tab="' + saved + '"]').length &&
-            $('#tab-' + saved).length
-        ) {
-            activateTab(saved);
-            return;
-        }
-
-        const $activeBtn = $('.dns-tab.active').first();
-        if ($activeBtn.length) {
-            const t = $activeBtn.data('tab');
-            if ($('#tab-' + t).length) {
-                activateTab(t);
-                return;
-            }
-        }
-
-        const $firstBtn = $('.dns-tab').filter(function() {
-            return $('#tab-' + $(this).data('tab')).length;
-        }).first();
-
-        if ($firstBtn.length) {
-            activateTab($firstBtn.data('tab'));
-        }
-    })();
-
-    $(document).on('click', '.dns-tab', function(e) {
-        if ($(this).attr('type') === 'submit') {
-            e.preventDefault();
-        }
-        activateTab($(this).data('tab'));
-    });
-
-    $(document).on('keydown', '.dns-tab', function(e) {
-        const code = e.which || e.keyCode;
-        if (code === 13 || code === 32) {
-            e.preventDefault();
-            $(this).trigger('click');
-        }
-    });
-
-    /**
-     * ---------------------------------------------
-     *  AUTO HIDE ALERT MESSAGE
-     * ---------------------------------------------
-     */
-    const $alert = $('.dns-alert');
-    if ($alert.length) {
-        setTimeout(function() {
-            $alert.fadeOut(400, function() {
-                $(this).remove();
-            });
-        }, 5000);
-    }
-
-    /**
-     * Allow external tab switching
-     */
-    window.dnsActivateTab = activateTab;
-
-});
-
-
 jQuery(function($) {
 
     // Preserve original order
@@ -176,83 +76,127 @@ jQuery(function($) {
 });
 
 jQuery(document).ready(function($) {
-    // SEARCH FUNCTION
+
+    const TAB_KEY = 'dns_active_tab';
+
+    /**
+     * ---------------------------
+     * TAB HANDLING
+     * ---------------------------
+     */
+    function activateTab(name) {
+        if (!name) return;
+
+        const $tabBtn = $('.dns-tab[data-tab="' + name + '"]');
+        const $tabPanel = $('#tab-' + name);
+
+        if ($tabBtn.length === 0 || $tabPanel.length === 0) return;
+
+        $('.dns-tab').removeClass('active');
+        $('.dns-tab-content').removeClass('active');
+
+        $tabBtn.addClass('active');
+        $tabPanel.addClass('active');
+
+        try {
+            localStorage.setItem(TAB_KEY, name);
+        } catch (e) {}
+    }
+
+    // Initialize saved tab or first tab
+    (function initActiveTab() {
+        let saved = null;
+        try { saved = localStorage.getItem(TAB_KEY); } catch (e) {}
+
+        if (saved && $('.dns-tab[data-tab="' + saved + '"]').length && $('#tab-' + saved).length) {
+            activateTab(saved);
+            return;
+        }
+
+        const $firstBtn = $('.dns-tab').first();
+        if ($firstBtn.length) activateTab($firstBtn.data('tab'));
+    })();
+
+    // Tab click
+    $(document).on('click', '.dns-tab', function(e) {
+        if ($(this).attr('type') === 'submit') e.preventDefault();
+        activateTab($(this).data('tab'));
+    });
+
+    $(document).on('keydown', '.dns-tab', function(e) {
+        const code = e.which || e.keyCode;
+        if (code === 13 || code === 32) {
+            e.preventDefault();
+            $(this).trigger('click');
+        }
+    });
+
+    /**
+     * ---------------------------
+     * ALERT AUTO HIDE
+     * ---------------------------
+     */
+    const $alert = $('.dns-alert');
+    if ($alert.length) {
+        setTimeout(function() {
+            $alert.fadeOut(400, function() { $(this).remove(); });
+        }, 5000);
+    }
+
+    /**
+     * ---------------------------
+     * SEARCH FILTER
+     * ---------------------------
+     */
     $('.dns-search-input').on('input', function() {
         const query = $(this).val().toLowerCase();
-        const $checkboxList = $(this).closest('.dns-tab-content').find('.dns-checkbox-list .dns-checkbox');
+        const $checkboxes = $(this).closest('.dns-tab-content').find('.dns-checkbox-list .dns-checkbox');
 
-        $checkboxList.each(function() {
+        $checkboxes.each(function() {
             const labelText = $(this).text().toLowerCase();
-            if (labelText.indexOf(query) > -1) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
+            $(this).toggle(labelText.indexOf(query) > -1);
         });
     });
 
-    // SELECT ALL
-    $('.dns-select-all').on('click', function() {
-        $(this).closest('.dns-tab-content').find('.dns-checkbox input[type="checkbox"]').prop('checked', true).closest('.dns-checkbox').addClass('dns-checked');
+    /**
+     * ---------------------------
+     * CHECKBOX HANDLING
+     * ---------------------------
+     */
+    $(document).on('click', '.dns-checkbox input[type="checkbox"]', function() {
+        $(this).closest('.dns-checkbox').toggleClass('dns-checked', $(this).is(':checked'));
     });
 
-    // DESELECT ALL
-    $('.dns-deselect-all').on('click', function() {
-        $(this).closest('.dns-tab-content').find('.dns-checkbox input[type="checkbox"]').prop('checked', false).closest('.dns-checkbox').removeClass('dns-checked');
+    $(document).on('click', '.dns-select-all', function() {
+        const $checkboxes = $(this).closest('.dns-tab-content').find('.dns-checkbox input[type="checkbox"]');
+        $checkboxes.prop('checked', true).closest('.dns-checkbox').addClass('dns-checked');
     });
 
-    // TOGGLE CHECKED CLASS ON CLICK
-    $('.dns-checkbox input[type="checkbox"]').on('change', function() {
-        if ($(this).is(':checked')) {
-            $(this).closest('.dns-checkbox').addClass('dns-checked');
-        } else {
-            $(this).closest('.dns-checkbox').removeClass('dns-checked');
-        }
+    $(document).on('click', '.dns-deselect-all', function() {
+        const $checkboxes = $(this).closest('.dns-tab-content').find('.dns-checkbox input[type="checkbox"]');
+        $checkboxes.prop('checked', false).closest('.dns-checkbox').removeClass('dns-checked');
     });
 
-    // SHOW SELECTED / SHOW ALL TOGGLE
-    $('.dns-show-selected').on('click', function() {
-        const $btnText = $(this).find('.dns-show-selected-text');
+    /**
+     * ---------------------------
+     * SHOW SELECTED / SHOW ALL TOGGLE
+     * ---------------------------
+     */
+    $(document).on('click', '.dns-show-selected', function() {
+        const $btn = $(this).find('.dns-show-selected-text');
         const $checkboxes = $(this).closest('.dns-tab-content').find('.dns-checkbox-list .dns-checkbox');
 
-        if ($btnText.text() === 'Show Selected') {
+        if ($btn.text().includes('Show Selected')) {
             $checkboxes.each(function() {
-                if (!$(this).find('input[type="checkbox"]').is(':checked')) {
-                    $(this).hide();
-                }
+                if (!$(this).find('input[type="checkbox"]').is(':checked')) $(this).hide();
             });
-            $btnText.text('Show All');
+            $btn.text('Show All');
         } else {
             $checkboxes.show();
-            $btnText.text('Show Selected');
+            $btn.text('Show Selected');
         }
     });
 
-    // TAB SWITCHING
-    $('.dns-tab').on('click', function() {
-        const target = $(this).data('tab');
-
-        // Toggle active tab button
-        $('.dns-tab').removeClass('active');
-        $(this).addClass('active');
-
-        // Show active tab content
-        $('.dns-tab-content').removeClass('active');
-        $('#tab-' + target).addClass('active');
-    });
-
-    // INITIALIZE FIRST TAB AS ACTIVE
-    $('.dns-tab').first().addClass('active');
-    $('.dns-tab-content').first().addClass('active');
+    // Expose tab function globally if needed
+    window.dnsActivateTab = activateTab;
 });
-
-
-
-
-
-
-
-
-
-
-
