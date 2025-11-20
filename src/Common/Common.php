@@ -215,26 +215,44 @@ class Common {
         
     public function check_unsubscribe() {
 
+        // 1. Only proceed when the query params are present
         if ( ! isset( $_GET['dns_unsubscribe'], $_GET['user_id'], $_GET['nonce'] ) ) {
             return;
         }
 
+        // 2. Sanitize inputs
         $user_id = absint( $_GET['user_id'] );
-        $nonce   = sanitize_text_field( $_GET['nonce'] );
+        $nonce   = sanitize_text_field( wp_unslash( $_GET['nonce'] ) );
 
-        if ( ! wp_verify_nonce( $nonce, 'dns_unsubscribe_' . $user_id ) ) {
-            wp_die( 'Invalid request.' );
+        if ( ! $user_id ) {
+            return; // invalid user id
         }
 
-        // Remove user from all subscriptions
-        dns_remove_user_from_subscriptions( $user_id );
+        // 3. Verify nonce – make sure you used the same action when creating it
+        if ( ! wp_verify_nonce( $nonce, 'dns_unsubscribe_' . $user_id ) ) {
+            wp_die( esc_html__( 'Invalid request.', 'directorist-notification-system' ) );
+        }
 
-        $subscription_id = get_option( 'dns_subscription_page_id' );
+        // 4. Remove user from all subscriptions
+        if ( function_exists( 'dns_remove_user_from_subscriptions' ) ) {
+            dns_remove_user_from_subscriptions( $user_id );
+        }
 
-        // Optional: redirect with confirmation
-        wp_redirect( get_permalink( $subscription_id  ) );
+        // 5. Redirect safely back to subscription page (or fallback)
+        $subscription_id = (int) get_option( 'dns_subscription_page_id' );
+        $redirect_url    = $subscription_id ? get_permalink( $subscription_id ) : home_url( '/' );
+
+        // Optional: add a query arg so you can show a "You have been unsubscribed" notice
+        $redirect_url = add_query_arg(
+            'dns_unsubscribed',
+            '1',
+            $redirect_url
+        );
+
+        wp_safe_redirect( $redirect_url );
         exit;
     }
+
 
     public function send_notifications_for_user( $notifications, $user_id, $format ){
           foreach ( $notifications as &$n ) {
