@@ -1,12 +1,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Directorist Notification System 1.0\n"
-"POT-Creation-Date: 2025-11-20 11:05+0600\n"
+"POT-Creation-Date: 2025-11-20 11:25+0600\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+# Notification Template Strings
 msgid "Notification Preferences"
 msgstr ""
 
@@ -44,4 +45,38 @@ msgid "No locations available."
 msgstr ""
 
 msgid "Confirm"
+msgstr ""
+
+# Admin Settings Template Strings
+msgid "Subscribe Button Settings"
+msgstr ""
+
+msgid "Notification Preferences Page"
+msgstr ""
+
+msgid "Select Page"
+msgstr ""
+
+msgid "Select your notification preferences page."
+msgstr ""
+
+msgid "Market Place Listing Type"
+msgstr ""
+
+msgid "Select Market Place Type"
+msgstr ""
+
+msgid "Job Listing Type"
+msgstr ""
+
+msgid "Select Job Listing Type"
+msgstr ""
+
+msgid "Show Subscribe Button"
+msgstr ""
+
+msgid "Enable subscribe button on selected pages"
+msgstr ""
+
+msgid "Select pages to enable subscribe button:"
 msgstr ""

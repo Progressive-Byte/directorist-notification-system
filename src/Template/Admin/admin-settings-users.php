@@ -20,32 +20,32 @@ use DNS\Helper\Messages;
     do_settings_sections('dns_notifications_settings');
     ?>
 
-    <h2><?php esc_html_e('Subscribe Button Settings', 'dns'); ?></h2>
+    <h2><?php esc_html_e('Subscribe Button Settings', 'directorist-notification-system'); ?></h2>
 
     <table class="form-table">
 
         <!-- Notification Preferences Page -->
         <tr>
             <th scope="row">
-                <?php esc_html_e('Notification Preferences Page', 'dns'); ?>
+                <?php esc_html_e('Notification Preferences Page', 'directorist-notification-system'); ?>
                 <span style="color:#e11d48;font-weight:bold;">*</span>
             </th>
             <td>
                 <select name="dns_subscription_page_id">
-                    <option value="">-- <?php esc_html_e('Select Page', 'dns'); ?> --</option>
+                    <option value="">-- <?php esc_html_e('Select Page', 'directorist-notification-system'); ?> --</option>
                     <?php foreach ($pages as $page) : ?>
                         <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($selected_page, $page->ID); ?>>
                             <?php echo esc_html($page->post_title); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <p class="description"><?php esc_html_e('Select your notification preferences page.', 'dns'); ?></p>
+                <p class="description"><?php esc_html_e('Select your notification preferences page.', 'directorist-notification-system'); ?></p>
             </td>
         </tr>
 
         <!-- Market Place Listing Type -->
         <tr>
-            <th scope="row"><?php esc_html_e('Market Place Listing Type', 'dns'); ?>
+            <th scope="row"><?php esc_html_e('Market Place Listing Type', 'directorist-notification-system'); ?>
                 <span style="color:#e11d48;font-weight:bold;">*</span>
             </th>
             <td>
@@ -60,7 +60,7 @@ use DNS\Helper\Messages;
                 }
                 ?>
                 <select name="dns_market_terms">
-                    <option value="">-- <?php esc_html_e('Select Market Place Type', 'dns'); ?> --</option>
+                    <option value="">-- <?php esc_html_e('Select Market Place Type', 'directorist-notification-system'); ?> --</option>
                     <?php foreach ($directory_types as $type) : ?>
                         <option value="<?php echo esc_attr($type->term_id); ?>" <?php selected($selected_market_term, $type->term_id); ?>>
                             <?php echo esc_html($type->name); ?>
@@ -72,7 +72,7 @@ use DNS\Helper\Messages;
 
         <!-- Job Listing Type -->
         <tr>
-            <th scope="row"><?php esc_html_e('Job Listing Type', 'dns'); ?>
+            <th scope="row"><?php esc_html_e('Job Listing Type', 'directorist-notification-system'); ?>
                 <span style="color:#e11d48;font-weight:bold;">*</span>
             </th>
             <td>
@@ -83,7 +83,7 @@ use DNS\Helper\Messages;
                 }
                 ?>
                 <select name="dns_job_terms">
-                    <option value="">-- <?php esc_html_e('Select Job Listing Type', 'dns'); ?> --</option>
+                    <option value="">-- <?php esc_html_e('Select Job Listing Type', 'directorist-notification-system'); ?> --</option>
                     <?php foreach ($directory_types as $type) : ?>
                         <option value="<?php echo esc_attr($type->term_id); ?>" <?php selected($selected_job_term, $type->term_id); ?>>
                             <?php echo esc_html($type->name); ?>
@@ -93,45 +93,43 @@ use DNS\Helper\Messages;
             </td>
         </tr>
 
-        <!-- Notificaton button -->
-       <tr>
-        <th scope="row"><?php esc_html_e('Show Subscribe Button', 'dns'); ?></th>
-        <td>
-            <label class="dns-toggle-wrapper">
-                <span class="dns-toggle">
-                    <input type="checkbox" id="dns_subscribe_pages" name="dns_subscribe_pages_enabled" value="1" <?php checked( $job_enabled || $product_enabled, 1 ); ?> />
-                    <span class="dns-toggle-slider"></span>
-                </span>
-                <span><?php esc_html_e('Enable subscribe button on selected pages', 'dns'); ?></span>
-            </label>
+        <!-- Notification Button -->
+        <tr>
+            <th scope="row"><?php esc_html_e('Show Subscribe Button', 'directorist-notification-system'); ?></th>
+            <td>
+                <label class="dns-toggle-wrapper">
+                    <span class="dns-toggle">
+                        <input type="checkbox" id="dns_subscribe_pages" name="dns_subscribe_pages_enabled" value="1" <?php checked( $job_enabled || $product_enabled, 1 ); ?> />
+                        <span class="dns-toggle-slider"></span>
+                    </span>
+                    <span><?php esc_html_e('Enable subscribe button on selected pages', 'directorist-notification-system'); ?></span>
+                </label>
 
-            <div id="dns_pages_select" style="margin-top:10px; <?php echo ($job_enabled || $product_enabled) ? '' : 'display:none;'; ?>">
-                <label><?php esc_html_e('Select pages to enable subscribe button:', 'dns'); ?></label>
-                <div style="margin-top:5px; max-height:200px; overflow-y:auto; border:1px solid #ddd; padding:5px;">
-                    <?php
-                    // Ensure saved pages are integers
-                    $saved_pages = get_option('dns_subscription_pages', []);
-                    $saved_pages = is_array($saved_pages) ? array_map('intval', $saved_pages) : [];
+                <div id="dns_pages_select" style="margin-top:10px; <?php echo ($job_enabled || $product_enabled) ? '' : 'display:none;'; ?>">
+                    <label><?php esc_html_e('Select pages to enable subscribe button:', 'directorist-notification-system'); ?></label>
+                    <div style="margin-top:5px; max-height:200px; overflow-y:auto; border:1px solid #ddd; padding:5px;">
+                        <?php
+                        $saved_pages = get_option('dns_subscription_pages', []);
+                        $saved_pages = is_array($saved_pages) ? array_map('intval', $saved_pages) : [];
 
-                    foreach ($pages as $page) :
-                        $is_checked = in_array((int) $page->ID, $saved_pages, true);
-                    ?>
-                        <label style="display:block; margin-bottom:3px;">
-                            <input
-                                type="checkbox"
-                                name="dns_subscription_pages[]"
-                                value="<?php echo esc_attr($page->ID); ?>"
-                                <?php checked($is_checked); ?>
-                            >
-                            <?php echo esc_html($page->post_title); ?>
-                        </label>
-                    <?php endforeach; ?>
+                        foreach ($pages as $page) :
+                            $is_checked = in_array((int) $page->ID, $saved_pages, true);
+                        ?>
+                            <label style="display:block; margin-bottom:3px;">
+                                <input
+                                    type="checkbox"
+                                    name="dns_subscription_pages[]"
+                                    value="<?php echo esc_attr($page->ID); ?>"
+                                    <?php checked($is_checked); ?>
+                                >
+                                <?php echo esc_html($page->post_title); ?>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
-            </div>
 
-        </td>
-    </tr>
-
+            </td>
+        </tr>
 
     </table>
 
