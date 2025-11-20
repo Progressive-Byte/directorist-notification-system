@@ -552,4 +552,200 @@
     gap: 6px; /* space between emoji and text */
 }
 
+/* ======== GLOBAL RESPONSIVE LAYOUT ======== */
+
+/* Small phones (up to 480px) */
+@media (max-width: 480px) {
+    .dns-wrap {
+        padding: 12px;
+        align-items: stretch;
+    }
+
+    .dns-card {
+        padding: 16px 14px 14px;
+        border-radius: 14px;
+    }
+
+    .dns-title {
+        font-size: 1.05rem;
+    }
+
+    .dns-sub {
+        font-size: 0.8rem;
+    }
+
+    /* Tabs become tighter */
+    .dns-tabs {
+        gap: 3px;
+        padding: 3px;
+    }
+
+    .dns-tab {
+        font-size: 0.75rem;
+        padding: 6px 4px;
+    }
+
+    /* Search and controls stack */
+    .dns-search-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .dns-search-wrapper input.dns-search-input {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .dns-search-wrapper .dns-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Actions: full-width primary, secondary below */
+    .dns-actions {
+        margin-top: 14px;
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .dns-btn--primary,
+    .dns-btn--secondary {
+        width: 100%;
+        justify-content: center;
+        margin: 0;
+    }
+
+    /* Scrollable lists get shorter on very small screens */
+    #tab-locations .dns-checkbox-list,
+    #tab-job .dns-checkbox-list,
+    #tab-market .dns-checkbox-list {
+        max-height: 220px;
+    }
+
+    /* Subscribe button nudged inward */
+    .dns-subscribe-button {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+}
+
+/* Phones / small tablets (up to 600px) */
+@media (max-width: 600px) {
+    .dns-card {
+        padding: 18px 16px 16px;
+        border-radius: 16px;
+    }
+
+    .dns-title {
+        font-size: 1.1rem;
+    }
+
+    .dns-tabs {
+        gap: 4px;
+        padding: 3px;
+    }
+
+    .dns-tab {
+        font-size: 0.78rem;
+        padding: 7px 6px;
+    }
+
+    .dns-actions {
+        margin-top: 18px;
+    }
+
+    .dns-btn--primary {
+        width: 100%;
+        justify-content: center;
+        margin-right: 0;
+    }
+
+    /* Already stacking search wrapper (keep + refine) */
+    .dns-search-wrapper {
+        flex-direction: column;
+    }
+}
+
+/* Tablets (600px – 991px) */
+@media (min-width: 600px) and (max-width: 991px) {
+    .dns-wrap {
+        padding: 20px;
+    }
+
+    .dns-card {
+        max-width: 720px;
+    }
+
+    .dns-title {
+        font-size: 1.2rem;
+    }
+
+    .dns-search-wrapper {
+        align-items: center;
+    }
+
+    .dns-search-wrapper input.dns-search-input {
+        max-width: 60%;
+    }
+
+    .dns-search-wrapper .dns-btn {
+        white-space: nowrap;
+    }
+
+    #tab-locations .dns-checkbox-list,
+    #tab-job .dns-checkbox-list,
+    #tab-market .dns-checkbox-list {
+        max-height: 260px;
+    }
+}
+
+/* Desktops (>= 992px) */
+@media (min-width: 992px) {
+    .dns-wrap {
+        padding: 32px;
+    }
+
+    .dns-card {
+        max-width: 780px;
+    }
+
+    .dns-title {
+        font-size: 1.25rem;
+    }
+
+    .dns-search-wrapper {
+        justify-content: space-between;
+    }
+
+    .dns-search-wrapper input.dns-search-input {
+        max-width: 50%;
+    }
+
+    /* Lists can be taller on desktop */
+    #tab-locations .dns-checkbox-list,
+    #tab-job .dns-checkbox-list,
+    #tab-market .dns-checkbox-list {
+        max-height: 320px;
+    }
+}
+
+/* Large desktops (>= 1280px) */
+@media (min-width: 1280px) {
+    .dns-wrap {
+        padding: 40px;
+    }
+
+    .dns-card {
+        max-width: 840px;
+    }
+
+    .dns-title {
+        font-size: 1.3rem;
+    }
+
+    .dns-sub {
+        font-size: 0.95rem;
+    }
+}
 

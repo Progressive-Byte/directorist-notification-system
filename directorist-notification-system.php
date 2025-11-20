@@ -3,7 +3,7 @@
  * Plugin Name: Directorist Notification System
  * Plugin URI: https://techwithmahbub.com/
  * Description: A notification system plugin for WordPress directories.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Mahbub
  * Author URI: https://techwithmahbub.com/
  * Text Domain: directorist-notification-system
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Plugin constants
 if ( ! defined( 'DNS_VERSION' ) ) {
-    define( 'DNS_VERSION', '1.0.0' );
+    define( 'DNS_VERSION', '1.0.1' );
 }
 
 if ( ! defined( 'DNS_PLUGIN_FILE' ) ) {
