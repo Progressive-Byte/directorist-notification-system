@@ -11,52 +11,37 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Frontend {
 
-	/**
-	 * Constructor.
-	 */
 	public function __construct() {
 		add_action( 'wp_footer', [ $this, 'add_subscribe_button' ] );
 		add_action( 'wp_head', [ $this, 'head' ] );
 	}
 
 	public function head(){
-		
-		// Messages::pri( $term_names );
-
-
+		// Optional head scripts or styles
 	}
-	
+
 	/**
 	 * Display the floating "Subscribe to Notifications" button on selected pages.
 	 */
 	public function add_subscribe_button() {
 
-	    // Get admin settings
-	    $show_job        = get_option( 'dns_subscribe_job' );
-	    $show_product    = get_option( 'dns_subscribe_product' );
-	    $job_page        = (int) get_option( 'dns_subscription_page_job' );
-	    $product_page    = (int) get_option( 'dns_subscription_page_product' );
-	    $subscription_id = get_option( 'dns_subscription_page_id' );
+		// Get current page ID
+		$current_page_id = get_queried_object_id();
 
-	    // Get current page ID
-	    $current_page_id = get_the_ID();
+		// Get saved subscription pages from settings
 
-	    // Exit if no subscription page selected
-	    if ( empty( $subscription_id ) ) {
-	        return;
-	    }
+		$subscription_page_id   = get_option('dns_subscription_page_id');
 
-	    // Show button on Product Listing page
-	    if ( $show_product && $current_page_id === $product_page ) {
-	        echo '<a href="' . esc_url( get_permalink( $subscription_id ) ) . '" class="dns-subscribe-button">Subscribe <br> to Notifications</a>';
-	    }
+		$subscription_pages = get_option( 'dns_subscription_pages', [] );
+		$subscription_pages = is_array( $subscription_pages ) ? array_map( 'intval', $subscription_pages ) : [];
 
-	    // Show button on Job Listing page
-	    if ( $show_job && $current_page_id === $job_page ) {
-	        echo '<a href="' . esc_url( get_permalink( $subscription_id ) ) . '" class="dns-subscribe-button">Subscribe <br> to Notifications</a>';
-	    }
+		// Check if current page is in the subscription pages
+		if ( in_array( $current_page_id, $subscription_pages, true ) ) :
+			?>
+		    <a href="<?php echo esc_url( get_permalink( $subscription_page_id ) ); ?>" class="dns-subscribe-button">
+		        <?php esc_html_e( 'Subscribe', 'directorist-notification-system' ); ?>
+		    </a>
+		<?php
+		endif;
 	}
-
-
-
 }
