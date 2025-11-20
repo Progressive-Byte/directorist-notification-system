@@ -1,0 +1,129 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Directorist Notification System 1.0\n"
+"POT-Creation-Date: 2025-11-20 12:05+0600\n"
+"Language: \n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Notification Template Strings
+msgid "Notification Preferences"
+msgstr ""
+
+msgid "Choose which listing types or listings and locations you want updates for."
+msgstr ""
+
+msgid "Market Place Listing"
+msgstr ""
+
+msgid "Job Listing"
+msgstr ""
+
+msgid "Location"
+msgstr ""
+
+msgid "Please select Market listing."
+msgstr ""
+
+msgid "Search..."
+msgstr ""
+
+msgid "Select All"
+msgstr ""
+
+msgid "Deselect All"
+msgstr ""
+
+msgid "Show Selected"
+msgstr ""
+
+msgid "Please select Job listing."
+msgstr ""
+
+msgid "No locations available."
+msgstr ""
+
+msgid "Confirm"
+msgstr ""
+
+# Admin Settings Template Strings
+msgid "Subscribe Button Settings"
+msgstr ""
+
+msgid "Notification Preferences Page"
+msgstr ""
+
+msgid "Select Page"
+msgstr ""
+
+msgid "Select your notification preferences page."
+msgstr ""
+
+msgid "Market Place Listing Type"
+msgstr ""
+
+msgid "Select Market Place Type"
+msgstr ""
+
+msgid "Job Listing Type"
+msgstr ""
+
+msgid "Select Job Listing Type"
+msgstr ""
+
+msgid "Show Subscribe Button"
+msgstr ""
+
+msgid "Enable subscribe button on selected pages"
+msgstr ""
+
+msgid "Select pages to enable subscribe button:"
+msgstr ""
+
+# Subscribed Users Tab Template Strings
+msgid "View all subscriptions"
+msgstr ""
+
+msgid "No subscribed users found."
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Listing Types"
+msgstr ""
+
+msgid "Locations"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+# Test Message Template Strings
+msgid "Test message sent!"
+msgstr ""
+
+msgid "Please select a user and enter a message."
+msgstr ""
+
+msgid "Test Message"
+msgstr ""
+
+msgid "Select User"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Send Method"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "BuddyPress Notification"
+msgstr ""
+
+msgid "Send Test"
+msgstr ""
