@@ -17,10 +17,16 @@ class System {
         // Enqueue assets
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ]);
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+        add_action( 'plugins_loaded', [$this, 'dns_load_textdomain'] );
 
         // Initialize classes
         add_action('init', [$this, 'init_classes']);
     }
+
+    function dns_load_textdomain() {
+        load_plugin_textdomain( DNS_TEXT_DOMAIN, false, dirname( plugin_basename( DNS_PLUGIN_FILE ) ) . '/languages/' );
+    }
+
 
     /**
      * Initialize Admin or Frontend classes

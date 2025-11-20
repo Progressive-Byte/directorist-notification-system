@@ -1,0 +1,47 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Directorist Notification System 1.0\n"
+"POT-Creation-Date: 2025-11-20 11:05+0600\n"
+"Language: \n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Notification Preferences"
+msgstr ""
+
+msgid "Choose which listing types or listings and locations you want updates for."
+msgstr ""
+
+msgid "Market Place Listing"
+msgstr ""
+
+msgid "Job Listing"
+msgstr ""
+
+msgid "Location"
+msgstr ""
+
+msgid "Please select Market listing."
+msgstr ""
+
+msgid "Search..."
+msgstr ""
+
+msgid "Select All"
+msgstr ""
+
+msgid "Deselect All"
+msgstr ""
+
+msgid "Show Selected"
+msgstr ""
+
+msgid "Please select Job listing."
+msgstr ""
+
+msgid "No locations available."
+msgstr ""
+
+msgid "Confirm"
+msgstr ""
