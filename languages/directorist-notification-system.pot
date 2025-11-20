@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Directorist Notification System 1.0\n"
-"POT-Creation-Date: 2025-11-20 11:25+0600\n"
+"POT-Creation-Date: 2025-11-20 12:05+0600\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -79,4 +79,51 @@ msgid "Enable subscribe button on selected pages"
 msgstr ""
 
 msgid "Select pages to enable subscribe button:"
+msgstr ""
+
+# Subscribed Users Tab Template Strings
+msgid "View all subscriptions"
+msgstr ""
+
+msgid "No subscribed users found."
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Listing Types"
+msgstr ""
+
+msgid "Locations"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+# Test Message Template Strings
+msgid "Test message sent!"
+msgstr ""
+
+msgid "Please select a user and enter a message."
+msgstr ""
+
+msgid "Test Message"
+msgstr ""
+
+msgid "Select User"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Send Method"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "BuddyPress Notification"
+msgstr ""
+
+msgid "Send Test"
 msgstr ""

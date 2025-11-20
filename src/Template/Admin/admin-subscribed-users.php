@@ -7,17 +7,17 @@
  */
 ?>
 
-<h2><?php esc_html_e('View all subscriptions', 'dns'); ?></h2>
+<h2><?php esc_html_e('View all subscriptions', 'directorist-notification-system'); ?></h2>
 
 <?php if ( empty( $subscribed_users ) ) : ?>
-    <p><?php esc_html_e( 'No subscribed users found.', 'dns' ); ?></p>
+    <p><?php esc_html_e( 'No subscribed users found.', 'directorist-notification-system' ); ?></p>
 <?php else : ?>
     <table class="widefat fixed striped">
         <thead>
             <tr>
-                <th><?php esc_html_e('User', 'dns'); ?></th>
-                <th><?php esc_html_e('Listing Types', 'dns'); ?></th>
-                <th><?php esc_html_e('Locations', 'dns'); ?></th>
+                <th><?php esc_html_e('User', 'directorist-notification-system'); ?></th>
+                <th><?php esc_html_e('Listing Types', 'directorist-notification-system'); ?></th>
+                <th><?php esc_html_e('Locations', 'directorist-notification-system'); ?></th>
             </tr>
         </thead>
         <tbody>
@@ -43,7 +43,7 @@
                             }
                         }
                     } else {
-                        echo '<em>' . esc_html__( 'None', 'dns' ) . '</em>';
+                        echo '<em>' . esc_html__( 'None', 'directorist-notification-system' ) . '</em>';
                     }
                     ?>
                 </td>
@@ -57,7 +57,7 @@
                             }
                         }
                     } else {
-                        echo '<em>' . esc_html__( 'None', 'dns' ) . '</em>';
+                        echo '<em>' . esc_html__( 'None', 'directorist-notification-system' ) . '</em>';
                     }
                     ?>
                 </td>
