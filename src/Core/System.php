@@ -24,7 +24,11 @@ class System {
     }
 
     function dns_load_textdomain() {
-        load_plugin_textdomain( DNS_TEXT_DOMAIN, false, dirname( plugin_basename( DNS_PLUGIN_FILE ) ) . '/languages/' );
+        load_plugin_textdomain(
+            'directorist-notification-system', // your text domain
+            false,
+            dirname(plugin_basename(__FILE__)) . '/languages/' // folder where .pot/.mo files are
+        );
     }
 
 
