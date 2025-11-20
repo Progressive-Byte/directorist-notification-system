@@ -123,63 +123,222 @@ class Common {
      */
     private function queue_subscription_emails( $post_id, $user_ids ) {
 
-        $queue = get_transient( 'dns_email_queue' );
-        if ( ! is_array( $queue ) ) $queue = [];
-
-        $listing_title = get_the_title( $post_id );
-        $listing_link  = get_permalink( $post_id );
-
-        // Get listing type and city
-        $listing_types = wp_get_post_terms( $post_id, 'atbdp_listing_types', ['fields' => 'names'] );
-        $listing_cities = wp_get_post_terms( $post_id, 'at_biz_dir-location', ['fields' => 'names'] );
-
-        foreach ( $user_ids as $user_id ) {
-            $user_info = get_userdata( $user_id );
-            if ( ! $user_info || empty( $user_info->user_email ) ) continue;
-
-            $unsubscribe_url = add_query_arg(
-                [
-                    'dns_unsubscribe' => 1,
-                    'user_id'        => $user_id,
-                    'nonce'          => wp_create_nonce( 'dns_unsubscribe_' . $user_id ),
-                ],
-                site_url()
-            );
-
-            $message  = '<p>Hello ' . esc_html( $user_info->display_name ) . ',</p>';
-            $message .= '<p>A new post has been published that matches your subscription preferences:</p>';
-            $message .= '<ul>';
-            $message .= '<li><strong>Title:</strong> <a href="' . esc_url( $listing_link ) . '">' . esc_html( $listing_title ) . '</a></li>';
-
-            if ( ! empty( $listing_types ) ) {
-                $message .= '<li><strong>Type:</strong> ' . esc_html( implode( ', ', $listing_types ) ) . '</li>';
-            }
-
-            if ( ! empty( $listing_cities ) ) {
-                $message .= '<li><strong>City:</strong> ' . esc_html( implode( ', ', $listing_cities ) ) . '</li>';
-            }
-
-            $message .= '<li><strong>Link:</strong> <a href="' . esc_url( $listing_link ) . '">View Listing</a></li>';
-            $message .= '</ul>';
-
-            $message .= '<p>If you wish to unsubscribe from all notifications, click the button below:</p>';
-            $message .= '<p><a href="' . esc_url( $unsubscribe_url ) . '" style="display:inline-block;padding:10px 20px;color:#ffffff;background-color:#0073aa;text-decoration:none;border-radius:5px;">Unsubscribe</a></p>';
-            $message .= '<p>Thank you!</p>';
-
-            $queue[] = [
-                'to'      => $user_info->user_email,
-                'subject' => 'New Listing Match Found: ' . $listing_title,
-                'message' => $message,
-                'headers' => ['Content-Type: text/html; charset=UTF-8'],
-            ];
-        }
-
-        set_transient( 'dns_email_queue', $queue, HOUR_IN_SECONDS );
-
-        if ( ! wp_next_scheduled( 'dns_process_email_queue' ) ) {
-            wp_schedule_single_event( time() + 30, 'dns_process_email_queue' );
-        }
+    // Existing queue from transient
+    $queue = get_transient( 'dns_email_queue' );
+    if ( ! is_array( $queue ) ) {
+        $queue = [];
     }
+
+    $listing_title = get_the_title( $post_id );
+    $listing_link  = get_permalink( $post_id );
+
+    // Get listing type and city (names)
+    $listing_types = wp_get_post_terms(
+        $post_id,
+        'atbdp_listing_types',
+        ['fields' => 'names']
+    );
+    if ( is_wp_error( $listing_types ) ) {
+        $listing_types = [];
+    }
+
+    $listing_cities = wp_get_post_terms(
+        $post_id,
+        'at_biz_dir-location',
+        ['fields' => 'names']
+    );
+    if ( is_wp_error( $listing_cities ) ) {
+        $listing_cities = [];
+    }
+
+    foreach ( $user_ids as $user_id ) {
+        $user_info = get_userdata( $user_id );
+        if ( ! $user_info || empty( $user_info->user_email ) ) {
+            continue;
+        }
+
+        // Unsubscribe URL
+        $unsubscribe_url = add_query_arg(
+            [
+                'dns_unsubscribe' => 1,
+                'user_id'         => $user_id,
+                'nonce'           => wp_create_nonce( 'dns_unsubscribe_' . $user_id ),
+            ],
+            site_url()
+        );
+
+        // Build HTML email using output buffering for cleaner template
+        ob_start();
+        ?>
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <title><?php echo esc_html( $listing_title ); ?></title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f3f4f6;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                }
+                a {
+                    color: #2563eb;
+                    text-decoration: none;
+                }
+                @media only screen and (max-width: 600px) {
+                    .dns-email-card {
+                        width: 100% !important;
+                        border-radius: 0 !important;
+                    }
+                    .dns-email-inner {
+                        padding: 18px !important;
+                    }
+                }
+            </style>
+            </head>
+            <body style="margin:0;padding:0;background-color:#f3f4f6;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f3f4f6;padding:24px 0;">
+                    <tr>
+                        <td align="center">
+                            <table class="dns-email-card" width="600" cellpadding="0" cellspacing="0" border="0"
+                                   style="max-width:600px;width:100%;background-color:#ffffff;border-radius:18px;
+                                          box-shadow:0 18px 45px rgba(15,23,42,0.10);border:1px solid #e5e7eb;
+                                          overflow:hidden;">
+                                <!-- Header -->
+                                <tr>
+                                    <td style="background:linear-gradient(135deg,#2563eb,#22c55e);padding:18px 24px;">
+                                        <h1 style="margin:0;font-size:20px;font-weight:600;color:#ffffff;">
+                                            <?php esc_html_e( 'New Listing Match Found', 'directorist-notification-system' ); ?>
+                                        </h1>
+                                    </td>
+                                </tr>
+
+                                <!-- Body -->
+                                <tr>
+                                    <td class="dns-email-inner" style="padding:24px 24px 20px;">
+                                        <p style="margin:0 0 14px;font-size:14px;color:#111827;">
+                                            <?php
+                                            printf(
+                                                /* translators: %s: user display name */
+                                                esc_html__( 'Hello %s,', 'directorist-notification-system' ),
+                                                '<strong>' . esc_html( $user_info->display_name ) . '</strong>'
+                                            );
+                                            ?>
+                                        </p>
+
+                                        <p style="margin:0 0 16px;font-size:14px;color:#374151;line-height:1.6;">
+                                            <?php esc_html_e( 'A new listing has been published that matches your notification preferences.', 'directorist-notification-system' ); ?>
+                                        </p>
+
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%"
+                                               style="margin:0 0 18px;border-collapse:collapse;">
+                                            <tr>
+                                                <td style="padding:12px 14px;border-radius:12px;background-color:#f9fafb;
+                                                           border:1px solid #e5e7eb;">
+
+                                                    <!-- Title -->
+                                                    <p style="margin:0 0 8px;font-size:14px;color:#111827;">
+                                                        <strong><?php esc_html_e( 'Title:', 'directorist-notification-system' ); ?></strong>
+                                                        <a href="<?php echo esc_url( $listing_link ); ?>" style="color:#2563eb;text-decoration:none;">
+                                                            <?php echo esc_html( $listing_title ); ?>
+                                                        </a>
+                                                    </p>
+
+                                                    <!-- Type -->
+                                                    <?php if ( ! empty( $listing_types ) ) : ?>
+                                                        <p style="margin:0 0 6px;font-size:13px;color:#4b5563;">
+                                                            <strong><?php esc_html_e( 'Type:', 'directorist-notification-system' ); ?></strong>
+                                                            <?php echo esc_html( implode( ', ', $listing_types ) ); ?>
+                                                        </p>
+                                                    <?php endif; ?>
+
+                                                    <!-- City -->
+                                                    <?php if ( ! empty( $listing_cities ) ) : ?>
+                                                        <p style="margin:0;font-size:13px;color:#4b5563;">
+                                                            <strong><?php esc_html_e( 'City:', 'directorist-notification-system' ); ?></strong>
+                                                            <?php echo esc_html( implode( ', ', $listing_cities ) ); ?>
+                                                        </p>
+                                                    <?php endif; ?>
+
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- View Listing button -->
+                                        <p style="margin:0 0 22px;text-align:left;">
+                                            <a href="<?php echo esc_url( $listing_link ); ?>"
+                                               style="display:inline-block;padding:10px 20px;border-radius:999px;
+                                                      background:linear-gradient(135deg,#2563eb,#22c55e);
+                                                      color:#ffffff;font-size:14px;font-weight:600;
+                                                      text-decoration:none;box-shadow:0 10px 20px rgba(37,99,235,0.35);">
+                                                <?php esc_html_e( 'View Listing', 'directorist-notification-system' ); ?>
+                                            </a>
+                                        </p>
+
+                                        <hr style="border:none;border-top:1px solid #e5e7eb;margin:0 0 16px;">
+
+                                        <!-- Unsubscribe -->
+                                        <p style="margin:0 0 10px;font-size:12px;color:#6b7280;line-height:1.5;">
+                                            <?php esc_html_e( 'If you no longer want to receive notifications like this, you can unsubscribe at any time:', 'directorist-notification-system' ); ?>
+                                        </p>
+
+                                        <p style="margin:0 0 10px;">
+                                            <a href="<?php echo esc_url( $unsubscribe_url ); ?>"
+                                               style="display:inline-block;padding:8px 18px;border-radius:999px;
+                                                      background-color:#ef4444;color:#ffffff;font-size:12px;
+                                                      font-weight:600;text-decoration:none;">
+                                                <?php esc_html_e( 'Unsubscribe from all notifications', 'directorist-notification-system' ); ?>
+                                            </a>
+                                        </p>
+
+                                        <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.5;">
+                                            <?php esc_html_e( 'You are receiving this email because you subscribed to listing notifications.', 'directorist-notification-system' ); ?>
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <!-- Footer -->
+                                <tr>
+                                    <td style="padding:14px 24px;background-color:#f9fafb;border-top:1px solid #e5e7eb;">
+                                        <p style="margin:0;font-size:11px;color:#9ca3af;text-align:center;">
+                                            &copy; <?php echo esc_html( date( 'Y' ) ); ?>
+                                            <?php echo esc_html( get_bloginfo( 'name' ) ); ?>.
+                                            <?php esc_html_e( 'All rights reserved.', 'directorist-notification-system' ); ?>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+                    <?php
+                    $message = ob_get_clean();
+
+                    $queue[] = [
+                        'to'      => $user_info->user_email,
+                        'subject' => sprintf(
+                            /* translators: %s: listing title */
+                            __( 'New Listing Match Found: %s', 'directorist-notification-system' ),
+                            $listing_title
+                        ),
+                        'message' => $message,
+                        'headers' => [ 'Content-Type: text/html; charset=UTF-8' ],
+                    ];
+                }
+
+                // Save back to transient
+                set_transient( 'dns_email_queue', $queue, HOUR_IN_SECONDS );
+
+                // Schedule processing event if not already scheduled
+                if ( ! wp_next_scheduled( 'dns_process_email_queue' ) ) {
+                    wp_schedule_single_event( time() + 30, 'dns_process_email_queue' );
+                }
+            }
+
 
 
 
