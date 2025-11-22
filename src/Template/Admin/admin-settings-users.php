@@ -35,7 +35,7 @@ use DNS\Helper\Messages;
                     <option value="">-- <?php esc_html_e('Select Page', 'directorist-notification-system'); ?> --</option>
                     <?php foreach ($pages as $page) : ?>
                         <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($selected_page, $page->ID); ?>>
-                            <?php echo esc_html($page->post_title); ?>
+                            <?php echo esc_html($page->post_title . ' (ID: ' . $page->ID . ')'); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -122,7 +122,7 @@ use DNS\Helper\Messages;
                                     value="<?php echo esc_attr($page->ID); ?>"
                                     <?php checked($is_checked); ?>
                                 >
-                                <?php echo esc_html($page->post_title); ?>
+                                <?php echo esc_html($page->post_title . ' (ID: ' . $page->ID . ')'); ?>
                             </label>
                         <?php endforeach; ?>
                     </div>
