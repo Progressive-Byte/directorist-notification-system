@@ -93,14 +93,14 @@ class Admin {
             <p><?php esc_html_e('Manage all directory notifications here.', 'dns'); ?></p>
 
             <!-- Tabs Navigation -->
-            <h2 class="nav-tab-wrapper">
-                <a href="#tab-settings" class="nav-tab nav-tab-active"><?php esc_html_e('Settings', 'dns'); ?></a>
-                <a href="#tab-subscribed" class="nav-tab"><?php esc_html_e('Subscribed Users', 'dns'); ?></a>
-                <a href="#tab-test-message" class="nav-tab"><?php esc_html_e('Test Message', 'dns'); ?></a>
+            <h2 class="dns-tab-wrapper">
+                <a href="#tab-settings" class="dns-tab dns-tab-active">Settings</a>
+                <a href="#tab-subscribed" class="dns-tab">Subscribed Users</a>
+                <a href="#tab-test-message" class="dns-tab">Test Message</a>
             </h2>
 
             <!-- Settings Tab -->
-            <div id="tab-settings" class="tab-content" style="display:block;">
+            <div id="tab-settings" class="dns-tab-content" style="display:block;">
                 <?php
                 dns_load_template(
                     DNS_PLUGIN_TEMPLATE . 'Admin/admin-settings-users.php',
@@ -117,7 +117,7 @@ class Admin {
             </div>
 
             <!-- Subscribed Users Tab -->
-            <div id="tab-subscribed" class="tab-content" style="display:none;">
+            <div id="tab-subscribed" class="dns-tab-content" style="display:none;">
                 <?php
                 $subscribed_users = get_users(['meta_key' => 'dns_notify_prefs']);
                 dns_load_template(
@@ -129,7 +129,7 @@ class Admin {
             </div>
 
             <!-- Test Message Tab -->
-            <div id="tab-test-message" class="tab-content" style="display:none;">
+            <div id="tab-test-message" class="dns-tab-content" style="display:none;">
                 <?php
                 dns_load_template(
                     DNS_PLUGIN_TEMPLATE . 'Admin/admin-test-message.php',
