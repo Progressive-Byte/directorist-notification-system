@@ -182,62 +182,54 @@ if ( ! function_exists( 'dns_extract_user_ids_from_taxonomy_data' ) ) {
 
 
 /**
- * Remove a user from all post + term subscriptions.
+ * Unsubscribe user completely from all term subscriptions
+ *
+ * @param int $user_id
+ * @return bool
  */
-if ( ! function_exists( 'dns_remove_user_from_subscriptions' ) ) {
-    function dns_remove_user_from_subscriptions( $user_id ) {
+function dns_unsubscribe_user( $user_id ) {
 
-        $meta_keys = [
-            'subscribed_users',
-            'listing_types',
-            'market_types',
-        ];
-
-        // Remove user from posts
-        $meta_query = ['relation' => 'OR'];
-        foreach ( $meta_keys as $key ) {
-            $meta_query[] = [
-                'key'     => $key,
-                'value'   => '"' . $user_id . '"', // For serialized arrays
-                'compare' => 'LIKE',
-            ];
-        }
-
-        $posts = get_posts([
-            'post_type'      => 'at_biz_dir',
-            'posts_per_page' => -1,
-            'meta_query'     => $meta_query,
-        ]);
-
-        foreach ( $posts as $post ) {
-            foreach ( $meta_keys as $key ) {
-                $users = get_post_meta( $post->ID, $key, true );
-                if ( is_array( $users ) ) {
-                    $users = array_diff( $users, [ $user_id ] );
-                    update_post_meta( $post->ID, $key, $users );
-                }
-            }
-        }
-
-        // Remove user from term meta
-        $taxonomies = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
-        foreach ( $taxonomies as $taxonomy ) {
-            $terms = get_terms([ 'taxonomy' => $taxonomy, 'hide_empty' => false ]);
-            foreach ( $terms as $term ) {
-                foreach ( $meta_keys as $key ) {
-                    $users = get_term_meta( $term->term_id, $key, true );
-                    if ( is_array( $users ) ) {
-                        $users = array_diff( $users, [ $user_id ] );
-                        update_term_meta( $term->term_id, $key, $users );
-                    }
-                }
-            }
-        }
-
-        // Delete user meta
-        delete_user_meta( $user_id, 'dns_notify_prefs' );
+    if ( ! $user_id || ! is_numeric( $user_id ) ) {
+        return false;
     }
+
+    // Get all user preferences (listing_types, market_types, listing_locations)
+    $prefs = get_user_meta( $user_id, 'dns_notify_prefs', true );
+
+    if ( ! is_array( $prefs ) || empty( $prefs ) ) {
+        return false;
+    }
+
+    // Loop through each group and remove user from subscribed term meta
+    foreach ( $prefs as $group_key => $term_ids ) {
+
+        if ( empty( $term_ids ) || ! is_array( $term_ids ) ) {
+            continue;
+        }
+
+        foreach ( $term_ids as $term_id ) {
+
+            $subscribed = get_term_meta( $term_id, 'subscribed_users', true );
+
+            if ( is_array( $subscribed ) && in_array( $user_id, $subscribed, true ) ) {
+
+                // Remove user ID
+                $subscribed = array_diff( $subscribed, [ $user_id ] );
+
+                // Update term meta
+                update_term_meta( $term_id, 'subscribed_users', $subscribed );
+            }
+        }
+    }
+
+    // Remove all user notification meta
+    delete_user_meta( $user_id, 'dns_notify_prefs' );
+    delete_user_meta( $user_id, 'dns_email_subject' );
+    delete_user_meta( $user_id, 'dns_email_body' );
+
+    return true;
 }
+
 
 
 

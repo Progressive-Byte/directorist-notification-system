@@ -25,64 +25,7 @@ class Common {
     }
 
     function head(){
-
-        $post_id = 10875507;
-
-        // --- Get selected Job/Market terms from admin options ---
-        $selected_market_term = get_option( 'dns_market_terms' );
-        $selected_job_term    = get_option( 'dns_job_terms' );
-
-        // --- Get post's directory type terms ---
-        $post_terms = wp_get_post_terms( $post_id, ATBDP_DIRECTORY_TYPE, [ 'fields' => 'ids' ] );
-
-        $taxonomies = [ ATBDP_CATEGORY, ATBDP_LOCATION ];
-
-        $user_ids = dns_get_subscribed_users_by_post( $post_id, $taxonomies );
-
-        // Messages::pri( $user_ids );
-        return;
         
-
-        // --- Check if post belongs to selected Job or Market term ---
-        $intersect = array_intersect( $post_terms, array_filter( [ $selected_market_term, $selected_job_term ] ) );
-        if ( empty( $intersect ) ) {
-            return; // Skip if post doesn't belong
-        }
-
-
-
-        
-
-        // --- Gather all subscribers ---
-        $user_ids = [];
-
-        $data = dns_get_post_data( $post_id );
-
-        // Subscribers from post meta
-        if ( ! empty( $data['subscribed_users'] ) ) {
-            $user_ids = array_merge( $user_ids, $data['subscribed_users'] );
-        }
-
-        // Subscribers from terms
-        // if ( ! empty( $data['terms'] ) ) {
-        //     foreach ( $data['terms'] as $taxonomy => $terms ) {
-        //         foreach ( $terms as $term_id => $term_data ) {
-        //             if ( ! empty( $term_data['subscribed_users'] ) ) {
-        //                 $user_ids = array_merge( $user_ids, $term_data['subscribed_users'] );
-        //             }
-        //         }
-        //     }
-        // }
-
-       
-
-        $user_ids = array_unique( $user_ids );
-        if ( empty( $user_ids ) ) {
-            // Fallback: get subscribers from taxonomies
-            $taxonomies    = [ 'atbdp_listing_types', 'at_biz_dir-location' ];
-            $taxonomy_data = dns_get_terms_with_subscribers( $taxonomies );
-            $user_ids      = dns_extract_user_ids_from_taxonomy_data( $taxonomy_data );
-        }
     }
 
     /**
@@ -315,7 +258,7 @@ class Common {
 
         // 4. Remove user from all subscriptions
         if ( function_exists( 'dns_remove_user_from_subscriptions' ) ) {
-            dns_remove_user_from_subscriptions( $user_id );
+            dns_unsubscribe_user( $user_id );
         }
 
         // 5. Redirect safely back to subscription page (or fallback)
