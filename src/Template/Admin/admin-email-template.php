@@ -1,3 +1,4 @@
+<?php 
 // Save form
 if ( isset($_POST['dns_save_email_template']) && check_admin_referer('dns_save_email_template_nonce') ) {
 
