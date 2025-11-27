@@ -17,30 +17,12 @@ class Frontend {
 	}
 
 	public function head(){
-		$selected_directories = [];
+		// $selected_directories = dns_get_selected_directories_for_categories();
 
-		$terms = get_terms([
-		    'taxonomy'   => ATBDP_CATEGORY,
-		    'hide_empty' => false,
-		    'orderby'    => 'date',
-		    'order'      => 'DESC',
-		]);
+		// $grouped = dns_get_terms_by_directory( 355 );
+		// Messages::pri( $grouped );
 
-		foreach ($terms as $term) {
-
-		    // Get directories (this returns array like [355])
-		    $dirs = directorist_get_category_directory($term->term_id);
-
-		    // Convert to single value instead of array
-		    $selected_directories[$term->term_id] = is_array($dirs) && !empty($dirs)
-		        ? $dirs[0]
-		        : null;
-		}
-
-		$grouped = group_terms_by_directory( $selected_directories );
-		Messages::pri( $grouped );
-
-		// Messages::pri($selected_directories);
+		// // Messages::pri($selected_directories);
 
 		// Optional head scripts or styles
 	}

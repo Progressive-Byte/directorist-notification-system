@@ -487,20 +487,128 @@ function get_taxonomy_by_term_id( $term_id ) {
     return $term->taxonomy; // Returns taxonomy name as string
 }
 
+/**
+ * Retrieve selected directories for all categories.
+ *
+ * Returns an associative array where:
+ *      key   = category term ID
+ *      value = selected directory ID (single value)
+ *
+ * @return array Array of term_id => directory_id.
+ */
+function dns_get_selected_directories_for_categories() {
 
-function group_terms_by_directory( $selected_directories ) {
-    $grouped = [];
+    $selected_directories = array();
+
+    // Get all terms from ATBDP category taxonomy.
+    $terms = get_terms(
+        array(
+            'taxonomy'   => ATBDP_CATEGORY,
+            'hide_empty' => false,
+            'orderby'    => 'date',
+            'order'      => 'DESC',
+        )
+    );
+
+    // Validate result before processing.
+    if ( is_wp_error( $terms ) || empty( $terms ) ) {
+        return array();
+    }
+
+    foreach ( $terms as $term ) {
+
+        // Get directory ID array assigned to this term (example: array( 355 ) ).
+        $dirs = directorist_get_category_directory( $term->term_id );
+
+        // Convert directory array to single directory value.
+        $selected_directories[ $term->term_id ] = ( is_array( $dirs ) && ! empty( $dirs ) )
+            ? $dirs[0]
+            : null;
+    }
+
+    return $selected_directories;
+}
+
+/**
+ * Group all terms by their selected directory.
+ *
+ * Converts:
+ *      [ term_id => directory_id ]
+ * Into:
+ *      [ directory_id => [ term_id, term_id... ] ]
+ *
+ * @param array $selected_directories Mapping of term_id => directory_id.
+ * @return array                       Grouped directory_id => [ term_ids ].
+ */
+function dns_group_terms_by_directory( $selected_directories ) {
+
+    $grouped = array();
+
+    if ( empty( $selected_directories ) || ! is_array( $selected_directories ) ) {
+        return array();
+    }
 
     foreach ( $selected_directories as $term_id => $directory_id ) {
 
-        // Initialize group
-        if ( ! isset( $grouped[$directory_id] ) ) {
-            $grouped[$directory_id] = [];
+        // Initialize array for each directory group.
+        if ( ! isset( $grouped[ $directory_id ] ) ) {
+            $grouped[ $directory_id ] = array();
         }
 
-        // Add term to directory
-        $grouped[$directory_id][] = $term_id;
+        // Append the term ID to that directory group.
+        $grouped[ $directory_id ][] = $term_id;
     }
 
     return $grouped;
 }
+
+/**
+ * Return all term IDs assigned to a given directory ID.
+ *
+ * Example:
+ *      dns_get_terms_by_directory( 355 );
+ *
+ * @param int|string $directory_id The directory ID to search for.
+ * @return array                    List of term IDs under that directory.
+ */
+function dns_get_terms_by_directory( $directory_id ) {
+
+    // Step 1: Get mapping: term_id => directory_id.
+    $selected_directories = dns_get_selected_directories_for_categories();
+
+    // Step 2: Group by directory: directory_id => array( term_ids )
+    $grouped = dns_group_terms_by_directory( $selected_directories );
+
+    // Step 3: Return the terms for this directory or an empty array.
+    return isset( $grouped[ $directory_id ] )
+        ? $grouped[ $directory_id ]
+        : array();
+}
+
+/**
+ * Get full WP_Term objects for all terms under a directory.
+ *
+ * @param int|string $directory_id Directory ID.
+ * @return array Array of WP_Term objects.
+ */
+function dns_get_term_objects_by_directory( $directory_id ) {
+
+    // Get only term IDs first.
+    $term_ids = dns_get_terms_by_directory( $directory_id );
+
+    if ( empty( $term_ids ) ) {
+        return array();
+    }
+
+    // Get full term objects.
+    $terms = get_terms(
+        array(
+            'taxonomy'   => ATBDP_CATEGORY,
+            'hide_empty' => false,
+            'include'    => $term_ids,
+        )
+    );
+
+    return ! is_wp_error( $terms ) ? $terms : array();
+}
+
