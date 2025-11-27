@@ -24,35 +24,17 @@ if ( ! function_exists( 'dns_display_data' ) ) {
 }
 
 
-/**
- * Get all terms where a post ID is in the 'subscribed_users' meta.
- */
-if ( ! function_exists( 'dns_get_terms_by_post_id' ) ) {
-    function dns_get_terms_by_post_id( $post_id, $taxonomy = '' ) {
-        global $wpdb;
+function dns_add_user_to_term( $term_id, $user_id ) {
+    $existing = get_term_meta( $term_id, 'subscribed_users', true );
 
-        $query = "SELECT term_id, meta_value
-                  FROM {$wpdb->termmeta}
-                  WHERE meta_key = 'subscribed_users'";
+    if ( ! is_array( $existing ) ) {
+        $existing = [];
+    }
 
-        if ($taxonomy) {
-            $term_ids = get_terms([
-                'taxonomy'   => $taxonomy,
-                'fields'     => 'ids',
-                'hide_empty' => false,
-            ]);
-
-            if (empty($term_ids)) return [];
-            $term_ids = implode(',', array_map('intval', $term_ids));
-            $query .= " AND term_id IN ($term_ids)";
-        }
-
-        $results = $wpdb->get_results( $query );
-
-        foreach ($results as $row) {
-            $subscribed = get_term_meta( (int) $row->term_id, 'subscribed_users', true );
-            return is_array($subscribed) ? $subscribed : [];
-        }
+    // Add user if not already subscribed
+    if ( ! in_array( $user_id, $existing, true ) ) {
+        $existing[] = $user_id;
+        update_term_meta( $term_id, 'subscribed_users', $existing );
     }
 }
 
@@ -441,39 +423,39 @@ function get_all_terms_by_directory_type( $type_id ) {
  *
  * @param array $term_ids Array of term IDs to subscribe the current user to.
  */
-function update_user_term_subscriptions( $term_ids = [], $meta_key = 'subscribed_users' ) {
+// function update_user_term_subscriptions( $term_ids = [], $meta_key = 'subscribed_users' ) {
 
-    if ( empty( $term_ids ) ) {
-        return;
-    }
+//     if ( empty( $term_ids ) ) {
+//         return;
+//     }
 
-    // Convert objects to IDs automatically
-    $term_ids = array_map( function($t) {
-        return is_object($t) ? intval($t->term_id) : intval($t);
-    }, $term_ids );
+//     // Convert objects to IDs automatically
+//     $term_ids = array_map( function($t) {
+//         return is_object($t) ? intval($t->term_id) : intval($t);
+//     }, $term_ids );
 
-    $current_user_id = get_current_user_id();
-    if ( ! $current_user_id ) {
-        return;
-    }
+//     $current_user_id = get_current_user_id();
+//     if ( ! $current_user_id ) {
+//         return;
+//     }
 
 
-    foreach ( $term_ids as $term_id ) {
+//     foreach ( $term_ids as $term_id ) {
 
-        if ( $term_id <= 0 ) {
-            continue;
-        }
+//         if ( $term_id <= 0 ) {
+//             continue;
+//         }
 
-        $subscribed_users = get_term_meta( $term_id, $meta_key, true );
-        $subscribed_users = is_array( $subscribed_users ) ? $subscribed_users : [];
+//         $subscribed_users = get_term_meta( $term_id, $meta_key, true );
+//         $subscribed_users = is_array( $subscribed_users ) ? $subscribed_users : [];
 
-        if ( ! in_array( $current_user_id, $subscribed_users, true ) ) {
-            $subscribed_users[] = $current_user_id;
-            update_option( 'subscribed_users_'. $term_id , $subscribed_users );
-            update_term_meta( $term_id, $meta_key, $subscribed_users );
-        }
-    }
-}
+//         if ( ! in_array( $current_user_id, $subscribed_users, true ) ) {
+//             $subscribed_users[] = $current_user_id;
+//             update_option( 'subscribed_users_'. $term_id , $subscribed_users );
+//             update_term_meta( $term_id, $meta_key, $subscribed_users );
+//         }
+//     }
+// }
 
 
 

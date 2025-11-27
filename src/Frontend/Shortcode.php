@@ -7,16 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/**
- * Class Shortcode
- *
- * Handles the notification preferences shortcode.
- */
 class Shortcode {
 
-    /**
-     * Shortcode constructor.
-     */
     public function __construct() {
         add_shortcode( 'notification_job', [ $this, 'job' ] );
         add_shortcode( 'notification_marketplace', [ $this, 'marketplace' ] );
@@ -24,16 +16,12 @@ class Shortcode {
     }
 
     /**
-     * Debug or print user preferences in head (optional).
-     *
-     * @return void
+     * Optional debugging hook.
      */
-    public function head() {        
-
-    }
+    public function head() {}
 
     /**
-     * Render the shortcode output.
+     * Render Job Notification Shortcode
      *
      * @return string
      */
@@ -46,14 +34,7 @@ class Shortcode {
 
         $user_id = get_current_user_id();
 
-        // --- LOAD TAXONOMY TERMS ---
-        $listing_types = get_terms( [
-            'taxonomy'   => 'atbdp_listing_types',
-            'hide_empty' => false,
-            'orderby'    => 'name',
-            'order'      => 'ASC',
-        ] );
-
+        // Get all listing locations
         $locations = get_terms( [
             'taxonomy'   => 'at_biz_dir-location',
             'hide_empty' => false,
@@ -61,81 +42,48 @@ class Shortcode {
             'order'      => 'ASC',
         ] );
 
-        // --- LOAD SAVED USER PREFS ---
+        // Load saved preferences
         $saved = get_user_meta( $user_id, 'dns_notify_prefs', true );
-        $saved = is_array( $saved ) ? $saved : [];
-        $saved = array_merge( [
-            'listing_types'     => [],
-            'listing_locations' => [],
-        ], $saved );
 
-        // --- HANDLE SAVE FORM ---
+        // --------------------------
+        // HANDLE SAVE FORM
+        // --------------------------
         if ( isset( $_POST['np_save'] ) && check_admin_referer( 'np_save_prefs', 'np_nonce' ) ) {
 
-            $selected_types     = isset( $_POST['listing_types'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_types'] ) ) : [];
-            $market_types       = isset( $_POST['market_types'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['market_types'] ) ) : [];
-            $selected_locations = isset( $_POST['listing_locations'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['listing_locations'] ) ) : [];
+            $selected_jobs       = isset( $_POST['listing_types'] ) 
+                ? array_map( 'intval', (array) wp_unslash( $_POST['listing_types'] ) ) 
+                : [];
 
-            // update_option( '$selected_types', $selected_types );
+            $selected_marketplace = isset( $_POST['market_types'] ) 
+                ? array_map( 'intval', (array) wp_unslash( $_POST['market_types'] ) ) 
+                : [];
 
-            // Save preferences
+            $selected_locations   = isset( $_POST['listing_locations'] ) 
+                ? array_map( 'intval', (array) wp_unslash( $_POST['listing_locations'] ) ) 
+                : [];
+
+            // Save user preferences
             $saved = [
-                'listing_types'     => $selected_types,
-                'market_types'      => $market_types,
+                'listing_types'     => $selected_jobs,
+                'market_types'      => $selected_marketplace,
                 'listing_locations' => $selected_locations,
             ];
+
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
 
-            if ( ! empty( $saved['market_types'] ) ) {
-                update_user_term_subscriptions( $saved['market_types'], 'market_types' );
-            }
-
-            if ( ! empty( $saved['listing_types'] ) ) {
-                update_user_term_subscriptions( $saved['listing_types'], 'listing_types' );
-            }
-
-            // --- SYNC TERM META ---
-            $taxonomies = [
-                'atbdp_listing_types' => $listing_types,
-                'at_biz_dir-location' => $locations,
-            ];
-
-            foreach ( $taxonomies as $taxonomy => $terms ) {
-                if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-                    $selected = ( 'atbdp_listing_types' === $taxonomy ) ? $selected_types : $selected_locations;
-
-                    foreach ( $terms as $term ) {
-                        $meta_key = 'subscribed_users';
-                        $users    = get_term_meta( $term->term_id, $meta_key, true );
-                        $users    = is_array( $users ) ? $users : [];
-
-                        if ( in_array( $term->term_id, $selected, true ) ) {
-                            if ( ! in_array( $user_id, $users, true ) ) {
-                                $users[] = $user_id;
-                            }
-                        } else {
-                            $users = array_diff( $users, [ $user_id ] );
-                        }
-
-                        update_term_meta( $term->term_id, $meta_key, $users );
-                    }
-                }
-            }
+            // Update term meta for subscribed users
+            dns_add_user_to_term( $selected_jobs, $user_id );
+            dns_add_user_to_term( $selected_marketplace, $user_id );
+            dns_add_user_to_term( $selected_locations, $user_id );
         }
 
-        // --- LOAD TEMPLATE ---
+        // Load Template
         $template = DNS_PLUGIN_TEMPLATE . 'Front/notifications-jobs.php';
 
         return dns_load_template( $template, [
-            'listing_types' => $listing_types,
-            'locations'     => $locations,
-            'saved'         => $saved,
+            'locations' => $locations,
+            'saved'     => $saved,
         ], false );
     }
-
-
-
-
-
 
 }
