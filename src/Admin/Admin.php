@@ -96,6 +96,7 @@ class Admin {
             <h2 class="dns-tab-wrapper">
                 <a href="#tab-settings" class="dns-tab dns-tab-active">Settings</a>
                 <a href="#tab-subscribed" class="dns-tab">Subscribed Users</a>
+                <a href="#tab-email-template" class="dns-tab">Email Settings</a>
                 <a href="#tab-test-message" class="dns-tab">Test Message</a>
             </h2>
 
@@ -123,6 +124,17 @@ class Admin {
                 dns_load_template(
                     DNS_PLUGIN_TEMPLATE . 'Admin/admin-subscribed-users.php',
                     ['subscribed_users' => $subscribed_users],
+                    true
+                );
+                ?>
+            </div>
+
+            <!-- Email Template Tab -->
+            <div id="tab-email-template" class="dns-tab-content" style="display:none;">
+                <?php
+                dns_load_template(
+                    DNS_PLUGIN_TEMPLATE . 'Admin/admin-email-template.php',
+                    [],
                     true
                 );
                 ?>
