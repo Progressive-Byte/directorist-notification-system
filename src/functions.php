@@ -487,4 +487,20 @@ function get_taxonomy_by_term_id( $term_id ) {
     return $term->taxonomy; // Returns taxonomy name as string
 }
 
-?>
+
+function group_terms_by_directory( $selected_directories ) {
+    $grouped = [];
+
+    foreach ( $selected_directories as $term_id => $directory_id ) {
+
+        // Initialize group
+        if ( ! isset( $grouped[$directory_id] ) ) {
+            $grouped[$directory_id] = [];
+        }
+
+        // Add term to directory
+        $grouped[$directory_id][] = $term_id;
+    }
+
+    return $grouped;
+}
