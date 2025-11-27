@@ -188,53 +188,69 @@ class Common {
         $listing_cities = wp_get_post_terms($post_id, 'at_biz_dir-location', ['fields'=>'names']);
         $listing_cities = ! is_wp_error($listing_cities) ? $listing_cities : [];
 
+        // ---------------------------------------
+        // Load global admin email defaults
+        // ---------------------------------------
+        $default_subject = get_option(
+            'dns_email_default_subject',
+            'New Listing Match Found: {listing_title}'
+        );
+
+        $default_body = get_option(
+            'dns_email_default_body',
+            '
+            <p>Hello {user_name},</p>
+            <p>A new listing "{listing_title}" matches your preferences.</p>
+            <p>Type: {listing_types}</p>
+            <p>City: {listing_cities}</p>
+            <p><a href="{listing_link}">View Listing</a></p>
+            <p><a href="{unsubscribe_url}">Unsubscribe</a></p>
+            '
+        );
+
         foreach ( $user_ids as $user_id ) {
+
             $user_info = get_userdata($user_id);
             if ( ! $user_info || empty($user_info->user_email) ) continue;
 
-            // --- Get user-specific email template ---
-            $email_subject = get_user_meta( $user_id, 'dns_email_subject', true );
-            $email_body    = get_user_meta( $user_id, 'dns_email_body', true );
+            // ---------------------------------------
+            // User-specific template
+            // ---------------------------------------
+            $email_subject = get_user_meta($user_id, 'dns_email_subject', true);
+            $email_body    = get_user_meta($user_id, 'dns_email_body', true);
 
-            // Fallback to default if user hasn't set
-            if ( empty( $email_subject ) ) {
-                $email_subject = 'New Listing Match Found: {listing_title}';
-            }
-            if ( empty( $email_body ) ) {
-                $email_body = '
-                    <p>Hello {user_name},</p>
-                    <p>A new listing "{listing_title}" matches your preferences.</p>
-                    <p>Type: {listing_types}</p>
-                    <p>City: {listing_cities}</p>
-                    <p><a href="{listing_link}">View Listing</a></p>
-                    <p><a href="{unsubscribe_url}">Unsubscribe</a></p>
-                ';
-            }
+            // ---------------------------------------
+            // Fallback to admin defaults (not hardcoded)
+            // ---------------------------------------
+            if ( empty($email_subject) ) $email_subject = $default_subject;
+            if ( empty($email_body) )    $email_body    = $default_body;
 
-            // --- Placeholders ---
+            // ---------------------------------------
+            // Placeholders
+            // ---------------------------------------
             $placeholders = [
                 '{user_name}'      => $user_info->display_name,
                 '{listing_title}'  => $listing_title,
                 '{listing_link}'   => $listing_link,
                 '{listing_types}'  => implode(', ', $listing_types),
                 '{listing_cities}' => implode(', ', $listing_cities),
-                '{unsubscribe_url}'=> add_query_arg([
-                    'dns_unsubscribe'=>1,
-                    'user_id'=>$user_id,
-                    'nonce'=>wp_create_nonce('dns_unsubscribe_'.$user_id),
+                '{unsubscribe_url}' => add_query_arg([
+                    'dns_unsubscribe' => 1,
+                    'user_id'         => $user_id,
+                    'nonce'           => wp_create_nonce('dns_unsubscribe_'.$user_id),
                 ], site_url())
             ];
 
-            // Replace placeholders if they exist in template
-            $subject = strtr( $email_subject, $placeholders );
-            $message = strtr( $email_body, $placeholders );
+            // Apply placeholders
+            $subject = strtr($email_subject, $placeholders);
+            $message = strtr($email_body, $placeholders);
 
-            // Add email to queue
+            // Add to queue
             $queue[] = [
-                'to'=>$user_info->user_email,
-                'subject'=>$subject,
-                'message'=>$message,
-                'headers'=>['Content-Type: text/html; charset=UTF-8'],
+                'to'       => $user_info->user_email,
+                'subject'  => $subject,
+                'message'  => $message,
+                'headers'  => ['Content-Type: text/html; charset=UTF-8'],
             ];
         }
 
@@ -244,6 +260,7 @@ class Common {
             wp_schedule_single_event(time()+30, 'dns_process_email_queue');
         }
     }
+
      /**
      * Process queued emails in the background
      */
