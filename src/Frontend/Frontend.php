@@ -32,23 +32,34 @@ class Frontend {
 	 */
 	public function add_subscribe_button() {
 
-		// Get current page ID
-		$current_page_id = get_queried_object_id();
+	    // Get current page ID
+	    $current_page_id = get_queried_object_id();
 
-		// Get saved subscription pages from settings
+	    // Get main and secondary subscription pages
+	    $market_page_id = get_option('dns_subscription_page_id');  // Main / Market Page
+	    $job_page_id    = get_option('dns_secondary_page_id');     // Secondary / Job Page
 
-		$subscription_page_id   = get_option('dns_subscription_page_id');
+	    // Get all pages enabled for subscribe button
+	    $subscription_pages = get_option('dns_subscription_pages', []);
+	    $subscription_pages = is_array($subscription_pages) ? array_map('intval', $subscription_pages) : [];
 
-		$subscription_pages = get_option( 'dns_subscription_pages', [] );
-		$subscription_pages = is_array( $subscription_pages ) ? array_map( 'intval', $subscription_pages ) : [];
+	    // Only show buttons on subscription pages
+	    if ( in_array( $current_page_id, $subscription_pages, true ) ) : ?>
+	        
+	        <?php if ( $market_page_id ) : ?>
+	            <a href="<?php echo esc_url( get_permalink( $market_page_id ) ); ?>" class="dns-subscribe-button">
+	                <?php esc_html_e( 'Market', 'directorist-notification-system' ); ?>
+	            </a>
+	        <?php endif; ?>
 
-		// Check if current page is in the subscription pages
-		if ( in_array( $current_page_id, $subscription_pages, true ) ) :
-			?>
-		    <a href="<?php echo esc_url( get_permalink( $subscription_page_id ) ); ?>" class="dns-subscribe-button">
-		        <?php esc_html_e( 'Subscribe', 'directorist-notification-system' ); ?>
-		    </a>
-		<?php
-		endif;
+	        <?php if ( $job_page_id ) : ?>
+	            <a href="<?php echo esc_url( get_permalink( $job_page_id ) ); ?>" class="dns-subscribe-button">
+	                <?php esc_html_e( 'Job List', 'directorist-notification-system' ); ?>
+	            </a>
+	        <?php endif; ?>
+
+	    <?php
+	    endif;
 	}
+
 }
