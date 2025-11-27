@@ -25,7 +25,45 @@ class Common {
     }
 
     function head(){
-        
+
+        // Get all user preferences (listing_types, market_types, listing_locations)
+
+        // $user_id = 1238;
+        // $prefs = get_user_meta( $user_id, 'dns_notify_prefs', true );
+
+        // if ( ! is_array( $prefs ) || empty( $prefs ) ) {
+        //     return false;
+        // }
+
+        // // Loop through each group and remove user from subscribed term meta
+        // foreach ( $prefs as $group_key => $term_ids ) {
+
+        //     if ( empty( $term_ids ) || ! is_array( $term_ids ) ) {
+        //         continue;
+        //     }
+
+        //     foreach ( $term_ids as $term_id ) {
+
+
+
+        //         $subscribed = get_term_meta( $term_id, 'subscribed_users', true );
+
+        //         if ( is_array( $subscribed ) && in_array( $user_id, $subscribed, true ) ) {
+
+                    
+
+        //             // Remove user ID
+        //             $subscribed = array_diff( $subscribed, [ $user_id ] );
+
+        //             Messages::pri( $term_id );
+        //             return;
+
+        //             // Update term meta
+        //             update_term_meta( $term_id, 'subscribed_users', $subscribed );
+        //         }
+        //     }
+        // }
+
     }
 
     /**
@@ -256,8 +294,10 @@ class Common {
             wp_die( esc_html__( 'Invalid request.', 'directorist-notification-system' ) );
         }
 
+        
+
         // 4. Remove user from all subscriptions
-        if ( function_exists( 'dns_remove_user_from_subscriptions' ) ) {
+        if ( function_exists( 'dns_unsubscribe_user' ) ) {
             dns_unsubscribe_user( $user_id );
         }
 

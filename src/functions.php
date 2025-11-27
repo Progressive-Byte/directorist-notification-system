@@ -224,8 +224,6 @@ function dns_unsubscribe_user( $user_id ) {
 
     // Remove all user notification meta
     delete_user_meta( $user_id, 'dns_notify_prefs' );
-    delete_user_meta( $user_id, 'dns_email_subject' );
-    delete_user_meta( $user_id, 'dns_email_body' );
 
     return true;
 }
