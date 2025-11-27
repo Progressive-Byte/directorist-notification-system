@@ -53,64 +53,90 @@ class Shortcode {
         }
 
         $user_id = get_current_user_id();
+        $message = '';
+        $message_class = '';
 
         // Get all listing locations
-        $locations = get_terms( [
+        $locations = get_terms([
             'taxonomy'   => 'at_biz_dir-location',
             'hide_empty' => false,
             'orderby'    => 'name',
             'order'      => 'ASC',
-        ] );
+        ]);
 
-        // Load saved preferences
+        // load saved prefs
         $saved = get_user_meta( $user_id, 'dns_notify_prefs', true );
 
-        // --------------------------
+        // --------------------------------
         // HANDLE SAVE FORM
-        // --------------------------
-        if ( isset( $_POST['np_save'] ) && check_admin_referer( 'np_save_prefs', 'np_nonce' ) ) {
+        // --------------------------------
+        if ( isset($_POST['np_save']) && check_admin_referer('np_save_prefs', 'np_nonce') ) {
 
-            $selected_types     = isset( $_POST[ $type_key ] ) 
-                ? array_map( 'intval', (array) wp_unslash( $_POST[ $type_key ] ) ) 
+            $selected_types = isset($_POST[$type_key])
+                ? array_map('intval', (array) wp_unslash($_POST[$type_key]))
                 : [];
 
-            $selected_locations = isset( $_POST['listing_locations'] ) 
-                ? array_map( 'intval', (array) wp_unslash( $_POST['listing_locations'] ) ) 
+            $selected_locations = isset($_POST['listing_locations'])
+                ? array_map('intval', (array) wp_unslash($_POST['listing_locations']))
                 : [];
 
-            // --------------------------
-            // REMOVE USER FROM UNCHECKED TERMS
-            // --------------------------
-            $previous_types     = isset( $saved[ $type_key ] ) ? (array) $saved[ $type_key ] : [];
-            $previous_locations = isset( $saved['listing_locations'] ) ? (array) $saved['listing_locations'] : [];
+            // previous values
+            $previous_types     = isset($saved[$type_key]) ? (array) $saved[$type_key] : [];
+            $previous_locations = isset($saved['listing_locations']) ? (array) $saved['listing_locations'] : [];
 
-            remove_user_from_terms( array_diff( $previous_types, $selected_types ), $user_id );
-            remove_user_from_terms( array_diff( $previous_locations, $selected_locations ), $user_id );
+            // Remove unchecked ones
+            remove_user_from_terms( array_diff($previous_types, $selected_types), $user_id );
+            remove_user_from_terms( array_diff($previous_locations, $selected_locations), $user_id );
 
-            // --------------------------
-            // SAVE USER PREFERENCES
-            // --------------------------
+            // Save new prefs
             $saved = [
                 $type_key           => $selected_types,
                 'listing_locations' => $selected_locations,
             ];
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
 
-            // --------------------------
-            // ADD USER TO NEWLY CHECKED TERMS
-            // --------------------------
+            // Add newly checked ones
             dns_add_user_to_term( $selected_types, $user_id );
             dns_add_user_to_term( $selected_locations, $user_id );
+
+            // -----------------------------
+            // SUCCESS MESSAGE
+            // -----------------------------
+            $message = __( 'Your notification preferences have been saved successfully!', 'dns' );
+            $message_class = 'dns-success';
         }
 
-        // Load Template
+        // Load template
         $template = DNS_PLUGIN_TEMPLATE . $template_file;
 
-        return dns_load_template( $template, [
+        $content = dns_load_template( $template, [
             'locations' => $locations,
             'saved'     => $saved,
         ], false );
-    }   
+
+        // Add message before template
+        if ( $message ) {
+            $alert = '<div class="dns-alert ' . esc_attr($message_class) . '">' . esc_html($message) . '</div>';
+
+            // Add fade-out script
+            $alert .= "
+                <script>
+                    setTimeout(function() {
+                        var box = document.querySelector('.dns-alert');
+                        if (box) {
+                            box.style.opacity = '0';
+                            box.style.transition = 'opacity 0.7s ease';
+                        }
+                    }, 2500);
+                </script>
+            ";
+
+            return $alert . $content;
+        }
+
+        return $content;
+    }
+   
 
    
 }
