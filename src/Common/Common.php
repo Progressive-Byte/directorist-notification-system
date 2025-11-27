@@ -153,7 +153,7 @@ class Common {
         // Update post meta so we don't notify the same users again
         // --------------------------
         $updated_users = array_merge( $notified_users, $new_users );
-        // update_post_meta( $post_id, '_notified_users', array_unique( $updated_users ) );
+        update_post_meta( $post_id, '_notified_users', array_unique( $updated_users ) );
 
         // --------------------------
         // Optional: queue emails only for new users
