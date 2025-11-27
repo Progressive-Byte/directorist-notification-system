@@ -78,15 +78,27 @@ class Shortcode {
                 ? array_map( 'intval', (array) wp_unslash( $_POST['listing_locations'] ) ) 
                 : [];
 
-            // Save user preferences
+            // --------------------------
+            // REMOVE USER FROM UNCHECKED TERMS
+            // --------------------------
+            $previous_types     = isset( $saved[ $type_key ] ) ? (array) $saved[ $type_key ] : [];
+            $previous_locations = isset( $saved['listing_locations'] ) ? (array) $saved['listing_locations'] : [];
+
+            remove_user_from_terms( array_diff( $previous_types, $selected_types ), $user_id );
+            remove_user_from_terms( array_diff( $previous_locations, $selected_locations ), $user_id );
+
+            // --------------------------
+            // SAVE USER PREFERENCES
+            // --------------------------
             $saved = [
                 $type_key           => $selected_types,
                 'listing_locations' => $selected_locations,
             ];
-
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
 
-            // Update term meta for subscribed users
+            // --------------------------
+            // ADD USER TO NEWLY CHECKED TERMS
+            // --------------------------
             dns_add_user_to_term( $selected_types, $user_id );
             dns_add_user_to_term( $selected_locations, $user_id );
         }
@@ -99,4 +111,6 @@ class Shortcode {
             'saved'     => $saved,
         ], false );
     }   
+
+   
 }

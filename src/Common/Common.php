@@ -25,23 +25,8 @@ class Common {
     }
 
     function head(){
-    }
 
-    /**
-     * Fires when a post is created or updated.
-     * Gathers all subscribed users and sends notifications.
-     */
-    public function save_at_biz_dir( $post_id, $post, $update ) {
-
-        // Ignore autosaves and revisions
-        if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
-            return;
-        }
-
-        // Only target specific post type and published posts
-        if ( 'at_biz_dir' !== $post->post_type || 'publish' !== $post->post_status ) {
-            return;
-        }
+        $post_id = 10875507;
 
         // --- Get selected Job/Market terms from admin options ---
         $selected_market_term = get_option( 'dns_market_terms' );
@@ -50,11 +35,23 @@ class Common {
         // --- Get post's directory type terms ---
         $post_terms = wp_get_post_terms( $post_id, ATBDP_DIRECTORY_TYPE, [ 'fields' => 'ids' ] );
 
+        $taxonomies = [ ATBDP_CATEGORY, ATBDP_LOCATION ];
+
+        $user_ids = dns_get_subscribed_users_by_post( $post_id, $taxonomies );
+
+        // Messages::pri( $user_ids );
+        return;
+        
+
         // --- Check if post belongs to selected Job or Market term ---
         $intersect = array_intersect( $post_terms, array_filter( [ $selected_market_term, $selected_job_term ] ) );
         if ( empty( $intersect ) ) {
             return; // Skip if post doesn't belong
         }
+
+
+
+        
 
         // --- Gather all subscribers ---
         $user_ids = [];
@@ -67,15 +64,17 @@ class Common {
         }
 
         // Subscribers from terms
-        if ( ! empty( $data['terms'] ) ) {
-            foreach ( $data['terms'] as $taxonomy => $terms ) {
-                foreach ( $terms as $term_id => $term_data ) {
-                    if ( ! empty( $term_data['subscribed_users'] ) ) {
-                        $user_ids = array_merge( $user_ids, $term_data['subscribed_users'] );
-                    }
-                }
-            }
-        }
+        // if ( ! empty( $data['terms'] ) ) {
+        //     foreach ( $data['terms'] as $taxonomy => $terms ) {
+        //         foreach ( $terms as $term_id => $term_data ) {
+        //             if ( ! empty( $term_data['subscribed_users'] ) ) {
+        //                 $user_ids = array_merge( $user_ids, $term_data['subscribed_users'] );
+        //             }
+        //         }
+        //     }
+        // }
+
+       
 
         $user_ids = array_unique( $user_ids );
         if ( empty( $user_ids ) ) {
@@ -84,34 +83,103 @@ class Common {
             $taxonomy_data = dns_get_terms_with_subscribers( $taxonomies );
             $user_ids      = dns_extract_user_ids_from_taxonomy_data( $taxonomy_data );
         }
+    }
 
-        if ( empty( $user_ids ) ) return;
+    /**
+     * Handle notifications when a directory post is saved.
+     *
+     * @param int     $post_id Post ID.
+     * @param WP_Post $post    Post object.
+     * @param bool    $update  Whether this is an update.
+     */
+    public function save_at_biz_dir( $post_id, $post, $update ) {
 
-        // --- Get users already notified for this post ---
+        // --------------------------
+        // Ignore autosaves and revisions
+        // --------------------------
+        if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+            return;
+        }
+
+        // --------------------------
+        // Only target 'at_biz_dir' published posts
+        // --------------------------
+        if ( 'at_biz_dir' !== $post->post_type || 'publish' !== $post->post_status ) {
+            return;
+        }
+
+        // --------------------------
+        // Get selected job/market terms from admin options
+        // --------------------------
+        $selected_market_term = (array) get_option( 'dns_market_terms', [] );
+        $selected_job_term    = (array) get_option( 'dns_job_terms', [] );
+
+        // Merge all selected terms
+        $selected_terms = array_merge( $selected_market_term, $selected_job_term );
+        $selected_terms = array_filter( $selected_terms ); // remove empty values
+
+        if ( empty( $selected_terms ) ) {
+            return; // Nothing to compare
+        }
+
+        // --------------------------
+        // Get post's directory type terms
+        // --------------------------
+        $post_terms = wp_get_post_terms( $post_id, ATBDP_DIRECTORY_TYPE, [ 'fields' => 'ids' ] );
+
+        // --------------------------
+        // Skip post if it doesn't belong to selected job/market terms
+        // --------------------------
+        $intersect = array_intersect( $post_terms, $selected_terms );
+        if ( empty( $intersect ) ) {
+            return;
+        }
+
+        // --------------------------
+        // Get users subscribed to the post's categories and locations
+        // --------------------------
+        $taxonomies = [ ATBDP_CATEGORY, ATBDP_LOCATION ];
+        $user_ids   = dns_get_subscribed_users_by_post( $post_id, $taxonomies );
+
+        if ( empty( $user_ids ) ) {
+            return;
+        }
+
+        // --------------------------
+        // Get users already notified for this post
+        // --------------------------
         $notified_users = get_post_meta( $post_id, '_notified_users', true );
         if ( ! is_array( $notified_users ) ) {
             $notified_users = [];
         }
 
-        // --- Send notifications only to users not notified yet ---
-        foreach ( $user_ids as $user_id ) {
-            if ( in_array( $user_id, $notified_users, true ) ) {
-                continue; // Already notified
-            }
-
-            // Send notification
-            dns_send_listing_notification( $user_id, $post_id );
-
-            // Add user to notified list
-            $notified_users[] = $user_id;
+        // --------------------------
+        // Determine new users to notify
+        // --------------------------
+        $new_users = array_diff( $user_ids, $notified_users );
+        if ( empty( $new_users ) ) {
+            return; // All users already notified
         }
 
-        // --- Update post meta so we don't notify same users again ---
-        update_post_meta( $post_id, '_notified_users', array_unique( $notified_users ) );
+        // --------------------------
+        // Send notifications to new users
+        // --------------------------
+        foreach ( $new_users as $user_id ) {
+            dns_send_listing_notification( $user_id, $post_id );
+        }
 
-        // Optional: queue emails
-        $this->queue_subscription_emails( $post_id, $user_ids );
+        // --------------------------
+        // Update post meta so we don't notify the same users again
+        // --------------------------
+        $updated_users = array_merge( $notified_users, $new_users );
+        update_post_meta( $post_id, '_notified_users', array_unique( $updated_users ) );
+
+        // --------------------------
+        // Optional: queue emails only for new users
+        // --------------------------
+        $this->queue_subscription_emails( $post_id, $new_users );        
     }
+
 
 
 

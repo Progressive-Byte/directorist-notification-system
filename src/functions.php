@@ -24,19 +24,7 @@ if ( ! function_exists( 'dns_display_data' ) ) {
 }
 
 
-function dns_add_user_to_term( $term_id, $user_id ) {
-    $existing = get_term_meta( $term_id, 'subscribed_users', true );
 
-    if ( ! is_array( $existing ) ) {
-        $existing = [];
-    }
-
-    // Add user if not already subscribed
-    if ( ! in_array( $user_id, $existing, true ) ) {
-        $existing[] = $user_id;
-        update_term_meta( $term_id, 'subscribed_users', $existing );
-    }
-}
 
 
 /**
@@ -594,3 +582,92 @@ function dns_get_term_objects_by_directory( $directory_id ) {
     return ! is_wp_error( $terms ) ? $terms : array();
 }
 
+/**
+ * Get all user IDs subscribed to a post via term meta.
+ *
+ * @param int   $post_id  The post ID.
+ * @param array $taxonomies Optional. List of taxonomies to check. Default: all taxonomies of the post type.
+ *
+ * @return array Unique user IDs
+ */
+function dns_get_subscribed_users_by_post( $post_id, $taxonomies = [] ) {
+
+    if ( empty( $taxonomies ) ) {
+        // Get all taxonomies for this post type
+        $taxonomies = get_object_taxonomies( get_post_type( $post_id ), 'names' );
+    }
+
+    $user_ids = [];
+
+    foreach ( $taxonomies as $taxonomy ) {
+        $terms = wp_get_post_terms( $post_id, $taxonomy );
+
+        if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+            foreach ( $terms as $term ) {
+                $subscribed = get_term_meta( $term->term_id, 'subscribed_users', true );
+
+                if ( is_array( $subscribed ) && ! empty( $subscribed ) ) {
+                    $user_ids = array_merge( $user_ids, $subscribed );
+                }
+            }
+        }
+    }
+
+    // Remove duplicate user IDs
+    $user_ids = array_unique( $user_ids );
+
+    return $user_ids;
+}
+
+/**
+ * Add a user ID to term meta `subscribed_users`.
+ *
+ * @param array|int $term_ids Term ID or array of term IDs
+ * @param int       $user_id  User ID
+ */
+function dns_add_user_to_term( $term_ids, $user_id ) {
+    if ( ! is_array( $term_ids ) ) {
+        $term_ids = [ $term_ids ];
+    }
+
+    foreach ( $term_ids as $term_id ) {
+        $existing = get_term_meta( $term_id, 'subscribed_users', true );
+        if ( ! is_array( $existing ) ) {
+            $existing = [];
+        }
+
+        if ( ! in_array( $user_id, $existing, true ) ) {
+            $existing[] = $user_id;
+            update_term_meta( $term_id, 'subscribed_users', $existing );
+        }
+    }
+}
+
+/**
+ * Remove a user ID from term meta `subscribed_users`.
+ *
+ * @param array|int $term_ids Term ID or array of term IDs
+ * @param int       $user_id  User ID
+ */
+function remove_user_from_terms( $term_ids, $user_id ) {
+    if ( empty( $term_ids ) ) {
+        return;
+    }
+
+    if ( ! is_array( $term_ids ) ) {
+        $term_ids = [ $term_ids ];
+    }
+
+    foreach ( $term_ids as $term_id ) {
+        $existing = get_term_meta( $term_id, 'subscribed_users', true );
+
+        if ( ! is_array( $existing ) || empty( $existing ) ) {
+            continue;
+        }
+
+        if ( in_array( $user_id, $existing, true ) ) {
+            $existing = array_diff( $existing, [ $user_id ] );
+            update_term_meta( $term_id, 'subscribed_users', $existing );
+        }
+    }
+}
