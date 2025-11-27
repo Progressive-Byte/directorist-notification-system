@@ -53,7 +53,7 @@ class Frontend {
 	        <?php endif; ?>
 
 	        <?php if ( $job_page_id ) : ?>
-	            <a href="<?php echo esc_url( get_permalink( $job_page_id ) ); ?>" class="dns-subscribe-button">
+	            <a href="<?php echo esc_url( get_permalink( $job_page_id ) ); ?>" class="dns-subscribe-button dns-job-button">
 	                <?php esc_html_e( 'Job List', 'directorist-notification-system' ); ?>
 	            </a>
 	        <?php endif; ?>

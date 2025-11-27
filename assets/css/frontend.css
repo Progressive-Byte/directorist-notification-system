@@ -699,9 +699,8 @@
     border-left: 4px solid #22c55e;
 }
 
-.dns-subscribe-button-wrapper a:nth-child(2) {
-    top: 58%;
-    background-color: #22c55e; /* example: green for second button */
+.dns-job-button {
+    top: 58%!important;   
 }
 
 
