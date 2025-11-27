@@ -1,4 +1,3 @@
-<?php
 // Save form
 if ( isset($_POST['dns_save_email_template']) && check_admin_referer('dns_save_email_template_nonce') ) {
 
@@ -8,22 +7,30 @@ if ( isset($_POST['dns_save_email_template']) && check_admin_referer('dns_save_e
     update_option('dns_email_default_subject', $subject);
     update_option('dns_email_default_body', $body);
 
-    echo '<div class="updated notice"><p>Email template saved successfully.</p></div>';
+    echo '<div class="updated notice"><p>' . esc_html__( 'Email template saved successfully.', 'dns' ) . '</p></div>';
 }
 
-$subject = get_option('dns_email_default_subject', 'New Listing Match Found: {listing_title}');
-$body    = get_option('dns_email_default_body', '
-    <p>Hello {user_name},</p>
-    <p>A new listing "{listing_title}" matches your preferences.</p>
-    <p>Type: {listing_types}</p>
-    <p>City: {listing_cities}</p>
-    <p><a href="{listing_link}">View Listing</a></p>
-    <p><a href="{unsubscribe_url}">Unsubscribe</a></p>
-');
+$subject = get_option(
+    'dns_email_default_subject',
+    __( 'New Listing Match Found: {listing_title}', 'dns' )
+);
+
+$body = get_option(
+    'dns_email_default_body',
+    __(
+        '<p>Hello {user_name},</p>
+        <p>A new listing "{listing_title}" matches your preferences.</p>
+        <p>Type: {listing_types}</p>
+        <p>City: {listing_cities}</p>
+        <p><a href="{listing_link}">View Listing</a></p>
+        <p><a href="{unsubscribe_url}">Unsubscribe</a></p>',
+        'dns'
+    )
+);
 ?>
 
 <div class="dns-card">
-    <h2>Email Template Settings</h2>
+    <h2><?php _e('Email Template Settings', 'dns'); ?></h2>
 
     <form method="post">
         <?php wp_nonce_field('dns_save_email_template_nonce'); ?>
@@ -31,16 +38,18 @@ $body    = get_option('dns_email_default_body', '
         <table class="form-table">
 
             <tr>
-                <th><label>Email Subject</label></th>
+                <th><label><?php _e('Email Subject', 'dns'); ?></label></th>
                 <td>
-                    <input type="text" name="dns_email_default_subject"
+                    <input type="text"
+                           name="dns_email_default_subject"
                            value="<?php echo esc_attr($subject); ?>"
-                           class="regular-text" style="width: 100%;">
+                           class="regular-text"
+                           style="width: 100%;">
                 </td>
             </tr>
 
             <tr>
-                <th><label>Email Message</label></th>
+                <th><label><?php _e('Email Message', 'dns'); ?></label></th>
                 <td>
                     <?php
                     wp_editor(
@@ -58,37 +67,33 @@ $body    = get_option('dns_email_default_body', '
 
         </table>
 
-        <h3 class="dns-heading">Available Placeholders</h3>
+        <h3 class="dns-heading"><?php _e('Available Placeholders', 'dns'); ?></h3>
 
         <ul id="dns-placeholder-list" class="dns-placeholder-box">
-            <li>
-                <span class="placeholder-tag">{user_name}</span>
-                <button class="copy-btn" data-copy="{user_name}">Copy</button>
-            </li>
-            <li>
-                <span class="placeholder-tag">{listing_title}</span>
-                <button class="copy-btn" data-copy="{listing_title}">Copy</button>
-            </li>
-            <li>
-                <span class="placeholder-tag">{listing_link}</span>
-                <button class="copy-btn" data-copy="{listing_link}">Copy</button>
-            </li>
-            <li>
-                <span class="placeholder-tag">{listing_types}</span>
-                <button class="copy-btn" data-copy="{listing_types}">Copy</button>
-            </li>
-            <li>
-                <span class="placeholder-tag">{listing_cities}</span>
-                <button class="copy-btn" data-copy="{listing_cities}">Copy</button>
-            </li>
-            <li>
-                <span class="placeholder-tag">{unsubscribe_url}</span>
-                <button class="copy-btn" data-copy="{unsubscribe_url}">Copy</button>
-            </li>
+            <?php
+            $placeholders = [
+                '{user_name}',
+                '{listing_title}',
+                '{listing_link}',
+                '{listing_types}',
+                '{listing_cities}',
+                '{unsubscribe_url}',
+            ];
+
+            foreach ( $placeholders as $ph ) {
+                echo '<li>
+                        <span class="placeholder-tag">' . esc_html( $ph ) . '</span>
+                        <button class="copy-btn" data-copy="' . esc_attr( $ph ) . '">' . esc_html__( 'Copy', 'dns' ) . '</button>
+                    </li>';
+            }
+            ?>
         </ul>
 
+        <p>
+            <button type="submit" name="dns_save_email_template" class="button button-primary">
+                <?php _e('Save Template', 'dns'); ?>
+            </button>
+        </p>
 
-
-        <p><button type="submit" name="dns_save_email_template" class="button button-primary">Save Template</button></p>
     </form>
 </div>
