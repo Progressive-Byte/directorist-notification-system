@@ -34,10 +34,6 @@ use DNS\Helper\Messages;
                     <?php esc_html_e( 'Market Place Listing', 'directorist-notification-system' ); ?>
                 </button>
 
-                <button type="button" class="dns-tab" data-tab="job">
-                    <?php esc_html_e( 'Job Listing', 'directorist-notification-system' ); ?>
-                </button>
-
                 <button type="button" class="dns-tab" data-tab="locations">
                     <?php esc_html_e( 'Location', 'directorist-notification-system' ); ?>
                 </button>
@@ -130,21 +126,7 @@ use DNS\Helper\Messages;
                     'market_types'
                 );
                 ?>
-            </div>
-
-            <!-- ============================= -->
-            <!-- JOB TAB -->
-            <!-- ============================= -->
-            <div class="dns-tab-content" id="tab-job">
-                <?php
-                dns_render_checkbox_block(
-                    $job_types,
-                    $saved['listing_types'] ?? array(),
-                    __( 'Please select Job listing.', 'directorist-notification-system' ),
-                    'listing_types'
-                );
-                ?>
-            </div>
+            </div>           
 
             <!-- ============================= -->
             <!-- LOCATION TAB -->

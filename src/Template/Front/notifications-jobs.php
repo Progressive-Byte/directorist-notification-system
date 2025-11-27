@@ -30,9 +30,6 @@ use DNS\Helper\Messages;
             <!-- Tabs Navigation -->
             <!-- ============================= -->
             <div class="dns-tabs">
-                <button type="button" class="dns-tab" data-tab="market">
-                    <?php esc_html_e( 'Market Place Listing', 'directorist-notification-system' ); ?>
-                </button>
 
                 <button type="button" class="dns-tab" data-tab="job">
                     <?php esc_html_e( 'Job Listing', 'directorist-notification-system' ); ?>
@@ -117,20 +114,6 @@ use DNS\Helper\Messages;
             <?php
             }
             ?>
-
-            <!-- ============================= -->
-            <!-- MARKET TAB -->
-            <!-- ============================= -->
-            <div class="dns-tab-content" id="tab-market">
-                <?php
-                dns_render_checkbox_block(
-                    $market_types,
-                    $saved['market_types'] ?? array(),
-                    __( 'Please select Market listing.', 'directorist-notification-system' ),
-                    'market_types'
-                );
-                ?>
-            </div>
 
             <!-- ============================= -->
             <!-- JOB TAB -->
