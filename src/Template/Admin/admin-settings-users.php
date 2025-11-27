@@ -27,7 +27,7 @@ use DNS\Helper\Messages;
         <!-- Notification Preferences Page -->
         <tr>
             <th scope="row">
-                <?php esc_html_e('Notification Preferences Page', 'directorist-notification-system'); ?>
+                <?php esc_html_e('Market Place Page', 'directorist-notification-system'); ?>
                 <span style="color:#e11d48;font-weight:bold;">*</span>
             </th>
             <td>
@@ -39,9 +39,40 @@ use DNS\Helper\Messages;
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <p class="description"><?php esc_html_e('Select your notification preferences page.', 'directorist-notification-system'); ?></p>
+                <p class="description"><?php esc_html_e('Select your market place page.', 'directorist-notification-system'); ?></p>
             </td>
         </tr>
+
+        <!-- Secondary Notification Page -->
+        <tr>
+            <th scope="row">
+                <?php esc_html_e('Job Listing page', 'directorist-notification-system'); ?>
+            </th>
+
+            <td>
+                <?php
+                $secondary_page = get_option('dns_secondary_page_id', '');
+                ?>
+
+                <select name="dns_secondary_page_id">
+                    <option value="">
+                        -- <?php esc_html_e('Select Page', 'directorist-notification-system'); ?> --
+                    </option>
+
+                    <?php foreach ($pages as $page) : ?>
+                        <option value="<?php echo esc_attr($page->ID); ?>"
+                            <?php selected($secondary_page, $page->ID); ?>>
+                            <?php echo esc_html($page->post_title . ' (ID: ' . $page->ID . ')'); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
+                <p class="description">
+                    <?php esc_html_e('Job Listing page.', 'directorist-notification-system'); ?>
+                </p>
+            </td>
+        </tr>
+
 
         <!-- Market Place Listing Type -->
         <tr>

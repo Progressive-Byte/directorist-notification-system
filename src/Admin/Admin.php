@@ -68,6 +68,7 @@ class Admin {
             'dns_market_terms',
             'dns_subscription_pages',
             'dns_subscription_page_id',
+            'dns_secondary_page_id',
         ];
 
         foreach ($settings as $setting) {
