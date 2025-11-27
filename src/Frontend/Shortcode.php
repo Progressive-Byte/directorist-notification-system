@@ -18,7 +18,8 @@ class Shortcode {
      * Shortcode constructor.
      */
     public function __construct() {
-        add_shortcode( 'notification_system', [ $this, 'render' ] );
+        add_shortcode( 'notification_job', [ $this, 'job' ] );
+        add_shortcode( 'notification_marketplace', [ $this, 'marketplace' ] );
         add_action( 'wp_head', [ $this, 'head' ] );
     }
 
@@ -36,7 +37,7 @@ class Shortcode {
      *
      * @return string
      */
-    public function render() {
+    public function job() {
 
         // Require login
         if ( ! is_user_logged_in() ) {
@@ -123,7 +124,7 @@ class Shortcode {
         }
 
         // --- LOAD TEMPLATE ---
-        $template = DNS_PLUGIN_TEMPLATE . 'Front/notify-preferences.php';
+        $template = DNS_PLUGIN_TEMPLATE . 'Front/notifications-jobs.php';
 
         return dns_load_template( $template, [
             'listing_types' => $listing_types,
