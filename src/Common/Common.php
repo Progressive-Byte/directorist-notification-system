@@ -15,10 +15,7 @@ class Common {
         add_action( 'dns_process_email_queue', [ $this, 'process_email_queue' ] );
 
         // Unsubscribe link handler
-        add_action( 'template_redirect', [ $this, 'check_unsubscribe' ] );
-        add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'send_notifications_for_user', 10, 3 ] );
-
-
+        add_action( 'template_redirect', [ $this, 'check_unsubscribe' ] );  
         add_action( 'wp_head', [$this, 'head' ] );
 
         
@@ -332,26 +329,5 @@ class Common {
         wp_safe_redirect( $redirect_url );
         exit;
     }
-
-
-    public function send_notifications_for_user( $notifications, $user_id, $format ){
-          foreach ( $notifications as &$n ) {
-
-            // Only our notification
-            if ( $n->component_action !== 'new_listing_match' ) {
-                continue;
-            }
-
-            $msg  = bp_notifications_get_meta( $n->id, 'message', true );
-            $link = bp_notifications_get_meta( $n->id, 'link', true );
-
-            if ( $format === 'string' ) {
-                $n->content = '<a href="' . esc_url( $link ) . '">' . esc_html( $msg ) . '</a>';
-            }
-        }
-
-        return $notifications;  
-    }
-
 
 }

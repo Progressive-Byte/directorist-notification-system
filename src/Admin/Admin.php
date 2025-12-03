@@ -22,8 +22,7 @@ class Admin {
         // Register settings
         add_action('admin_init', [$this, 'register_settings']);
 
-        // Hook to custom notifications filter
-        add_filter('dns_notifications', [$this, 'send_notifications_for_user'], 10, 3);
+        add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'send_notifications_for_user', 10, 3 ] );
 
         // Clear cache when a user is updated or created
         add_action('profile_update', function() {
