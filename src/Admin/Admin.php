@@ -41,6 +41,8 @@ class Admin {
                 delete_transient('dns_cached_pages');
             }
         });
+
+         add_filter( 'directorist_template', [ $this, 'change_template' ], 20, 2 );
     }
 
     /**
@@ -180,5 +182,22 @@ class Admin {
         }
 
         return $notifications;
+    }
+
+    public function change_template(  $template, $args ){
+        // dns_pri( $template );
+
+        if ( 'listing-form/fields/address' == $template ) {
+            $template = DNS_PLUGIN_DIR . '/src/Template/Admin/address.php';
+             if ( file_exists( $template ) ) {
+
+                dns_load_template( $template, $args );
+                
+                return false;
+            }
+        }
+
+
+        return $template;
     }
 }

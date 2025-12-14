@@ -130,13 +130,13 @@ use DNS\Helper\Messages;
             <td>
                 <label class="dns-toggle-wrapper">
                     <span class="dns-toggle">
-                        <input type="checkbox" id="dns_subscribe_pages" name="dns_subscribe_pages_enabled" value="1" <?php checked( $job_enabled || $product_enabled, 1 ); ?> />
+                        <input type="checkbox" id="dns_subscribe_pages" name="dns_subscribe_pages_enabled" value="1" <?php checked( $job_enabled , 1 ); ?> />
                         <span class="dns-toggle-slider"></span>
                     </span>
                     <span><?php esc_html_e('Enable subscribe button on selected pages', 'directorist-notification-system'); ?></span>
                 </label>
 
-                <div id="dns_pages_select" style="margin-top:10px; <?php echo ($job_enabled || $product_enabled) ? '' : 'display:none;'; ?>">
+                <div id="dns_pages_select" style="margin-top:10px; <?php echo ($job_enabled ) ? '' : 'display:none;'; ?>">
                     <label><?php esc_html_e('Select pages to enable subscribe button:', 'directorist-notification-system'); ?></label>
                     <div style="margin-top:5px; max-height:200px; overflow-y:auto; border:1px solid #ddd; padding:5px;">
                         <?php
