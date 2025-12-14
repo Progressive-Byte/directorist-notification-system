@@ -239,7 +239,7 @@ class Admin {
         );
 
         // Save
-        update_post_meta( $post_id, 'custom_address', $addresses );
+        update_post_meta( $post_id, '_custom_address', $addresses );
     }
 
 }
