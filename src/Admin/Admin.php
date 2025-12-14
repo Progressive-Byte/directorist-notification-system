@@ -43,6 +43,7 @@ class Admin {
         });
 
          add_filter( 'directorist_template', [ $this, 'change_template' ], 20, 2 );
+         add_filter( 'save_post', [ $this, 'save_custom_addresses' ] );
     }
 
     /**
@@ -188,7 +189,7 @@ class Admin {
     public function change_template(  $template, $args ){
         // dns_pri( $template );
 
-        if ( 'listing-form/fields/address' == $template ) {
+        if ( dns_is_multiple_address_enabled() && 'listing-form/fields/address' == $template ) {
             $template = DNS_PLUGIN_DIR . '/src/Template/Admin/address.php';
              if ( file_exists( $template ) ) {
 
@@ -201,4 +202,44 @@ class Admin {
 
         return $template;
     }
+
+    /**
+     * Save custom addresses for a post
+     */
+    function save_custom_addresses( $post_id ) {
+
+        // Always stop autosave
+        if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+            return;
+        }
+
+        // Stop revisions
+        if ( wp_is_post_revision( $post_id ) ) {
+            return;
+        }
+
+        // Permission check (important)
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+
+        // Feature toggle check
+        if ( ! dns_is_multiple_address_enabled() ) {
+            return;
+        }
+
+        // Validate input
+        if ( empty( $_POST['custom_address'] ) || ! is_array( $_POST['custom_address'] ) ) {
+            return;
+        }
+
+        // Sanitize addresses & remove empty values
+        $addresses = array_filter(
+            array_map( 'sanitize_text_field', wp_unslash( $_POST['custom_address'] ) )
+        );
+
+        // Save
+        update_post_meta( $post_id, 'custom_address', $addresses );
+    }
+
 }

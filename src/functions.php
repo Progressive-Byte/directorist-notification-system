@@ -661,3 +661,12 @@ function remove_user_from_terms( $term_ids, $user_id ) {
         }
     }
 }
+
+/**
+ * Check if multiple address feature is enabled
+ *
+ * @return bool
+ */
+function dns_is_multiple_address_enabled() {
+    return (bool) get_option('dns_multiple_address_enabled', false);
+}

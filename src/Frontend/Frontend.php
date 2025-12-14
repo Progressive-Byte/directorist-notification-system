@@ -19,7 +19,7 @@ class Frontend {
 	public function head(){
 		
 
-		// // Messages::pri($selected_directories);
+		// Messages::pri( dns_is_multiple_address_enabled() );
 
 		// Optional head scripts or styles
 	}
