@@ -238,51 +238,72 @@ function dns_unsubscribe_user( $user_id ) {
  *
  * @param int $user_id    ID of the user to notify.
  * @param int $listing_id ID of the listing post.
+ *
+ * @return bool
  */
-if ( ! function_exists( 'dns_send_listing_notification' ) ) {
-    function dns_send_listing_notification( $user_id, $listing_id ) {
+function dns_send_listing_notification( $user_id, $listing_id ) {
 
+    $user_id    = (int) $user_id;
+    $listing_id = (int) $listing_id;
 
-        $user_id    = (int) $user_id;
-        $listing_id = (int) $listing_id;
-
-        if ( ! $user_id || ! $listing_id ) return false;
-
-        $listing_title = get_the_title( $listing_id );
-        $listing_link  = get_permalink( $listing_id );
-
-        // --- BuddyBoss Notification ---
-        if ( function_exists( 'bp_notifications_add_notification' ) ) {
-
-            $notification_id = bp_notifications_add_notification( [
-                'user_id'           => $user_id,
-                'item_id'           => $listing_id,
-                'secondary_item_id' => 0,
-                'component_name'    => 'dns_matches',
-                'component_action'  => 'new_listing_match',
-                'is_new'            => 1,
-                'allow_duplicate'   => false,
-            ] );
-
-            if ( $notification_id ) {
-                bp_notifications_update_meta( $notification_id, 'message', "New Listing Match Found: $listing_title" );
-                bp_notifications_update_meta( $notification_id, 'link', $listing_link );
-            }
-        }
-
-        // --- Push Notification ---
-        if ( function_exists( 'bp_push_notification_send' ) ) {
-            bp_push_notification_send( [
-                'user_id' => $user_id,
-                'title'   => 'New Listing Match Found!',
-                'message' => "A new listing matches your preferences: $listing_title",
-                'url'     => $listing_link,
-            ] );
-        }
-
-        return true;
+    if ( ! $user_id || ! $listing_id ) {
+        return false;
     }
+
+    $listing_title = get_the_title( $listing_id );
+    $listing_link  = get_permalink( $listing_id );
+
+    /* ---------------------------------------------------------
+     * BuddyBoss / BuddyPress Notification
+     * ------------------------------------------------------ */
+
+    if ( function_exists( 'bp_notifications_add_notification' ) ) {
+
+        $notification_id = bp_notifications_add_notification( [
+            'user_id'           => $user_id,
+            'item_id'           => $listing_id,
+            'secondary_item_id' => 0,
+            'component_name'    => 'activity', // registered component
+            'component_action'  => 'dns_new_listing_match',
+            'date_notified'     => bp_core_current_time(),
+            'is_new'            => 1,
+            'allow_duplicate'   => false,
+        ] );
+
+        if ( $notification_id ) {
+            bp_notifications_update_meta(
+                $notification_id,
+                'dns_message',
+                sprintf( __( 'New listing match: %s', 'dns' ), $listing_title )
+            );
+
+            bp_notifications_update_meta(
+                $notification_id,
+                'dns_link',
+                $listing_link
+            );
+        }
+    }
+
+    /* ---------------------------------------------------------
+     * BuddyBoss Push Notification
+     * ------------------------------------------------------ */
+
+    if ( function_exists( 'bp_push_notification_send' ) ) {
+        bp_push_notification_send( [
+            'user_id' => $user_id,
+            'title'   => __( 'New Listing Match Found!', 'dns' ),
+            'message' => sprintf(
+                __( 'A new listing matches your preferences: %s', 'dns' ),
+                $listing_title
+            ),
+            'url'     => $listing_link,
+        ] );
+    }
+
+    return true;
 }
+
 
 /* ============================================================
  * ✅ Template Loader

@@ -22,7 +22,7 @@ class Admin {
         // Register settings
         add_action('admin_init', [$this, 'register_settings']);
 
-        add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'send_notifications_for_user', 10, 3 ] );
+        add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'send_notifications_for_user', 10, 7 ] );
 
         // Clear cache when a user is updated or created
         add_action('profile_update', function() {
@@ -156,29 +156,52 @@ class Admin {
     }
 
     /**
-     * Process notifications for users
-     *
-     * @param array $notifications Array of notification objects
-     * @param int   $user_id       User ID
-     * @param string $format       Output format ('string' or 'html')
-     * @return array
+     * Format BuddyBoss / BuddyPress notification output
      */
-    public function send_notifications_for_user($notifications, $user_id, $format) {
-        foreach ($notifications as &$n) {
+    function dns_format_listing_notification(
+        $content,
+        $user_id,
+        $format,
+        $action,
+        $component,
+        $item_id,
+        $secondary_item_id
+    ) {
 
-            // Only process notifications for new listing matches
-            if ($n->component_action !== 'new_listing_match') {
-                continue;
-            }
-
-            $msg  = bp_notifications_get_meta($n->id, 'message', true);
-            $link = bp_notifications_get_meta($n->id, 'link', true);
-
-            if ($format === 'string') {
-                $n->content = '<a href="' . esc_url($link) . '">' . esc_html($msg) . '</a>';
-            }
+        if ( $component !== 'activity' || $action !== 'dns_new_listing_match' ) {
+            return $content;
         }
 
-        return $notifications;
+        // Get notification ID
+        $notification_id = bp_notifications_get_notification_id();
+
+        $message = bp_notifications_get_meta(
+            $notification_id,
+            'dns_message',
+            true
+        );
+
+        $link = bp_notifications_get_meta(
+            $notification_id,
+            'dns_link',
+            true
+        );
+
+        if ( empty( $message ) ) {
+            $message = __( 'You have a new listing match.', 'dns' );
+        }
+
+        if ( empty( $link ) ) {
+            $link = home_url();
+        }
+
+        if ( 'string' === $format ) {
+            return $message;
+        }
+
+        return [
+            'text' => $message,
+            'link' => $link,
+        ];
     }
 }
