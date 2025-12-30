@@ -596,7 +596,7 @@ function dns_get_term_objects_by_directory( $directory_id ) {
 /**
  * Get all user IDs subscribed to a post via term meta.
  *
- * @param int   $post_id  The post ID.
+ * @param int   $post_id    The post ID.
  * @param array $taxonomies Optional. List of taxonomies to check. Default: all taxonomies of the post type.
  *
  * @return array Unique user IDs
@@ -643,20 +643,6 @@ function dns_get_subscribed_users_by_post( $post_id, $taxonomies = [] ) {
             continue;
         }
         
-        $match_type     = false;
-        $match_location = false;
-        
-        // Check listing type match (categories)
-        if ( ! empty( $prefs['listing_types'] ) ) {
-            $post_types = wp_get_post_terms( $post_id, ATBDP_CATEGORY, ['fields' => 'ids'] );
-            
-            if ( ! is_wp_error( $post_types ) && ! empty( $post_types ) ) {
-                $user_selected_types = (array) $prefs['listing_types'];
-                $type_match = array_intersect( $post_types, $user_selected_types );
-                $match_type = ! empty( $type_match );
-            }
-        }
-        
         // Check location match
         if ( ! empty( $prefs['listing_locations'] ) ) {
             $post_locations = wp_get_post_terms( $post_id, ATBDP_LOCATION, ['fields' => 'ids'] );
@@ -664,27 +650,13 @@ function dns_get_subscribed_users_by_post( $post_id, $taxonomies = [] ) {
             if ( ! is_wp_error( $post_locations ) && ! empty( $post_locations ) ) {
                 $user_selected_locations = (array) $prefs['listing_locations'];
                 $location_match = array_intersect( $post_locations, $user_selected_locations );
-                $match_location = ! empty( $location_match );
+                
+                // Add user if location matches
+                if ( ! empty( $location_match ) ) {
+                    $user_ids[] = $user->ID;
+                }
             }
         }
-        
-        // ========================================
-        // Matching Logic
-        // ========================================
-        // Option A: User must match BOTH type AND location
-        if ( $match_type && $match_location ) {
-            $user_ids[] = $user->ID;
-        }
-        
-        // Option B: User matches EITHER type OR location (uncomment if needed)
-        // if ( $match_type || $match_location ) {
-        //     $user_ids[] = $user->ID;
-        // }
-        
-        // Option C: Match only location (if type not set)
-        // if ( $match_location && empty( $prefs['listing_types'] ) ) {
-        //     $user_ids[] = $user->ID;
-        // }
     }
     
     // ========================================
