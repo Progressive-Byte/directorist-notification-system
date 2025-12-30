@@ -17,12 +17,9 @@ class Frontend {
 	}
 
 	public function head(){
-		// $selected_directories = dns_get_selected_directories_for_categories();
+		
 
-		// $grouped = dns_get_terms_by_directory( 355 );
-		// Messages::pri( $grouped );
-
-		// // Messages::pri($selected_directories);
+		// Messages::pri( dns_is_multiple_address_enabled() );
 
 		// Optional head scripts or styles
 	}
