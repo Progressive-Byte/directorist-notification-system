@@ -602,32 +602,95 @@ function dns_get_term_objects_by_directory( $directory_id ) {
  * @return array Unique user IDs
  */
 function dns_get_subscribed_users_by_post( $post_id, $taxonomies = [] ) {
-
+    
+    $user_ids = [];
+    
+    // ========================================
+    // METHOD 1: Term-level subscriptions
+    // (Original implementation)
+    // ========================================
     if ( empty( $taxonomies ) ) {
         // Get all taxonomies for this post type
         $taxonomies = get_object_taxonomies( get_post_type( $post_id ), 'names' );
     }
-
-    $user_ids = [];
-
+    
     foreach ( $taxonomies as $taxonomy ) {
         $terms = wp_get_post_terms( $post_id, $taxonomy );
-
         if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
             foreach ( $terms as $term ) {
                 $subscribed = get_term_meta( $term->term_id, 'subscribed_users', true );
-
                 if ( is_array( $subscribed ) && ! empty( $subscribed ) ) {
                     $user_ids = array_merge( $user_ids, $subscribed );
                 }
             }
         }
     }
-
-    // Remove duplicate user IDs
-    $user_ids = array_unique( $user_ids );
-
-    return $user_ids;
+    
+    // ========================================
+    // METHOD 2: User preference matching
+    // (Check user meta for saved preferences)
+    // ========================================
+    $args = [
+        'meta_key'     => 'dns_notify_prefs',
+        'meta_compare' => 'EXISTS',
+    ];
+    $users = get_users( $args );
+    
+    foreach ( $users as $user ) {
+        $prefs = get_user_meta( $user->ID, 'dns_notify_prefs', true );
+        
+        if ( empty( $prefs ) || ! is_array( $prefs ) ) {
+            continue;
+        }
+        
+        $match_type     = false;
+        $match_location = false;
+        
+        // Check listing type match (categories)
+        if ( ! empty( $prefs['listing_types'] ) ) {
+            $post_types = wp_get_post_terms( $post_id, ATBDP_CATEGORY, ['fields' => 'ids'] );
+            
+            if ( ! is_wp_error( $post_types ) && ! empty( $post_types ) ) {
+                $user_selected_types = (array) $prefs['listing_types'];
+                $type_match = array_intersect( $post_types, $user_selected_types );
+                $match_type = ! empty( $type_match );
+            }
+        }
+        
+        // Check location match
+        if ( ! empty( $prefs['listing_locations'] ) ) {
+            $post_locations = wp_get_post_terms( $post_id, ATBDP_LOCATION, ['fields' => 'ids'] );
+            
+            if ( ! is_wp_error( $post_locations ) && ! empty( $post_locations ) ) {
+                $user_selected_locations = (array) $prefs['listing_locations'];
+                $location_match = array_intersect( $post_locations, $user_selected_locations );
+                $match_location = ! empty( $location_match );
+            }
+        }
+        
+        // ========================================
+        // Matching Logic
+        // ========================================
+        // Option A: User must match BOTH type AND location
+        if ( $match_type && $match_location ) {
+            $user_ids[] = $user->ID;
+        }
+        
+        // Option B: User matches EITHER type OR location (uncomment if needed)
+        // if ( $match_type || $match_location ) {
+        //     $user_ids[] = $user->ID;
+        // }
+        
+        // Option C: Match only location (if type not set)
+        // if ( $match_location && empty( $prefs['listing_types'] ) ) {
+        //     $user_ids[] = $user->ID;
+        // }
+    }
+    
+    // ========================================
+    // Return unique user IDs from both methods
+    // ========================================
+    return array_unique( $user_ids );
 }
 
 /**
