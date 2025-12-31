@@ -1,63 +1,59 @@
-jQuery(document).ready(function($) {
+jQuery(document).ready(function ($) {
 
     // === Toggle Job/Product page select ===
-    $('#dns_subscribe_job').on('change', function() {
+    $('#dns_subscribe_job').on('change', function () {
         $('#dns_job_page_select').toggle(this.checked);
     });
 
-    $('#dns_subscribe_product').on('change', function() {
+    $('#dns_subscribe_product').on('change', function () {
         $('#dns_product_page_select').toggle(this.checked);
     });
 
-    // === Show/hide pages list when toggle is clicked ===
-    $('#dns_subscribe_pages').on('change', function() {
-        if ($(this).is(':checked')) {
-            $('#dns_pages_select').slideDown();
-        } else {
-            $('#dns_pages_select').slideUp();
-        }
+    // === Show/hide pages list ===
+    $('#dns_subscribe_pages').on('change', function () {
+        $(this).is(':checked')
+            ? $('#dns_pages_select').slideDown()
+            : $('#dns_pages_select').slideUp();
     });
 
-    // === Tabs handling (conflict-free) ===
+    // === Tabs handling ===
     function dnsAdminTabs() {
-        var wrapper = $('.dns-tab-wrapper');
-        var tabs    = wrapper.find('.dns-tab');
-        var contents = $('.dns-tab-content');
+        const tabs     = $('.dns-tab');
+        const contents = $('.dns-tab-content');
 
-        // Show last active tab
-        var lastTab = localStorage.getItem('dns_active_tab');
-        if (lastTab && $(lastTab).length) {
-            tabs.removeClass('dns-tab-active');
-            contents.hide();
-            tabs.filter('[href="' + lastTab + '"]').addClass('dns-tab-active');
-            $(lastTab).show();
-        } else {
-            tabs.removeClass('dns-tab-active');
-            tabs.first().addClass('dns-tab-active');
-            contents.hide();
-            contents.first().show();
+        // Priority: URL hash > localStorage > first tab
+        let activeTab = window.location.hash || localStorage.getItem('dns_active_tab');
+
+        if (!activeTab || !$(activeTab).length) {
+            activeTab = tabs.first().attr('href');
         }
 
-        // Tabs switching
-        tabs.off('click.dnsTabs').on('click.dnsTabs', function(e) {
-            e.preventDefault();
-            var tab_id = $(this).attr('href');
+        // Activate tab
+        tabs.removeClass('dns-tab-active');
+        contents.hide();
+        tabs.filter('[href="' + activeTab + '"]').addClass('dns-tab-active');
+        $(activeTab).show();
 
-            // Activate tab
+        // Click handler
+        tabs.off('click.dnsTabs').on('click.dnsTabs', function (e) {
+            e.preventDefault();
+
+            const tab_id = $(this).attr('href');
+
             tabs.removeClass('dns-tab-active');
             $(this).addClass('dns-tab-active');
 
-            // Show corresponding content
             contents.hide();
             $(tab_id).show();
 
-            // Save active tab
             localStorage.setItem('dns_active_tab', tab_id);
+            history.replaceState(null, null, tab_id); // update URL hash
         });
     }
 
     dnsAdminTabs();
 });
+
 
 jQuery(document).ready(function($) {
 
