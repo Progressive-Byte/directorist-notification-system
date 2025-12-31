@@ -139,6 +139,12 @@ class Common {
             return; // All users already notified
         }
 
+
+        // --------------------------
+        // Optional: queue emails only for new users
+        // --------------------------
+        $this->queue_subscription_emails( $post_id, $new_users );
+
         // --------------------------
         // Send notifications to new users
         // --------------------------
@@ -152,10 +158,7 @@ class Common {
         $updated_users = array_merge( $notified_users, $new_users );
         update_post_meta( $post_id, '_notified_users', array_unique( $updated_users ) );
 
-        // --------------------------
-        // Optional: queue emails only for new users
-        // --------------------------
-        $this->queue_subscription_emails( $post_id, $new_users );
+        
     }
 
 
