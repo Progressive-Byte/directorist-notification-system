@@ -66,6 +66,11 @@ class Shortcode {
 
         // load saved prefs
         $saved = get_user_meta( $user_id, 'dns_notify_prefs', true );
+        
+        // Ensure $saved is an array
+        if (!is_array($saved)) {
+            $saved = [];
+        }
 
         // --------------------------------
         // HANDLE SAVE FORM
@@ -88,11 +93,10 @@ class Shortcode {
             remove_user_from_terms( array_diff($previous_types, $selected_types), $user_id );
             remove_user_from_terms( array_diff($previous_locations, $selected_locations), $user_id );
 
-            // Save new prefs
-            $saved = [
-                $type_key           => $selected_types,
-                'listing_locations' => $selected_locations,
-            ];
+            // Merge with existing prefs instead of overwriting
+            $saved[$type_key] = $selected_types;
+            $saved['listing_locations'] = $selected_locations;
+            
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
 
             // Add newly checked ones

@@ -64,6 +64,8 @@
                 <!-- JOB LISTINGS -->
                 <td>
                     <?php
+
+                    // var_dump( $prefs );
                     if ( ! empty( $prefs['listing_types'] ) && is_array( $prefs['listing_types'] ) ) {
                         foreach ( $prefs['listing_types'] as $tid ) {
                             $term = get_term( (int) $tid );
