@@ -17,9 +17,11 @@ class Frontend {
 	}
 
 	public function head(){
+
+
 		
 
-		// Messages::pri( dns_is_multiple_address_enabled() );
+		// Messages::pri( dns_get_subscribed_users_by_post( 4911589  ) );
 
 		// Optional head scripts or styles
 	}
