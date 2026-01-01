@@ -89,29 +89,29 @@ class Common {
         // --------------------------
         // Get selected job/market terms from admin options
         // --------------------------
-        $selected_market_term = (array) get_option( 'dns_market_terms', [] );
-        $selected_job_term    = (array) get_option( 'dns_job_terms', [] );
+        // $selected_market_term = (array) get_option( 'dns_market_terms', [] );
+        // $selected_job_term    = (array) get_option( 'dns_job_terms', [] );
 
-        // Merge all selected terms
-        $selected_terms = array_merge( $selected_market_term, $selected_job_term );
-        $selected_terms = array_filter( $selected_terms ); // remove empty values
+        // // Merge all selected terms
+        // $selected_terms = array_merge( $selected_market_term, $selected_job_term );
+        // $selected_terms = array_filter( $selected_terms ); // remove empty values
 
-        if ( empty( $selected_terms ) ) {
-            return; // Nothing to compare
-        }
+        // if ( empty( $selected_terms ) ) {
+        //     return; // Nothing to compare
+        // }
 
         // --------------------------
         // Get post's directory type terms
         // --------------------------
-        $post_terms = wp_get_post_terms( $post_id, ATBDP_DIRECTORY_TYPE, [ 'fields' => 'ids' ] );
+        // $post_terms = wp_get_post_terms( $post_id, ATBDP_DIRECTORY_TYPE, [ 'fields' => 'ids' ] );
 
-        // --------------------------
-        // Skip post if it doesn't belong to selected job/market terms
-        // --------------------------
-        $intersect = array_intersect( $post_terms, $selected_terms );
-        if ( empty( $intersect ) ) {
-            return;
-        }
+        // // --------------------------
+        // // Skip post if it doesn't belong to selected job/market terms
+        // // --------------------------
+        // $intersect = array_intersect( $post_terms, $selected_terms );
+        // if ( empty( $intersect ) ) {
+        //     return;
+        // }
 
         // --------------------------
         // Get users subscribed to the post's categories and locations
@@ -149,7 +149,9 @@ class Common {
         // Send notifications to new users
         // --------------------------
         foreach ( $new_users as $user_id ) {
+            
             dns_send_listing_notification( $user_id, $post_id );
+            
         }
 
         // --------------------------
