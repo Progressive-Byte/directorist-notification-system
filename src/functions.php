@@ -594,76 +594,110 @@ function dns_get_term_objects_by_directory( $directory_id ) {
 }
 
 /**
- * Get all user IDs subscribed to a post via term meta.
+ * Get all user IDs subscribed to a post via term meta or user preferences.
  *
  * @param int   $post_id    The post ID.
  * @param array $taxonomies Optional. List of taxonomies to check. Default: all taxonomies of the post type.
  *
  * @return array Unique user IDs
  */
-function dns_get_subscribed_users_by_post( $post_id, $taxonomies = [] ) {
-    
-    $user_ids = [];
-    
-    // ========================================
-    // METHOD 1: Term-level subscriptions
-    // (Original implementation)
-    // ========================================
-    if ( empty( $taxonomies ) ) {
-        // Get all taxonomies for this post type
-        $taxonomies = get_object_taxonomies( get_post_type( $post_id ), 'names' );
-    }
-    
-    foreach ( $taxonomies as $taxonomy ) {
-        $terms = wp_get_post_terms( $post_id, $taxonomy );
-        if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-            foreach ( $terms as $term ) {
-                $subscribed = get_term_meta( $term->term_id, 'subscribed_users', true );
-                if ( is_array( $subscribed ) && ! empty( $subscribed ) ) {
-                    $user_ids = array_merge( $user_ids, $subscribed );
+
+if ( ! function_exists( 'dns_get_subscribed_users_by_post' ) ) {
+    function dns_get_subscribed_users_by_post( $post_id, $taxonomies = [] ) {
+
+        global $wpdb;
+
+        $user_ids = [];
+
+        // --------------------------
+        // 1️⃣ Term-level subscriptions via SQL
+        // --------------------------
+        if ( empty( $taxonomies ) ) {
+            $taxonomies = get_object_taxonomies( get_post_type( $post_id ), 'names' );
+        }
+
+        if ( ! empty( $taxonomies ) ) {
+
+            // Prepare placeholders for SQL IN
+            $taxonomy_placeholders = implode( ',', array_fill( 0, count( $taxonomies ), '%s' ) );
+
+            // Get all term IDs for this post and these taxonomies
+            $term_ids = $wpdb->get_col( $wpdb->prepare(
+                "
+                SELECT tt.term_id
+                FROM {$wpdb->term_relationships} AS tr
+                INNER JOIN {$wpdb->term_taxonomy} AS tt 
+                    ON tr.term_taxonomy_id = tt.term_taxonomy_id
+                WHERE tr.object_id = %d
+                AND tt.taxonomy IN ($taxonomy_placeholders)
+                ",
+                $post_id,
+                ...$taxonomies
+            ));
+
+            if ( ! empty( $term_ids ) ) {
+                // Prepare placeholders for term IDs
+                $term_placeholders = implode( ',', array_fill( 0, count( $term_ids ), '%d' ) );
+
+                // Get all subscribed users from term meta
+                $meta_values = $wpdb->get_col( $wpdb->prepare(
+                    "
+                    SELECT meta_value
+                    FROM {$wpdb->termmeta}
+                    WHERE meta_key = 'subscribed_users'
+                    AND term_id IN ($term_placeholders)
+                    ",
+                    ...$term_ids
+                ));
+
+                // Merge all subscribed user IDs
+                foreach ( $meta_values as $meta_value ) {
+                    $ids = maybe_unserialize( $meta_value );
+                    if ( is_array( $ids ) && ! empty( $ids ) ) {
+                        $user_ids = array_merge( $user_ids, $ids );
+                    }
                 }
             }
         }
-    }
-    
-    // ========================================
-    // METHOD 2: User preference matching
-    // (Check user meta for saved preferences)
-    // ========================================
-    $args = [
-        'meta_key'     => 'dns_notify_prefs',
-        'meta_compare' => 'EXISTS',
-    ];
-    $users = get_users( $args );
-    
-    foreach ( $users as $user ) {
-        $prefs = get_user_meta( $user->ID, 'dns_notify_prefs', true );
-        
-        if ( empty( $prefs ) || ! is_array( $prefs ) ) {
-            continue;
-        }
-        
-        // Check location match
-        if ( ! empty( $prefs['listing_locations'] ) ) {
-            $post_locations = wp_get_post_terms( $post_id, ATBDP_LOCATION, ['fields' => 'ids'] );
-            
-            if ( ! is_wp_error( $post_locations ) && ! empty( $post_locations ) ) {
-                $user_selected_locations = (array) $prefs['listing_locations'];
-                $location_match = array_intersect( $post_locations, $user_selected_locations );
-                
-                // Add user if location matches
-                if ( ! empty( $location_match ) ) {
-                    $user_ids[] = $user->ID;
+
+        // --------------------------
+        // 2️⃣ User preference matching
+        // --------------------------
+        $users = get_users([
+            'meta_key'     => 'dns_notify_prefs',
+            'meta_compare' => 'EXISTS',
+        ]);
+
+        foreach ( $users as $user ) {
+            $prefs = get_user_meta( $user->ID, 'dns_notify_prefs', true );
+
+            if ( empty( $prefs ) || ! is_array( $prefs ) ) {
+                continue;
+            }
+
+            // Check location match
+            if ( ! empty( $prefs['listing_locations'] ) ) {
+                $post_locations = wp_get_post_terms( $post_id, ATBDP_LOCATION, ['fields' => 'ids'] );
+
+                if ( ! is_wp_error( $post_locations ) && ! empty( $post_locations ) ) {
+                    $user_selected_locations = (array) $prefs['listing_locations'];
+                    $location_match = array_intersect( $post_locations, $user_selected_locations );
+
+                    if ( ! empty( $location_match ) ) {
+                        $user_ids[] = $user->ID;
+                    }
                 }
             }
         }
+
+        // --------------------------
+        // 3️⃣ Return unique user IDs
+        // --------------------------
+        return array_unique( $user_ids );
     }
-    
-    // ========================================
-    // Return unique user IDs from both methods
-    // ========================================
-    return array_unique( $user_ids );
 }
+
+
 
 /**
  * Add a user ID to term meta `subscribed_users`.
