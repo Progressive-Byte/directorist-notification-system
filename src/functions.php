@@ -605,63 +605,39 @@ function dns_get_term_objects_by_directory( $directory_id ) {
 if ( ! function_exists( 'dns_get_subscribed_users_by_post' ) ) {
     function dns_get_subscribed_users_by_post( $post_id, $taxonomies = [] ) {
 
-        global $wpdb;
-
         $user_ids = [];
 
         // --------------------------
-        // 1️⃣ Term-level subscriptions via SQL
+        // Get post terms per taxonomy
         // --------------------------
         if ( empty( $taxonomies ) ) {
             $taxonomies = get_object_taxonomies( get_post_type( $post_id ), 'names' );
         }
 
-        if ( ! empty( $taxonomies ) ) {
-
-            // Prepare placeholders for SQL IN
-            $taxonomy_placeholders = implode( ',', array_fill( 0, count( $taxonomies ), '%s' ) );
-
-            // Get all term IDs for this post and these taxonomies
-            $term_ids = $wpdb->get_col( $wpdb->prepare(
-                "
-                SELECT tt.term_id
-                FROM {$wpdb->term_relationships} AS tr
-                INNER JOIN {$wpdb->term_taxonomy} AS tt 
-                    ON tr.term_taxonomy_id = tt.term_taxonomy_id
-                WHERE tr.object_id = %d
-                AND tt.taxonomy IN ($taxonomy_placeholders)
-                ",
-                $post_id,
-                ...$taxonomies
-            ));
-
-            if ( ! empty( $term_ids ) ) {
-                // Prepare placeholders for term IDs
-                $term_placeholders = implode( ',', array_fill( 0, count( $term_ids ), '%d' ) );
-
-                // Get all subscribed users from term meta
-                $meta_values = $wpdb->get_col( $wpdb->prepare(
-                    "
-                    SELECT meta_value
-                    FROM {$wpdb->termmeta}
-                    WHERE meta_key = 'subscribed_users'
-                    AND term_id IN ($term_placeholders)
-                    ",
-                    ...$term_ids
-                ));
-
-                // Merge all subscribed user IDs
-                foreach ( $meta_values as $meta_value ) {
-                    $ids = maybe_unserialize( $meta_value );
-                    if ( is_array( $ids ) && ! empty( $ids ) ) {
-                        $user_ids = array_merge( $user_ids, $ids );
-                    }
-                }
+        $post_terms = [];
+        foreach ( $taxonomies as $taxonomy ) {
+            $terms = wp_get_post_terms( $post_id, $taxonomy, ['fields' => 'ids'] );
+            if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+                $post_terms[ $taxonomy ] = $terms;
             }
         }
 
+        $post_locations = wp_get_post_terms( $post_id, ATBDP_LOCATION, ['fields' => 'ids'] );
+        if ( is_wp_error( $post_locations ) || empty( $post_locations ) ) {
+            $post_locations = [];
+        }
+
         // --------------------------
-        // 2️⃣ User preference matching
+        // Map post taxonomies to user meta keys
+        // --------------------------
+        $taxonomy_to_meta = [
+            'atbdp_listing_types' => 'listing_types',
+            'at_biz_dir-category' => 'market_types',
+            // add more if needed
+        ];
+
+        // --------------------------
+        // Get all users with notification prefs
         // --------------------------
         $users = get_users([
             'meta_key'     => 'dns_notify_prefs',
@@ -670,32 +646,36 @@ if ( ! function_exists( 'dns_get_subscribed_users_by_post' ) ) {
 
         foreach ( $users as $user ) {
             $prefs = get_user_meta( $user->ID, 'dns_notify_prefs', true );
+            if ( empty( $prefs ) || ! is_array( $prefs ) ) continue;
 
-            if ( empty( $prefs ) || ! is_array( $prefs ) ) {
-                continue;
+            $matched = false;
+
+            foreach ( $taxonomy_to_meta as $taxonomy => $meta_key ) {
+                if ( empty( $prefs[ $meta_key ]['listing'] ) || empty( $post_terms[ $taxonomy ] ) ) {
+                    continue;
+                }
+
+                $listing_match = array_intersect( $prefs[ $meta_key ]['listing'], $post_terms[ $taxonomy ] );
+                $location_match = ! empty( $prefs[ $meta_key ]['locations'] )
+                    ? array_intersect( $prefs[ $meta_key ]['locations'], $post_locations )
+                    : [];
+
+                if ( ! empty( $listing_match ) && ! empty( $location_match ) ) {
+                    $matched = true;
+                    break; // stop loop if matched
+                }
             }
 
-            // Check location match
-            if ( ! empty( $prefs['listing_locations'] ) ) {
-                $post_locations = wp_get_post_terms( $post_id, ATBDP_LOCATION, ['fields' => 'ids'] );
-
-                if ( ! is_wp_error( $post_locations ) && ! empty( $post_locations ) ) {
-                    $user_selected_locations = (array) $prefs['listing_locations'];
-                    $location_match = array_intersect( $post_locations, $user_selected_locations );
-
-                    if ( ! empty( $location_match ) ) {
-                        $user_ids[] = $user->ID;
-                    }
-                }
+            if ( $matched ) {
+                $user_ids[] = $user->ID;
             }
         }
 
-        // --------------------------
-        // 3️⃣ Return unique user IDs
-        // --------------------------
         return array_unique( $user_ids );
     }
 }
+
+
 
 
 
