@@ -148,13 +148,46 @@ jQuery(document).ready(function($) {
      * SEARCH FILTER
      * ---------------------------
      */
-    $('.dns-search-input').on('input', function() {
-        const query = $(this).val().toLowerCase();
-        const $checkboxes = $(this).closest('.dns-tab-content').find('.dns-checkbox-list .dns-checkbox');
+    jQuery(document).ready(function($) {
+        $('.dns-search-wrapper').each(function() {
+            var $wrapper = $(this);
+            var $input = $wrapper.find('.dns-search-input');
+            var $clearBtn = $wrapper.find('.dns-search-clear');
 
-        $checkboxes.each(function() {
-            const labelText = $(this).text().toLowerCase();
-            $(this).toggle(labelText.indexOf(query) > -1);
+            // --------------------------
+            // Show/hide cross icon & filter checkboxes on input
+            // --------------------------
+            $input.on('input', function() {
+                var query = $input.val().toLowerCase();
+
+                // Show/hide clear icon
+                if (query.length > 0) {
+                    $clearBtn.show();
+                } else {
+                    $clearBtn.hide();
+                }
+
+                // Filter checkboxes in this tab
+                var $checkboxes = $wrapper.closest('.dns-tab-content').find('.dns-checkbox-list .dns-checkbox');
+                $checkboxes.each(function() {
+                    var labelText = $(this).text().toLowerCase();
+                    $(this).toggle(labelText.indexOf(query) > -1);
+                });
+            });
+
+            // --------------------------
+            // Clear input when clicking cross
+            // --------------------------
+            $clearBtn.on('click', function() {
+                $input.val('');
+                $clearBtn.hide();
+
+                // Reset all checkboxes visibility
+                var $checkboxes = $wrapper.closest('.dns-tab-content').find('.dns-checkbox-list .dns-checkbox');
+                $checkboxes.show();
+
+                $input.focus();
+            });
         });
     });
 

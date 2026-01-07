@@ -704,4 +704,13 @@
 }
 
 
-
+.dns-search-clear{
+    position:absolute;
+    right: 274px;
+    top: 44%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    font-size: 25px;
+    color: #000000;
+    display:none;
+}
