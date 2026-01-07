@@ -1,6 +1,16 @@
 <?php
 use DNS\Helper\Messages;
 
+/** @var array $data */
+$data = is_array( $data ?? null ) ? $data : [];
+
+/**
+ * Extract saved data safely
+ */
+$listing_types     = $data['listing_types']['listing']   ?? [];
+$listing_locations = $data['listing_types']['locations'] ?? [];
+
+// Messages::pri( $data );
 ?>
 
 <div class="dns-wrap">
@@ -11,7 +21,10 @@ use DNS\Helper\Messages;
         </h3>
 
         <p class="dns-sub">
-            <?php esc_html_e( 'Choose which listing types or listings and locations you want updates for.', 'directorist-notification-system' ); ?>
+            <?php esc_html_e(
+                'Choose which listing types and locations you want updates for.',
+                'directorist-notification-system'
+            ); ?>
         </p>
 
         <form method="post">
@@ -22,15 +35,19 @@ use DNS\Helper\Messages;
             $selected_market_term = (int) get_option( 'dns_market_terms', '' );
             $selected_job_term    = (int) get_option( 'dns_job_terms', '' );
 
-            $market_types   = ! empty( $selected_market_term ) ? dns_get_term_objects_by_directory( $selected_market_term ) : array();
-            $job_types      = ! empty( $selected_job_term )    ? dns_get_term_objects_by_directory( $selected_job_term )    : array();
+            $market_types_list = ! empty( $selected_market_term )
+                ? dns_get_term_objects_by_directory( $selected_market_term )
+                : [];
+
+            $job_types_list = ! empty( $selected_job_term )
+                ? dns_get_term_objects_by_directory( $selected_job_term )
+                : [];
             ?>
 
             <!-- ============================= -->
             <!-- Tabs Navigation -->
             <!-- ============================= -->
             <div class="dns-tabs">
-
                 <button type="button" class="dns-tab" data-tab="job">
                     <?php esc_html_e( 'Job Listing', 'directorist-notification-system' ); ?>
                 </button>
@@ -42,75 +59,50 @@ use DNS\Helper\Messages;
 
             <?php
             /**
-             * Renders the checklist block
+             * Checkbox renderer
              */
             function dns_render_checkbox_block( $items, $saved_items, $empty_message, $name_attr ) {
+                if ( empty( $items ) ) {
+                    echo '<p>' . esc_html( $empty_message ) . '</p>';
+                    return;
+                }
                 ?>
 
-                <?php if ( empty( $items ) ) : ?>
+                <div class="dns-search-wrapper" style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text"
+                        class="dns-search-input"
+                        placeholder="<?php esc_attr_e( 'Search...', 'directorist-notification-system' ); ?>"
+                        style="flex:1;"
+                    >
 
-                    <p><?php echo esc_html( $empty_message ); ?></p>
+                    <button type="button" class="dns-btn dns-btn--mini dns-select-all">
+                        <?php esc_html_e( 'Select All', 'directorist-notification-system' ); ?>
+                    </button>
 
-                <?php else : ?>
+                    <button type="button" class="dns-btn dns-btn--mini dns-deselect-all">
+                        <?php esc_html_e( 'Deselect All', 'directorist-notification-system' ); ?>
+                    </button>
+                </div>
 
-                    <div class="dns-search-wrapper" style="display:flex; gap:10px; margin-bottom:10px;">
-                        <input type="text"
-                            class="dns-search-input"
-                            placeholder="<?php esc_attr_e( 'Search...', 'directorist-notification-system' ); ?>"
-                            style="flex:1;"
-                        >
-
-                        <button type="button" class="dns-btn dns-btn--mini dns-select-all">
-                            <?php esc_html_e( 'Select All', 'directorist-notification-system' ); ?>
-                        </button>
-
-                        <button type="button" class="dns-btn dns-btn--mini dns-deselect-all">
-                            <?php esc_html_e( 'Deselect All', 'directorist-notification-system' ); ?>
-                        </button>
-
-                        <button type="button" class="dns-btn dns-btn--mini dns-show-selected">
-                            <span class="dns-show-selected-icon">👁️</span>
-                            <span class="dns-show-selected-text">
-                                <?php esc_html_e( 'Show Selected', 'directorist-notification-system' ); ?>
-                            </span>
-                        </button>
-                    </div>
-
-                    <div class="dns-selected-preview"
-                        style="display:none; margin-bottom:15px; padding:10px; background:#f7f7f7; border:1px solid #ddd;">
-                    </div>
-
-                    <div class="dns-checkbox-list">
-
-                        <?php
-                        $serial = 1;
-                        foreach ( $items as $item ) :
-                            $is_checked = in_array( $item->term_id, $saved_items, true );
-                            ?>
-
-                            <label class="dns-checkbox <?php echo $is_checked ? 'dns-checked' : ''; ?>">
-                                <input type="checkbox"
-                                    name="<?php echo esc_attr( $name_attr ); ?>[]"
-                                    value="<?php echo esc_attr( $item->term_id ); ?>"
-                                    <?php checked( $is_checked ); ?>
-                                >
-
-                                <?php printf(
-                                    esc_html__( '%d. %s', 'directorist-notification-system' ),
-                                    $serial,
-                                    esc_html( $item->name )
-                                ); ?>
-                            </label>
-
-                            <?php
-                            $serial++;
-                        endforeach;
+                <div class="dns-checkbox-list">
+                    <?php
+                    $i = 1;
+                    foreach ( $items as $item ) :
+                        $checked = in_array( $item->term_id, $saved_items, true );
                         ?>
-
-                    </div>
-
-                <?php endif; ?>
-
+                        <label class="dns-checkbox <?php echo $checked ? 'dns-checked' : ''; ?>">
+                            <input type="checkbox"
+                                name="<?php echo esc_attr( $name_attr ); ?>[]"
+                                value="<?php echo esc_attr( $item->term_id ); ?>"
+                                <?php checked( $checked ); ?>
+                            >
+                            <?php echo esc_html( $i . '. ' . $item->name ); ?>
+                        </label>
+                        <?php
+                        $i++;
+                    endforeach;
+                    ?>
+                </div>
             <?php
             }
             ?>
@@ -121,8 +113,8 @@ use DNS\Helper\Messages;
             <div class="dns-tab-content" id="tab-job">
                 <?php
                 dns_render_checkbox_block(
-                    $job_types,
-                    $saved['listing_types'] ?? array(),
+                    $job_types_list,
+                    $listing_types,
                     __( 'Please select Job listing.', 'directorist-notification-system' ),
                     'listing_types'
                 );
@@ -136,7 +128,7 @@ use DNS\Helper\Messages;
                 <?php
                 dns_render_checkbox_block(
                     $locations,
-                    $saved['listing_locations'] ?? array(),
+                    $listing_locations,
                     __( 'No locations available.', 'directorist-notification-system' ),
                     'listing_locations'
                 );
@@ -144,7 +136,7 @@ use DNS\Helper\Messages;
             </div>
 
             <!-- ============================= -->
-            <!-- Form Actions -->
+            <!-- FORM ACTIONS -->
             <!-- ============================= -->
             <div class="dns-actions">
                 <button class="dns-btn dns-btn--primary" type="submit" name="np_save" value="1">
@@ -153,5 +145,11 @@ use DNS\Helper\Messages;
             </div>
 
         </form>
+
+        <?php
+        // DEBUG (optional)
+        // Messages::pri( $data );
+        ?>
+
     </div>
 </div>
