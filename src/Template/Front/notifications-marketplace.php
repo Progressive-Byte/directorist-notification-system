@@ -65,22 +65,17 @@ $market_locations = $data['market_types']['locations'] ?? [];
                 }
                 ?>
 
-                <div class="dns-search-wrapper" style="display:flex; gap:10px; margin-bottom:10px;">
-                    <input type="text"
-                        class="dns-search-input"
-                        placeholder="<?php esc_attr_e( 'Search...', 'directorist-notification-system' ); ?>"
-                        style="flex:1;"
-                    >
+                <div class="dns-search-wrapper" style="position:relative; display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+                    <input type="text" class="dns-search-input" placeholder="Search..." style="flex:1; padding-right:30px;">
 
                     <!-- Cross icon inside input -->
                     <span class="dns-search-clear">×</span>
 
-                    <button type="button" class="dns-btn dns-btn--mini dns-select-all">
-                        <?php esc_html_e( 'Select All', 'directorist-notification-system' ); ?>
-                    </button>
-
-                    <button type="button" class="dns-btn dns-btn--mini dns-deselect-all">
-                        <?php esc_html_e( 'Deselect All', 'directorist-notification-system' ); ?>
+                    <button type="button" class="dns-btn dns-btn--mini dns-select-all">Select All</button>
+                    <button type="button" class="dns-btn dns-btn--mini dns-deselect-all">Deselect All</button>
+                    <button type="button" class="dns-btn dns-btn--mini dns-show-selected">
+                        <span class="dns-show-selected-icon">👁️</span>
+                        <span class="dns-show-selected-text">Show Selected</span>
                     </button>
                 </div>
 
