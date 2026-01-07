@@ -43,26 +43,25 @@ function dns_print_terms_with_sl( $term_ids, $text_domain = 'directorist-notific
         <tr>
             <th><?php esc_html_e( 'User', 'directorist-notification-system' ); ?></th>
             <th><?php esc_html_e( 'Market Place Listings', 'directorist-notification-system' ); ?></th>
+            <th><?php esc_html_e( 'Market Place Locations', 'directorist-notification-system' ); ?></th>
             <th><?php esc_html_e( 'Job Listings', 'directorist-notification-system' ); ?></th>
-            <th><?php esc_html_e( 'Locations', 'directorist-notification-system' ); ?></th>
+            <th><?php esc_html_e( 'Job Locations', 'directorist-notification-system' ); ?></th>
         </tr>
     </thead>
 
     <tbody>
     <?php foreach ( $subscribed_users as $user ) : 
 
-        // User preferences
+        // Get user prefs
         $prefs = get_user_meta( $user->ID, 'dns_notify_prefs', true );
+        $prefs = is_array( $prefs ) ? $prefs : [];
 
-        // Normalize preferences
-        $prefs = wp_parse_args(
-            is_array( $prefs ) ? $prefs : [],
-            [
-                'market_types'      => [],
-                'listing_types'     => [],
-                'listing_locations' => [],
-            ]
-        );
+        // Extract listings and locations
+        $market_listings  = $prefs['market_types']['listing']   ?? [];
+        $market_locations = $prefs['market_types']['locations'] ?? [];
+
+        $job_listings     = $prefs['listing_types']['listing']  ?? [];
+        $job_locations    = $prefs['listing_types']['locations'] ?? [];
         ?>
         <tr>
             <!-- USER -->
@@ -73,17 +72,18 @@ function dns_print_terms_with_sl( $term_ids, $text_domain = 'directorist-notific
 
             <!-- MARKETPLACE -->
             <td>
-                <?php dns_print_terms_with_sl( $prefs['market_types'] ); ?>
+                <?php dns_print_terms_with_sl( $market_listings ); ?>
+            </td>
+            <td>
+                <?php dns_print_terms_with_sl( $market_locations ); ?>
             </td>
 
-            <!-- JOB LISTINGS -->
+            <!-- JOB -->
             <td>
-                <?php dns_print_terms_with_sl( $prefs['listing_types'] ); ?>
+                <?php dns_print_terms_with_sl( $job_listings ); ?>
             </td>
-
-            <!-- LOCATIONS -->
             <td>
-                <?php dns_print_terms_with_sl( $prefs['listing_locations'] ); ?>
+                <?php dns_print_terms_with_sl( $job_locations ); ?>
             </td>
         </tr>
     <?php endforeach; ?>
