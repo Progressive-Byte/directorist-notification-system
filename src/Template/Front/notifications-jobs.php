@@ -68,24 +68,21 @@ $listing_locations = $data['listing_types']['locations'] ?? [];
                 }
                 ?>
 
-                <div class="dns-search-wrapper" style="position:relative; display:flex; gap:10px; margin-bottom:10px; align-items:center;">
-                <input type="text"
-                    class="dns-search-input"
-                    placeholder="<?php esc_attr_e( 'Search...', 'directorist-notification-system' ); ?>"
-                    style="flex:1; padding-right:25px;" 
-                >
+                <div class="dns-search-wrapper">
+                    <input type="text"
+                        class="dns-search-input"
+                        placeholder="<?php esc_attr_e( 'Search...', 'directorist-notification-system' ); ?>"
+                    >
+                    <span class="dns-search-clear">×</span>
 
-                <!-- Cross icon inside input -->
-                <span class="dns-search-clear">×</span>
+                    <button type="button" class="dns-btn dns-btn--mini dns-select-all">
+                        <?php esc_html_e( 'Select All', 'directorist-notification-system' ); ?>
+                    </button>
 
-                <button type="button" class="dns-btn dns-btn--mini dns-select-all">
-                    <?php esc_html_e( 'Select All', 'directorist-notification-system' ); ?>
-                </button>
-
-                <button type="button" class="dns-btn dns-btn--mini dns-deselect-all">
-                    <?php esc_html_e( 'Deselect All', 'directorist-notification-system' ); ?>
-                </button>
-            </div>
+                    <button type="button" class="dns-btn dns-btn--mini dns-deselect-all">
+                        <?php esc_html_e( 'Deselect All', 'directorist-notification-system' ); ?>
+                    </button>
+                </div>
 
                 <div class="dns-checkbox-list">
                     <?php

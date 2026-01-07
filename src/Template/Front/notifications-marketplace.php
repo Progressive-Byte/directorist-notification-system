@@ -72,6 +72,9 @@ $market_locations = $data['market_types']['locations'] ?? [];
                         style="flex:1;"
                     >
 
+                    <!-- Cross icon inside input -->
+                    <span class="dns-search-clear">×</span>
+
                     <button type="button" class="dns-btn dns-btn--mini dns-select-all">
                         <?php esc_html_e( 'Select All', 'directorist-notification-system' ); ?>
                     </button>
