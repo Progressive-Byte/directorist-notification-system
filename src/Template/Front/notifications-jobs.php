@@ -68,34 +68,34 @@ $listing_locations = $data['listing_types']['locations'] ?? [];
                 }
                 ?>
 
-                <div class="dns-search-wrapper" style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <div class="dns-search-wrapper">
     
-                <!-- Inner div for input + cross -->
-                <div style="position:relative; flex:1;">
-                    <input type="text"
-                        class="dns-search-input"
-                        placeholder="<?php esc_attr_e( 'Search...', 'directorist-notification-system' ); ?>"
-                        style="width:100%; padding-right:30px; box-sizing:border-box;"
-                    >
-                    <span class="dns-search-clear" >×</span>
+                    <!-- Inner div for input + cross -->
+                    <div style="position:relative; flex:1;">
+                        <input type="text"
+                            class="dns-search-input"
+                            placeholder="<?php esc_attr_e( 'Search...', 'directorist-notification-system' ); ?>"
+                          
+                        >
+                        <span class="dns-search-clear" >×</span>
+                    </div>
+
+                    <!-- Buttons outside input -->
+                    <button type="button" class="dns-btn dns-btn--mini dns-select-all">
+                        <?php esc_html_e( 'Select All', 'directorist-notification-system' ); ?>
+                    </button>
+
+                    <button type="button" class="dns-btn dns-btn--mini dns-deselect-all">
+                        <?php esc_html_e( 'Deselect All', 'directorist-notification-system' ); ?>
+                    </button>
+
+                    <button type="button" class="dns-btn dns-btn--mini dns-show-selected">
+                        <span class="dns-show-selected-icon">👁️</span>
+                        <span class="dns-show-selected-text">
+                            <?php esc_html_e( 'Show Selected', 'directorist-notification-system' ); ?>
+                        </span>
+                    </button>
                 </div>
-
-                <!-- Buttons outside input -->
-                <button type="button" class="dns-btn dns-btn--mini dns-select-all">
-                    <?php esc_html_e( 'Select All', 'directorist-notification-system' ); ?>
-                </button>
-
-                <button type="button" class="dns-btn dns-btn--mini dns-deselect-all">
-                    <?php esc_html_e( 'Deselect All', 'directorist-notification-system' ); ?>
-                </button>
-
-                <button type="button" class="dns-btn dns-btn--mini dns-show-selected">
-                    <span class="dns-show-selected-icon">👁️</span>
-                    <span class="dns-show-selected-text">
-                        <?php esc_html_e( 'Show Selected', 'directorist-notification-system' ); ?>
-                    </span>
-                </button>
-            </div>
 
                 <div class="dns-checkbox-list">
                     <?php
