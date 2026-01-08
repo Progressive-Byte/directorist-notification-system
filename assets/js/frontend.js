@@ -233,3 +233,74 @@ jQuery(document).ready(function($) {
     // Expose tab function globally if needed
     window.dnsActivateTab = activateTab;
 });
+
+jQuery(document).ready(function($){
+
+    const $form = $('.dns-wrap form');
+    const $submitBtn = $form.find('.dns-btn.dns-btn--primary');
+
+    // Footer message container
+    let $footerMsg = $('#dns-footer-message');
+    if (!$footerMsg.length) {
+        $footerMsg = $(`
+            <div id="dns-footer-message" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); 
+                 padding:15px 20px; background:#ffe6e6; border:1px solid red; color:red; border-radius:6px; 
+                 z-index:9999; font-weight:500;">
+                <span id="dns-footer-close" style="cursor:pointer; float:right; margin-left:10px; font-weight:bold;">×</span>
+                <span id="dns-footer-text"></span>
+            </div>
+        `);
+        $('body').append($footerMsg);
+    }
+
+    const $footerText = $footerMsg.find('#dns-footer-text');
+    const $footerClose = $footerMsg.find('#dns-footer-close');
+
+    // Function to set cookie
+    function setCookie(name, value, days) {
+        const d = new Date();
+        d.setTime(d.getTime() + (days*24*60*60*1000));
+        const expires = "expires="+ d.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    // Function to get cookie
+    function getCookie(name) {
+        const cname = name + "=";
+        const decodedCookie = decodeURIComponent(document.cookie);
+        const ca = decodedCookie.split(';');
+        for(let i=0; i<ca.length; i++) {
+            let c = ca[i].trim();
+            if(c.indexOf(cname) == 0) return c.substring(cname.length, c.length);
+        }
+        return "";
+    }
+
+    // Hover event
+    $submitBtn.on('mouseenter', function(){
+        if(getCookie('dns_hover_msg_shown')) return; // already shown in last 5 days
+
+        const marketChecked = $form.find('input[name="market_types[]"]:checked').length;
+        const locationChecked = $form.find('input[name="listing_locations[]"]:checked').length;
+
+        if(!marketChecked || !locationChecked){
+            $footerText.text('Make sure you select both Listing/Marketplace and Location.');
+            $footerMsg.fadeIn();
+
+            // Auto hide after 5 seconds
+            setTimeout(function(){
+                $footerMsg.fadeOut();
+            }, 5000);
+
+            // Set cookie for 5 days
+            setCookie('dns_hover_msg_shown', '1', 5);
+        }
+    });
+
+    // Close on cross click
+    $footerClose.on('click', function(){
+        $footerMsg.fadeOut();
+    });
+
+});
+
