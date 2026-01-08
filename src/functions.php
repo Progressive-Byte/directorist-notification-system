@@ -263,7 +263,7 @@ function dns_send_listing_notification( $user_id, $listing_id ) {
             'user_id'           => $user_id,
             'item_id'           => $listing_id,
             'secondary_item_id' => 0,
-            'component_name'    => 'dns',
+            'component_name'    => 'activity',
             'component_action'  => 'dns_new_listing_match',
             'date_notified'     => bp_core_current_time(),
             'is_new'            => 1,

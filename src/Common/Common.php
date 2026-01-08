@@ -24,7 +24,9 @@ class Common {
         add_action( 'template_redirect', [ $this, 'check_unsubscribe' ] );  
 
         // Optional head action
-        add_action( 'wp_head', [ $this, 'head' ] );
+        // add_action( 'wp_head', [ $this, '+' ] );
+
+        add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'dns_format_listing_notifications', 10, 7 ] );
     }
 
     /**
@@ -239,5 +241,51 @@ class Common {
 
         wp_safe_redirect($redirect_url);
         exit;
+    }
+
+    function dns_format_listing_notifications( $content, $user_id, $format,$action,
+        $component, $item_id, $secondary_item_id ) {
+
+        if ( $component !== 'activity' || $action !== 'dns_new_listing_match' ) {
+            return $content;
+        }
+
+        $listing_title = get_the_title( $item_id );
+        $listing_link  = get_permalink( $item_id );
+
+        // Unsubscribe URL
+        $unsubscribe_url = add_query_arg(
+            [
+                'dns_unsubscribe' => 1,
+                'user_id'         => $user_id,
+                'nonce'           => wp_create_nonce( 'dns_unsubscribe_' . $user_id ),
+            ],
+            home_url( '/' )
+        );
+
+        if ( 'string' === $format ) {
+
+            return sprintf(
+                '<div class="dns-notification">
+                    <a class="dns-notification-link" href="%s">
+                        %s
+                    </a>
+                    <div class="dns-notification-actions">
+                        <a class="dns-unsubscribe-btn" href="%s">
+                            %s
+                        </a>
+                    </div>
+                </div>',
+                esc_url( $listing_link ),
+                esc_html( sprintf( __( 'New listing match: %s', 'dns' ), $listing_title ) ),
+                esc_url( $unsubscribe_url ),
+                esc_html__( 'Unsubscribe', 'dns' )
+            );
+        }
+
+        return [
+            'text' => sprintf( __( 'New listing match: %s', 'dns' ), $listing_title ),
+            'link' => $listing_link,
+        ];
     }
 }

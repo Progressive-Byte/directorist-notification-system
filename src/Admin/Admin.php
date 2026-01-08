@@ -22,7 +22,7 @@ class Admin {
         // Register settings
         add_action('admin_init', [$this, 'register_settings']);
 
-        add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'dns_format_listing_notifications', 10, 7 ] );
+        
 
         // Clear cache when a user is updated or created
         add_action('profile_update', function() {
@@ -159,56 +159,6 @@ class Admin {
         <?php
     }
 
-    /**
-     * Format BuddyBoss / BuddyPress notification output
-     */
-    function dns_format_listing_notification(
-        $content,
-        $user_id,
-        $format,
-        $action,
-        $component,
-        $item_id,
-        $secondary_item_id
-    ) {
-
-        if ( $component !== 'activity' || $action !== 'dns_new_listing_match' ) {
-            return $content;
-        }
-
-        // Get notification ID
-        $notification_id = bp_notifications_get_notification_id();
-
-        $message = bp_notifications_get_meta(
-            $notification_id,
-            'dns_message',
-            true
-        );
-
-        $link = bp_notifications_get_meta(
-            $notification_id,
-            'dns_link',
-            true
-        );
-
-        if ( empty( $message ) ) {
-            $message = __( 'You have a new listing match.', 'dns' );
-        }
-
-        if ( empty( $link ) ) {
-            $link = home_url();
-        }
-
-        if ( 'string' === $format ) {
-            return $message;
-        }
-
-        return [
-            'text' => $message,
-            'link' => $link,
-        ];
-    }
-
     public function change_template(  $template, $args ){
         // dns_pri( $template );
 
@@ -265,58 +215,7 @@ class Admin {
         update_post_meta( $post_id, '_custom_address', $addresses );
     }
 
-        function dns_format_listing_notifications(
-        $content,
-        $user_id,
-        $format,
-        $action,
-        $component,
-        $item_id,
-        $secondary_item_id
-    ) {
-
-        if ( $component !== 'dns' || $action !== 'dns_new_listing_match' ) {
-            return $content;
-        }
-
-        $listing_title = get_the_title( $item_id );
-        $listing_link  = get_permalink( $item_id );
-
-        // Unsubscribe URL
-        $unsubscribe_url = add_query_arg(
-            [
-                'dns_unsubscribe' => 1,
-                'user_id'         => $user_id,
-                'nonce'           => wp_create_nonce( 'dns_unsubscribe_' . $user_id ),
-            ],
-            home_url( '/' )
-        );
-
-        if ( 'string' === $format ) {
-
-            return sprintf(
-                '<div class="dns-notification">
-                    <a class="dns-notification-link" href="%s">
-                        %s
-                    </a>
-                    <div class="dns-notification-actions">
-                        <a class="dns-unsubscribe-btn" href="%s">
-                            %s
-                        </a>
-                    </div>
-                </div>',
-                esc_url( $listing_link ),
-                esc_html( sprintf( __( 'New listing match: %s', 'dns' ), $listing_title ) ),
-                esc_url( $unsubscribe_url ),
-                esc_html__( 'Unsubscribe', 'dns' )
-            );
-        }
-
-        return [
-            'text' => sprintf( __( 'New listing match: %s', 'dns' ), $listing_title ),
-            'link' => $listing_link,
-        ];
-    }
+    
 
 
 }
