@@ -203,7 +203,8 @@ $listing_locations = $data['listing_locations'] ?? [];
                                 ?>
                                 <div class="dns-location-parent <?php echo $selected_count > 0 ? 'dns-parent-has-selected' : ''; ?>" 
                                      data-parent-id="<?php echo esc_attr($parent->term_id); ?>">
-                                    ▸ <?php echo esc_html($parent->name); ?>
+                                    <span class="dns-location-arrow">▸</span>
+                                    <?php echo esc_html($parent->name); ?>
                                     <?php if ($selected_count > 0) : ?>
                                         <strong>(<?php echo $selected_count; ?>)</strong>
                                     <?php endif; ?>

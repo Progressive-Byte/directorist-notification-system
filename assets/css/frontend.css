@@ -724,3 +724,25 @@
     display: none;
     z-index: 10;
 }
+
+.dns-location-parent {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px; /* space between arrow and text */
+    transition: background-color 0.2s ease;
+}
+
+.dns-location-parent:hover {
+    background-color: #f0f0f0;
+}
+
+.dns-location-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+/* Rotate arrow when active */
+.dns-location-parent.active .dns-location-arrow {
+    transform: rotate(90deg); /* points down */
+}
