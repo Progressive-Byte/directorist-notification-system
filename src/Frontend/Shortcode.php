@@ -85,6 +85,10 @@ class Shortcode {
                 ? array_map('intval', (array) wp_unslash($_POST['listing_locations']))
                 : [];
 
+            // Messages::pri( $selected_locations );
+
+            // return;
+
             // --------------------------------
             // PREVIOUS VALUES
             // --------------------------------
@@ -113,6 +117,8 @@ class Shortcode {
             ];
 
             update_user_meta( $user_id, 'dns_notify_prefs', $saved );
+
+            // Messages::pri( $saved );
 
             // --------------------------------
             // ADD NEW TERMS

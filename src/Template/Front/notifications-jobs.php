@@ -7,8 +7,9 @@ $data = is_array($data ?? null) ? $data : [];
 /**
  * Extract saved data safely
  */
-$listing_types     = $data['listing_types'] ?? [];
-$listing_locations = $data['listing_locations'] ?? [];
+$job_listing =  $data['listing_types'] ?? [];
+$listing_types     = $job_listing['listing'] ?? [];
+$listing_locations = $job_listing['locations'] ?? [];
 ?>
 
 <div class="dns-wrap">
