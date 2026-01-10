@@ -49,7 +49,11 @@ class Shortcode {
 
         // Require login
         if ( ! is_user_logged_in() ) {
-            return '<div class="dns-card"><p>' . esc_html__( 'You must be logged in to save preferences.', 'dns' ) . '</p></div>';
+            $login_url = wp_login_url( get_permalink() ); // Redirect back to current page after login
+            return '<div class="dns-card">
+                        <p>' . esc_html__( 'You must be logged in to save preferences.', 'dns' ) . '</p>
+                        <p><a href="' . esc_url( $login_url ) . '">' . esc_html__( 'Click here to login', 'dns' ) . '</a></p>
+                    </div>';
         }
 
         $user_id = get_current_user_id();
