@@ -304,3 +304,32 @@ jQuery(document).ready(function($){
 
 });
 
+jQuery(function($){
+
+    // Toggle children on parent click
+    $('.dns-location-parent').on('click', function() {
+        var parentID = $(this).data('parent-id');
+        var children = $('#dns-children-' + parentID);
+
+        children.slideToggle();
+    });
+
+    // Select All
+    $('.dns-select-all').on('click', function() {
+        $(this).closest('.dns-tab-content').find('input[type=checkbox]').prop('checked', true);
+    });
+
+    // Deselect All
+    $('.dns-deselect-all').on('click', function() {
+        $(this).closest('.dns-tab-content').find('input[type=checkbox]').prop('checked', false);
+    });
+
+    // Show Selected
+    $('.dns-show-selected').on('click', function() {
+        $(this).closest('.dns-tab-content').find('.dns-checkbox').hide();
+        $(this).closest('.dns-tab-content').find('input:checked').closest('.dns-checkbox').show();
+    });
+
+});
+
+

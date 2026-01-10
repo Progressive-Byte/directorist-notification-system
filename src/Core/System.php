@@ -36,25 +36,32 @@ class System {
      * Initialize Admin or Frontend classes
      */
     public function init_classes() {
-        if (is_admin()) {
-            if (class_exists('\DNS\Admin\Admin')) {
-                new \DNS\Admin\Admin();
-            }
+
+        if ( is_admin() ) {
+            // Admin only
+            new \DNS\Admin\Admin();
         } else {
-            if (class_exists('\DNS\Frontend\Frontend')) {
-                new \DNS\Frontend\Frontend();
-            }
-            if (class_exists('\DNS\Frontend\Shortcode')) {
-                new \DNS\Frontend\Shortcode();
-            }
+            // Frontend only
+            new \DNS\Frontend\Frontend();
+            new \DNS\Frontend\Shortcode();
+            new \DNS\Frontend\Ajax();
         }
 
-        if (class_exists('\DNS\Common\Common')) {
-            new \DNS\Common\Common();
-        }
-
-
+        // Common – always loads
+        new \DNS\Common\Common();
     }
+
+    /**
+     * Safely initialize a class if it exists
+     *
+     * @param string $class
+     */
+    private function init_class( $class ) {
+        if ( class_exists( $class ) ) {
+            new $class();
+        }
+    }
+
 
     /**
      * Enqueue frontend scripts and styles
