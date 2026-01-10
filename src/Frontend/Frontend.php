@@ -20,9 +20,9 @@ class Frontend {
 
 
 		
-		$post_id = '9160253';
-		$user_ids = dns_get_subscribed_users_by_post( $post_id );
-		Messages::pri( $user_ids );
+		// $post_id = '9160253';
+		// $user_ids = dns_get_subscribed_users_by_post( $post_id );
+		// Messages::pri( $user_ids );
 
 		// Messages::pri( dns_send_listing_notification( $user_ids[0], $post_id ));
 
