@@ -20,7 +20,7 @@ class Frontend {
 
 
 		
-		// $post_id = '9160253';
+		// $post_id = '11180718';
 		// $user_ids = dns_get_subscribed_users_by_post( $post_id );
 		// Messages::pri( $user_ids );
 
