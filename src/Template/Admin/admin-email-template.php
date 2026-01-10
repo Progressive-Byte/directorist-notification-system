@@ -1,16 +1,19 @@
-<?php 
-// Save form
-if ( isset($_POST['dns_save_email_template']) && check_admin_referer('dns_save_email_template_nonce') ) {
+<?php
+// ------------------------------
+// 1. Admin Email Template Settings
+// ------------------------------
+if ( isset( $_POST['dns_save_email_template'] ) && check_admin_referer( 'dns_save_email_template_nonce' ) ) {
 
-    $subject = sanitize_text_field( wp_unslash($_POST['dns_email_default_subject']) );
-    $body    = wp_kses_post( wp_unslash($_POST['dns_email_default_body']) );
+    $subject = sanitize_text_field( wp_unslash( $_POST['dns_email_default_subject'] ) );
+    $body    = wp_kses_post( wp_unslash( $_POST['dns_email_default_body'] ) );
 
-    update_option('dns_email_default_subject', $subject);
-    update_option('dns_email_default_body', $body);
+    update_option( 'dns_email_default_subject', $subject );
+    update_option( 'dns_email_default_body', $body );
 
     echo '<div class="updated notice"><p>' . esc_html__( 'Email template saved successfully.', 'dns' ) . '</p></div>';
 }
 
+// Get saved template or default
 $subject = get_option(
     'dns_email_default_subject',
     __( 'New Listing Match Found: {listing_title}', 'dns' )
@@ -31,26 +34,26 @@ $body = get_option(
 ?>
 
 <div class="dns-card">
-    <h2><?php _e('Email Template Settings', 'dns'); ?></h2>
+    <h2><?php _e( 'Email Template Settings', 'dns' ); ?></h2>
 
     <form method="post">
-        <?php wp_nonce_field('dns_save_email_template_nonce'); ?>
+        <?php wp_nonce_field( 'dns_save_email_template_nonce' ); ?>
 
         <table class="form-table">
 
             <tr>
-                <th><label><?php _e('Email Subject', 'dns'); ?></label></th>
+                <th><label><?php _e( 'Email Subject', 'dns' ); ?></label></th>
                 <td>
                     <input type="text"
                            name="dns_email_default_subject"
-                           value="<?php echo esc_attr($subject); ?>"
+                           value="<?php echo esc_attr( $subject ); ?>"
                            class="regular-text"
                            style="width: 100%;">
                 </td>
             </tr>
 
             <tr>
-                <th><label><?php _e('Email Message', 'dns'); ?></label></th>
+                <th><label><?php _e( 'Email Message', 'dns' ); ?></label></th>
                 <td>
                     <?php
                     wp_editor(
@@ -68,7 +71,7 @@ $body = get_option(
 
         </table>
 
-        <h3 class="dns-heading"><?php _e('Available Placeholders', 'dns'); ?></h3>
+        <h3 class="dns-heading"><?php _e( 'Available Placeholders', 'dns' ); ?></h3>
 
         <ul id="dns-placeholder-list" class="dns-placeholder-box">
             <?php
@@ -92,9 +95,71 @@ $body = get_option(
 
         <p>
             <button type="submit" name="dns_save_email_template" class="button button-primary">
-                <?php _e('Save Template', 'dns'); ?>
+                <?php _e( 'Save Template', 'dns' ); ?>
             </button>
         </p>
 
     </form>
 </div>
+
+<?php
+// ------------------------------
+// 2. Unsubscribe URL function
+// ------------------------------
+if ( ! function_exists( 'dns_get_unsubscribe_url' ) ) {
+
+    function dns_get_unsubscribe_url( $user_id ) {
+        $user_id = (int) $user_id;
+        if ( ! $user_id ) {
+            return false;
+        }
+
+        return add_query_arg(
+            [
+                'dns_unsubscribe' => 1,
+                'user_id'         => $user_id,
+                'nonce'           => wp_create_nonce( 'dns_unsubscribe_' . $user_id ),
+            ],
+            home_url( '/' )
+        );
+    }
+}
+
+// ------------------------------
+// 3. Replace placeholders function
+// ------------------------------
+if ( ! function_exists( 'dns_parse_email_template' ) ) {
+
+    function dns_parse_email_template( $template, $data = [] ) {
+        foreach ( $data as $key => $value ) {
+            $template = str_replace( '{' . $key . '}', $value, $template );
+        }
+        return $template;
+    }
+}
+
+// ------------------------------
+// 4. Example: Sending email
+// ------------------------------
+function dns_send_listing_email( $user_id, $user_email, $listing ) {
+
+    $subject_template = get_option( 'dns_email_default_subject' );
+    $body_template    = get_option( 'dns_email_default_body' );
+
+    // Prepare replacement data
+    $data = [
+        'user_name'       => get_the_author_meta( 'display_name', $user_id ),
+        'listing_title'   => $listing['title'],
+        'listing_link'    => $listing['link'],
+        'listing_types'   => implode( ', ', $listing['types'] ),
+        'listing_cities'  => implode( ', ', $listing['cities'] ),
+        'unsubscribe_url' => dns_get_unsubscribe_url( $user_id ),
+    ];
+
+    // Replace placeholders
+    $subject = dns_parse_email_template( $subject_template, $data );
+    $body    = dns_parse_email_template( $body_template, $data );
+
+    // Send email
+    wp_mail( $user_email, $subject, $body );
+}
