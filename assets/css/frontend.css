@@ -746,3 +746,6 @@
 .dns-location-parent.active .dns-location-arrow {
     transform: rotate(90deg); /* points down */
 }
+.dns-notification-actions .dns-btn:first-child {
+    padding-left: 0 !important;
+}

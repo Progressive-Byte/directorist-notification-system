@@ -223,11 +223,11 @@ if ( ! function_exists( 'dns_unsubscribe_user' ) ) {
     }
 }
 
-
 /**
  * Send BuddyBoss + Push Notification to a single user for a listing.
  */
 if ( ! function_exists( 'dns_send_listing_notification' ) ) {
+
     function dns_send_listing_notification( $user_id, $listing_id ) {
 
         $user_id    = (int) $user_id;
@@ -237,8 +237,44 @@ if ( ! function_exists( 'dns_send_listing_notification' ) ) {
             return false;
         }
 
+        // User
+        $user      = get_user_by( 'id', $user_id );
+        $user_name = $user ? $user->display_name : __( 'there', 'dns' );
+
+        // Listing
         $listing_title = get_the_title( $listing_id );
         $listing_link  = get_permalink( $listing_id );
+
+        // Locations
+        $locations = get_the_terms( $listing_id, 'at_biz_dir-location' );
+        $location_names = [];
+
+        if ( ! empty( $locations ) && ! is_wp_error( $locations ) ) {
+            $location_names = wp_list_pluck( $locations, 'name' );
+        }
+
+        $location_text = ! empty( $location_names )
+            ? implode( ', ', $location_names )
+            : __( 'your preferred location', 'dns' );
+
+        // Categories (Job / Marketplace etc.)
+        $categories = get_the_terms( $listing_id, 'at_biz_dir-category' );
+        $category_name = ! empty( $categories ) && ! is_wp_error( $categories )
+            ? $categories[0]->name
+            : __( 'listing', 'dns' );
+
+        // Unsubscribe URL
+        $unsubscribe_url = dns_get_unsubscribe_url( $user_id );
+
+        // Message
+        $message = sprintf(
+            __( 'Hi %1$s, a new %2$s listing matched your location (%3$s). View it here: %4$s. If you want to unsubscribe, click here: %5$s', 'dns' ),
+            $user_name,
+            $category_name,
+            $location_text,
+            $listing_link,
+            $unsubscribe_url
+        );
 
         /* BuddyBoss / BuddyPress Notification */
         if ( function_exists( 'bp_notifications_add_notification' ) ) {
@@ -246,7 +282,6 @@ if ( ! function_exists( 'dns_send_listing_notification' ) ) {
             $notification_id = bp_notifications_add_notification( [
                 'user_id'           => $user_id,
                 'item_id'           => $listing_id,
-                'secondary_item_id' => 0,
                 'component_name'    => 'activity',
                 'component_action'  => 'dns_new_listing_match',
                 'date_notified'     => bp_core_current_time(),
@@ -255,17 +290,8 @@ if ( ! function_exists( 'dns_send_listing_notification' ) ) {
             ] );
 
             if ( $notification_id ) {
-                bp_notifications_update_meta(
-                    $notification_id,
-                    'dns_message',
-                    sprintf( __( 'New listing match: %s', 'dns' ), $listing_title )
-                );
-
-                bp_notifications_update_meta(
-                    $notification_id,
-                    'dns_link',
-                    $listing_link
-                );
+                bp_notifications_update_meta( $notification_id, 'dns_message', $message );
+                bp_notifications_update_meta( $notification_id, 'dns_link', $listing_link );
             }
         }
 
@@ -274,10 +300,7 @@ if ( ! function_exists( 'dns_send_listing_notification' ) ) {
             bp_push_notification_send( [
                 'user_id' => $user_id,
                 'title'   => __( 'New Listing Match Found!', 'dns' ),
-                'message' => sprintf(
-                    __( 'A new listing matches your preferences: %s', 'dns' ),
-                    $listing_title
-                ),
+                'message' => wp_strip_all_tags( $message ),
                 'url'     => $listing_link,
             ] );
         }
@@ -285,6 +308,35 @@ if ( ! function_exists( 'dns_send_listing_notification' ) ) {
         return true;
     }
 }
+
+
+if ( ! function_exists( 'dns_get_unsubscribe_url' ) ) {
+
+    /**
+     * Generate unsubscribe URL for a user
+     *
+     * @param int $user_id
+     * @return string|false
+     */
+    function dns_get_unsubscribe_url( $user_id ) {
+
+        $user_id = (int) $user_id;
+
+        if ( ! $user_id ) {
+            return false;
+        }
+
+        return add_query_arg(
+            [
+                'dns_unsubscribe' => 1,
+                'user_id'         => $user_id,
+                'nonce'           => wp_create_nonce( 'dns_unsubscribe_' . $user_id ),
+            ],
+            home_url( '/' )
+        );
+    }
+}
+
 
 
 /**

@@ -336,3 +336,77 @@ jQuery(function($){
     });
 
 });
+
+jQuery(document).ready(function ($) {
+
+    function enhanceDnsNotifications() {
+
+        $('.bs-item-wrap .notification-content span').each(function () {
+
+            var $span = $(this);
+            var text  = $span.html();
+
+            // Only process DNS notifications
+            if (text.indexOf('dns_unsubscribe=1') === -1) {
+                return;
+            }
+
+            // Extract URLs
+            var urls = text.match(/https?:\/\/[^\s]+/g);
+            if (!urls || urls.length < 2) {
+                return;
+            }
+
+            var listingUrl     = urls[0];
+            var unsubscribeUrl = urls[1];
+
+            // Clean message text
+            var cleanedText = text
+                .replace(listingUrl, '')
+                .replace(unsubscribeUrl, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            // Build enhanced markup
+            var html =
+                '<div class="dns-notification">' +
+                    '<p>' + cleanedText + '</p>' +
+                    '<div class="dns-notification-actions">' +
+                        '<a href="' + listingUrl + '" class="dns-btn dns-btn-view">View Listing</a>' +
+                        '<a href="' + unsubscribeUrl + '" class="dns-btn dns-btn-unsub">Unsubscribe</a>' +
+                    '</div>' +
+                '</div>';
+
+            $span.html(html);
+        });
+
+        // Now remove outer <a> wrapping the span to avoid nested links
+        $('.bs-item-wrap .notification-content').each(function () {
+
+            var $content = $(this);
+            var $outerLink = $content.find('> a');
+
+            // Only target DNS notifications (must contain our dns-notification)
+            if ($outerLink.find('.dns-notification').length === 0) {
+                return;
+            }
+
+            // Move span content outside the anchor
+            var $spanContent = $outerLink.find('span').contents();
+
+            // Remove the outer <a> but keep its content
+            $outerLink.replaceWith($spanContent);
+
+        });
+
+    }
+
+    // Run once on page load
+    enhanceDnsNotifications();
+
+    // If BuddyBoss loads notifications via AJAX, re-run
+    $(document).ajaxComplete(function () {
+        enhanceDnsNotifications();
+    });
+
+});
