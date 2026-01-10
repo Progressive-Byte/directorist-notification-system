@@ -197,6 +197,7 @@ $market_locations  = $data['market_types']['locations'] ?? [];
                         <div class="dns-location-parents">
                             <?php foreach ($parents as $parent) : 
                                 $selected_count = 0;
+                                $parent_checked = in_array($parent->term_id, $all_saved_locations, true);
                                 if (isset($children[$parent->term_id])) {
                                     foreach ($children[$parent->term_id] as $child) {
                                         if (in_array($child->term_id, $all_saved_locations, true)) {
@@ -205,29 +206,52 @@ $market_locations  = $data['market_types']['locations'] ?? [];
                                     }
                                 }
                                 ?>
-                                <div class="dns-location-parent <?php echo $selected_count > 0 ? 'dns-parent-has-selected' : ''; ?>" 
+                                <div class="dns-location-parent <?php echo $selected_count > 0 || $parent_checked ? 'dns-parent-has-selected' : ''; ?>" 
                                      data-parent-id="<?php echo esc_attr($parent->term_id); ?>">
                                     <span class="dns-location-arrow">▸</span>
                                     <?php echo esc_html($parent->name); ?>
-                                    <?php if ($selected_count > 0) : ?>
-                                        <strong>(<?php echo $selected_count; ?>)</strong>
+                                    <?php if ($selected_count > 0 || $parent_checked) : ?>
+                                        <strong>(<?php echo ($parent_checked ? 1 : 0) + $selected_count; ?>)</strong>
                                     <?php endif; ?>
                                 </div>
 
                                 <div class="dns-location-children" 
                                      id="dns-children-<?php echo esc_attr($parent->term_id); ?>" 
                                      style="display:none;">
-                                    <?php
-                                    if (isset($children[$parent->term_id])) {
-                                        dns_render_checkbox_block(
-                                            $children[$parent->term_id],
-                                            $all_saved_locations,
-                                            __('No locations available.', 'directorist-notification-system'),
-                                            'listing_locations',
-                                            false  
-                                        );
-                                    }
-                                    ?>
+                                    <div class="dns-checkbox-wrapper">
+                                        <div class="dns-checkbox-list">
+                                            <!-- Parent item as first checkbox in children list -->
+                                            <label class="dns-checkbox dns-parent-item <?php echo $parent_checked ? 'dns-checked' : ''; ?>">
+                                                <input type="checkbox"
+                                                    name="listing_locations[]"
+                                                    value="<?php echo esc_attr($parent->term_id); ?>"
+                                                    <?php checked($parent_checked); ?>
+                                                >
+                                                <?php echo esc_html($parent->name); ?>
+                                            </label>
+                                            
+                                            <?php
+                                            // Now render children
+                                            if (isset($children[$parent->term_id])) {
+                                                $i = 1;
+                                                foreach ($children[$parent->term_id] as $child) :
+                                                    $checked = in_array($child->term_id, $all_saved_locations, true);
+                                                    ?>
+                                                    <label class="dns-checkbox <?php echo $checked ? 'dns-checked' : ''; ?>">
+                                                        <input type="checkbox"
+                                                            name="listing_locations[]"
+                                                            value="<?php echo esc_attr($child->term_id); ?>"
+                                                            <?php checked($checked); ?>
+                                                        >
+                                                        <?php echo esc_html($i . '. ' . $child->name); ?>
+                                                    </label>
+                                                    <?php
+                                                    $i++;
+                                                endforeach;
+                                            }
+                                            ?>
+                                        </div>
+                                    </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
