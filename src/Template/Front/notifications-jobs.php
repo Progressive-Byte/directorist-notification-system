@@ -220,7 +220,7 @@ $listing_locations = $data['listing_locations'] ?? [];
                                             $listing_locations,
                                             __('No locations available.', 'directorist-notification-system'),
                                             'listing_locations',
-                                            false  // Don't show controls for nested items
+                                            false  
                                         );
                                     }
                                     ?>
@@ -228,6 +228,8 @@ $listing_locations = $data['listing_locations'] ?? [];
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
+
+                    <hr>
 
                     <!-- Orphan locations (locations without children) -->
                     <?php if (!empty($orphans)) : ?>
