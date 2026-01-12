@@ -103,27 +103,6 @@ $body = get_option(
 </div>
 
 <?php
-// ------------------------------
-// 2. Unsubscribe URL function
-// ------------------------------
-if ( ! function_exists( 'dns_get_unsubscribe_url' ) ) {
-
-    function dns_get_unsubscribe_url( $user_id ) {
-        $user_id = (int) $user_id;
-        if ( ! $user_id ) {
-            return false;
-        }
-
-        return add_query_arg(
-            [
-                'dns_unsubscribe' => 1,
-                'user_id'         => $user_id,
-                'nonce'           => wp_create_nonce( 'dns_unsubscribe_' . $user_id ),
-            ],
-            home_url( '/' )
-        );
-    }
-}
 
 // ------------------------------
 // 3. Replace placeholders function
@@ -141,25 +120,25 @@ if ( ! function_exists( 'dns_parse_email_template' ) ) {
 // ------------------------------
 // 4. Example: Sending email
 // ------------------------------
-function dns_send_listing_email( $user_id, $user_email, $listing ) {
+// function dns_send_listing_email( $user_id, $user_email, $listing ) {
 
-    $subject_template = get_option( 'dns_email_default_subject' );
-    $body_template    = get_option( 'dns_email_default_body' );
+//     $subject_template = get_option( 'dns_email_default_subject' );
+//     $body_template    = get_option( 'dns_email_default_body' );
 
-    // Prepare replacement data
-    $data = [
-        'user_name'       => get_the_author_meta( 'display_name', $user_id ),
-        'listing_title'   => $listing['title'],
-        'listing_link'    => $listing['link'],
-        'listing_types'   => implode( ', ', $listing['types'] ),
-        'listing_cities'  => implode( ', ', $listing['cities'] ),
-        'unsubscribe_url' => dns_get_unsubscribe_url( $user_id ),
-    ];
+//     // Prepare replacement data
+//     $data = [
+//         'user_name'       => get_the_author_meta( 'display_name', $user_id ),
+//         'listing_title'   => $listing['title'],
+//         'listing_link'    => $listing['link'],
+//         'listing_types'   => implode( ', ', $listing['types'] ),
+//         'listing_cities'  => implode( ', ', $listing['cities'] ),
+//         'unsubscribe_url' => dns_get_unsubscribe_url( $user_id ),
+//     ];
 
-    // Replace placeholders
-    $subject = dns_parse_email_template( $subject_template, $data );
-    $body    = dns_parse_email_template( $body_template, $data );
+//     // Replace placeholders
+//     $subject = dns_parse_email_template( $subject_template, $data );
+//     $body    = dns_parse_email_template( $body_template, $data );
 
-    // Send email
-    wp_mail( $user_email, $subject, $body );
-}
+//     // Send email
+//     wp_mail( $user_email, $subject, $body );
+// }

@@ -24,7 +24,7 @@ class Common {
         add_action( 'template_redirect', [ $this, 'check_unsubscribe' ] );  
 
         // Optional head action
-        // add_action( 'wp_head', [ $this, '+' ] );
+        add_action( 'wp_head', [ $this, 'head' ] );
 
         add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'dns_format_listing_notifications', 10, 7 ] );
 
@@ -35,8 +35,114 @@ class Common {
      * Optional head action (currently disabled, placeholder for future use)
      */
     public function head() {
-        // Placeholder: implement global head actions or user preference cleanup here
+
+        // --------------------------
+        // Listing Data
+        // --------------------------
+        $post_id = 11180714;
+        $user_id = 5972;
+
+        if ( ! $post_id || ! $user_id ) {
+            return;
+        }
+
+        $listing_title = get_the_title( $post_id );
+        $listing_link  = get_permalink( $post_id );
+
+        if ( ! $listing_title || ! $listing_link ) {
+            return;
+        }
+
+        $listing_types = wp_get_post_terms(
+            $post_id,
+            'atbdp_listing_types',
+            [ 'fields' => 'names' ]
+        );
+        $listing_types = ! is_wp_error( $listing_types ) ? $listing_types : [];
+
+        $listing_cities = wp_get_post_terms(
+            $post_id,
+            'at_biz_dir-location',
+            [ 'fields' => 'names' ]
+        );
+        $listing_cities = ! is_wp_error( $listing_cities ) ? $listing_cities : [];
+
+        // --------------------------
+        // User Data
+        // --------------------------
+        $user_info = get_userdata( $user_id );
+        if ( ! $user_info || empty( $user_info->user_email ) ) {
+            return;
+        }
+
+        // --------------------------
+        // Email Templates (Defaults)
+        // --------------------------
+        $default_subject = get_option(
+            'dns_email_default_subject',
+            'New Listing Match Found: {listing_title}'
+        );
+
+        $default_body = get_option(
+            'dns_email_default_body',
+            '
+            <p>Hello {user_name},</p>
+            <p>A new listing "<strong>{listing_title}</strong>" matches your preferences.</p>
+            <p><strong>Type:</strong> {listing_types}</p>
+            <p><strong>City:</strong> {listing_cities}</p>
+            <p><a href="{listing_link}">View Listing</a></p>
+            <p><a href="{unsubscribe_url}">Unsubscribe</a></p>
+            '
+        );
+
+        // --------------------------
+        // User Custom Templates
+        // --------------------------
+        $email_subject = get_user_meta( $user_id, 'dns_email_subject', true );
+        $email_body    = get_user_meta( $user_id, 'dns_email_body', true );
+
+        if ( empty( $email_subject ) ) {
+            $email_subject = $default_subject;
+        }
+
+        if ( empty( $email_body ) ) {
+            $email_body = $default_body;
+        }
+
+        // --------------------------
+        // Placeholders
+        // --------------------------
+        $unsubscribe_url = dns_get_unsubscribe_url( $user_id );
+
+        $placeholders = [
+            '{user_name}'       => esc_html( $user_info->display_name ),
+            '{listing_title}'   => esc_html( $listing_title ),
+            '{listing_link}'    => esc_url( $listing_link ),
+            '{listing_types}'   => esc_html( implode( ', ', $listing_types ) ),
+            '{listing_cities}'  => esc_html( implode( ', ', $listing_cities ) ),
+            '{unsubscribe_url}' => esc_url( $unsubscribe_url ),
+        ];
+
+        // --------------------------
+        // Apply Placeholders
+        // --------------------------
+        $subject = strtr( $email_subject, $placeholders );
+        $message = strtr( $email_body, $placeholders );
+
+        // --------------------------
+        // Email Queue
+        // --------------------------
+        $queue[] = [
+            'to'      => $user_info->user_email,
+            'subject' => $subject,
+            'message' => $message,
+            'headers' => [ 'Content-Type: text/html; charset=UTF-8' ],
+        ];
+
+        // Debug (remove in production)
+        dns_display_data( $message );
     }
+
     
 
     /**
@@ -108,89 +214,145 @@ class Common {
     }
 
     /**
-     * Queue subscription emails using transient + WP Cron
+     * Queue subscription emails using Transient + WP Cron
      *
-     * @param int   $post_id Post ID.
+     * @param int   $post_id  Listing post ID.
      * @param array $user_ids Array of user IDs to notify.
      */
     private function queue_subscription_emails( $post_id, $user_ids ) {
 
-        if ( empty( $user_ids ) ) {
+        // --------------------------
+        // Validation
+        // --------------------------
+        $post_id  = (int) $post_id;
+        $user_ids = (array) $user_ids;
+
+        if ( ! $post_id || empty( $user_ids ) ) {
             return;
         }
 
-        $queue = get_transient('dns_email_queue');
-        if ( ! is_array($queue) ) {
+        // --------------------------
+        // Load Existing Queue
+        // --------------------------
+        $queue = get_transient( 'dns_email_queue' );
+        if ( ! is_array( $queue ) ) {
             $queue = [];
         }
 
-        $listing_title = get_the_title($post_id);
-        $listing_link  = get_permalink($post_id);
+        // --------------------------
+        // Listing Data
+        // --------------------------
+        $listing_title = get_the_title( $post_id );
+        $listing_link  = get_permalink( $post_id );
 
-        $listing_types  = wp_get_post_terms($post_id, 'atbdp_listing_types', ['fields'=>'names']);
-        $listing_types  = ! is_wp_error($listing_types) ? $listing_types : [];
+        if ( ! $listing_title || ! $listing_link ) {
+            return;
+        }
 
-        $listing_cities = wp_get_post_terms($post_id, 'at_biz_dir-location', ['fields'=>'names']);
-        $listing_cities = ! is_wp_error($listing_cities) ? $listing_cities : [];
+        $listing_types = wp_get_post_terms(
+            $post_id,
+            'atbdp_listing_types',
+            [ 'fields' => 'names' ]
+        );
+        $listing_types = ! is_wp_error( $listing_types ) ? $listing_types : [];
 
-        // Load global admin email defaults
-        $default_subject = get_option('dns_email_default_subject', 'New Listing Match Found: {listing_title}');
-        $default_body    = get_option('dns_email_default_body', '
+        $listing_cities = wp_get_post_terms(
+            $post_id,
+            'at_biz_dir-location',
+            [ 'fields' => 'names' ]
+        );
+        $listing_cities = ! is_wp_error( $listing_cities ) ? $listing_cities : [];
+
+        // --------------------------
+        // Default Email Templates
+        // --------------------------
+        $default_subject = get_option(
+            'dns_email_default_subject',
+            'New Listing Match Found: {listing_title}'
+        );
+
+        $default_body = get_option(
+            'dns_email_default_body',
+            '
             <p>Hello {user_name},</p>
-            <p>A new listing "{listing_title}" matches your preferences.</p>
-            <p>Type: {listing_types}</p>
-            <p>City: {listing_cities}</p>
+            <p>A new listing "<strong>{listing_title}</strong>" matches your preferences.</p>
+            <p><strong>Type:</strong> {listing_types}</p>
+            <p><strong>City:</strong> {listing_cities}</p>
             <p><a href="{listing_link}">View Listing</a></p>
             <p><a href="{unsubscribe_url}">Unsubscribe</a></p>
-        ');
+            '
+        );
 
+        // --------------------------
+        // Loop Through Users
+        // --------------------------
         foreach ( $user_ids as $user_id ) {
 
-            $user_info = get_userdata($user_id);
-            if ( ! $user_info || empty($user_info->user_email) ) continue;
+            $user_id   = (int) $user_id;
+            $user_info = get_userdata( $user_id );
 
-            // User-specific template
-            $email_subject = get_user_meta($user_id, 'dns_email_subject', true);
-            $email_body    = get_user_meta($user_id, 'dns_email_body', true);
+            if ( ! $user_info || empty( $user_info->user_email ) ) {
+                continue;
+            }
 
-            // Fallback to admin defaults
-            if ( empty($email_subject) ) $email_subject = $default_subject;
-            if ( empty($email_body) )    $email_body    = $default_body;
+            // User-specific templates
+            $email_subject = get_user_meta( $user_id, 'dns_email_subject', true );
+            $email_body    = get_user_meta( $user_id, 'dns_email_body', true );
 
+            if ( empty( $email_subject ) ) {
+                $email_subject = $default_subject;
+            }
+
+            if ( empty( $email_body ) ) {
+                $email_body = $default_body;
+            }
+
+            // Unsubscribe URL
+            $unsubscribe_url = dns_get_unsubscribe_url( $user_id );
+            if ( ! $unsubscribe_url ) {
+                continue;
+            }
+
+            // --------------------------
             // Placeholders
+            // --------------------------
             $placeholders = [
-                '{user_name}'      => $user_info->display_name,
-                '{listing_title}'  => $listing_title,
-                '{listing_link}'   => $listing_link,
-                '{listing_types}'  => implode(', ', $listing_types),
-                '{listing_cities}' => implode(', ', $listing_cities),
-                '{unsubscribe_url}' => add_query_arg([
-                    'dns_unsubscribe' => 1,
-                    'user_id'         => $user_id,
-                    'nonce'           => wp_create_nonce('dns_unsubscribe_'.$user_id),
-                ], site_url())
+                '{user_name}'       => esc_html( $user_info->display_name ),
+                '{listing_title}'   => esc_html( $listing_title ),
+                '{listing_link}'    => esc_url( $listing_link ),
+                '{listing_types}'   => esc_html( implode( ', ', $listing_types ) ),
+                '{listing_cities}'  => esc_html( implode( ', ', $listing_cities ) ),
+                '{unsubscribe_url}' => esc_url( $unsubscribe_url ),
             ];
 
             // Apply placeholders
-            $subject = strtr($email_subject, $placeholders);
-            $message = strtr($email_body, $placeholders);
+            $subject = strtr( $email_subject, $placeholders );
+            $message = strtr( $email_body, $placeholders );
 
-            // Add to queue
+            // --------------------------
+            // Add to Queue
+            // --------------------------
             $queue[] = [
-                'to'       => $user_info->user_email,
-                'subject'  => $subject,
-                'message'  => $message,
-                'headers'  => ['Content-Type: text/html; charset=UTF-8'],
+                'to'      => sanitize_email( $user_info->user_email ),
+                'subject' => $subject,
+                'message' => $message,
+                'headers' => [ 'Content-Type: text/html; charset=UTF-8' ],
             ];
         }
 
-        set_transient('dns_email_queue', $queue, HOUR_IN_SECONDS);
+        // --------------------------
+        // Save Queue
+        // --------------------------
+        set_transient( 'dns_email_queue', $queue, HOUR_IN_SECONDS );
 
-        // Schedule cron job if not already scheduled
-        if ( ! wp_next_scheduled('dns_process_email_queue') ) {
-            wp_schedule_single_event(time()+30, 'dns_process_email_queue');
+        // --------------------------
+        // Schedule Cron
+        // --------------------------
+        if ( ! wp_next_scheduled( 'dns_process_email_queue' ) ) {
+            wp_schedule_single_event( time() + 30, 'dns_process_email_queue' );
         }
     }
+
 
     /**
      * Process queued emails in the background
