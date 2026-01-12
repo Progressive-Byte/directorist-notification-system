@@ -220,18 +220,8 @@ $market_locations  = $data['market_types']['locations'] ?? [];
                                      style="display:none;">
                                     <div class="dns-checkbox-wrapper">
                                         <div class="dns-checkbox-list">
-                                            <!-- Parent item as first checkbox in children list -->
-                                            <label class="dns-checkbox dns-parent-item <?php echo $parent_checked ? 'dns-checked' : ''; ?>">
-                                                <input type="checkbox"
-                                                    name="listing_locations[]"
-                                                    value="<?php echo esc_attr($parent->term_id); ?>"
-                                                    <?php checked($parent_checked); ?>
-                                                >
-                                                <?php echo esc_html($parent->name); ?>
-                                            </label>
-                                            
+                                            <!-- Render only children (parent removed) -->
                                             <?php
-                                            // Now render children
                                             if (isset($children[$parent->term_id])) {
                                                 $i = 1;
                                                 foreach ($children[$parent->term_id] as $child) :
