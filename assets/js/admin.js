@@ -55,24 +55,26 @@ jQuery(document).ready(function ($) {
 });
 
 
-jQuery(document).ready(function($) {
+jQuery(document).ready(function ($) {
 
-    $('.copy-btn').on('click', function() {
+    $('.copy-btn').on('click', function (e) {
+        e.preventDefault(); // ✅ Prevent default action
+
         var text = $(this).data('copy');
         var btn  = $(this);
 
         // Create temporary input field
-        var temp = $("<input>");
-        $("body").append(temp);
+        var temp = $('<input>');
+        $('body').append(temp);
         temp.val(text).select();
-        document.execCommand("copy");
+        document.execCommand('copy');
         temp.remove();
 
         // Change button state
-        btn.text("Copied!").addClass("copied");
+        btn.text('Copied!').addClass('copied');
 
-        setTimeout(function() {
-            btn.text("Copy").removeClass("copied");
+        setTimeout(function () {
+            btn.text('Copy').removeClass('copied');
         }, 1000);
     });
 
