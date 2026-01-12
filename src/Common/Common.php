@@ -220,6 +220,7 @@ class Common {
      */
     public function check_unsubscribe() {
 
+        // Check if required parameters exist
         if ( ! isset($_GET['dns_unsubscribe'], $_GET['user_id'], $_GET['nonce']) ) {
             return;
         }
@@ -227,24 +228,40 @@ class Common {
         $user_id = absint($_GET['user_id']);
         $nonce   = sanitize_text_field(wp_unslash($_GET['nonce']));
 
+        // Validate user ID and nonce
         if ( ! $user_id || ! wp_verify_nonce($nonce, 'dns_unsubscribe_' . $user_id) ) {
-            wp_die( esc_html__('Invalid request.', 'directorist-notification-system') );
+            // Instead of wp_die, just show a notice
+            add_action('the_content', function($content) {
+                return '<div class="dns-error" style="color:red; font-weight:bold; margin:10px 0;">' .
+                    esc_html__('Invalid unsubscribe request.', 'directorist-notification-system') .
+                    '</div>' . $content;
+            });
+            return;
         }
 
-        // Remove user from all subscriptions
+        // Remove user from all subscriptions if function exists
         if ( function_exists('dns_unsubscribe_user') ) {
-            dns_unsubscribe_user($user_id);
+            $already_unsubscribed = ! dns_unsubscribe_user($user_id); // Assuming dns_unsubscribe_user returns false if already unsubscribed
+
+            if ( $already_unsubscribed ) {
+                add_action('the_content', function($content) {
+                    return '<div class="dns-info" style="color:orange; font-weight:bold; margin:10px 0;">' .
+                        esc_html__('You are already unsubscribed.', 'directorist-notification-system') .
+                        '</div>' . $content;
+                });
+                return;
+            }
         }
 
-        // Redirect back to subscription page
+        // Redirect back to subscription page with confirmation
         $subscription_id = (int) get_option('dns_subscription_page_id');
         $redirect_url    = $subscription_id ? get_permalink($subscription_id) : home_url('/');
-
-        $redirect_url = add_query_arg('dns_unsubscribed', '1', $redirect_url);
+        $redirect_url    = add_query_arg('dns_unsubscribed', '1', $redirect_url);
 
         wp_safe_redirect($redirect_url);
         exit;
     }
+
 
     function dns_format_listing_notifications( $content, $user_id, $format,$action,
         $component, $item_id, $secondary_item_id ) {
