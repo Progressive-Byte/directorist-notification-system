@@ -27,7 +27,6 @@ class Common {
         // add_action( 'wp_head', [ $this, '+' ] );
 
         add_filter( 'bp_notifications_get_notifications_for_user', [ $this, 'dns_format_listing_notifications', 10, 7 ] );
-        add_filter( 'bp_get_template_part', [ $this, 'dns_plugin_override_notifications' ], 10, 3 );
 
 
     }
@@ -38,12 +37,7 @@ class Common {
     public function head() {
         // Placeholder: implement global head actions or user preference cleanup here
     }
-
-    public function dns_plugin_override_notifications( $located, $slug, $name ) {
-
-        Messages::pri( $located );
-        return $located;
-    }
+    
 
     /**
      * Handle notifications when a directory post is saved.
