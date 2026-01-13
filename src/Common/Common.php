@@ -424,8 +424,7 @@ class Common {
         exit;
     }
 
-
-    function dns_format_listing_notifications( $content, $user_id, $format,$action,
+    public function dns_format_listing_notifications( $content, $user_id, $format,$action,
         $component, $item_id, $secondary_item_id ) {
 
         if ( $component !== 'activity' || $action !== 'dns_new_listing_match' ) {
