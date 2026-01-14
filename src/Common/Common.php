@@ -172,7 +172,7 @@ class Common {
         // Get users subscribed to the post's categories and locations
         // --------------------------
         $taxonomies = [ ATBDP_CATEGORY, ATBDP_LOCATION ];
-        $user_ids   = dns_get_subscribed_users_by_post( $post_id, $taxonomies );
+        $user_ids   = dns_find_matching_users_for_post( $post_id );
 
         if ( empty( $user_ids ) ) {
             return;

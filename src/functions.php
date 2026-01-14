@@ -296,14 +296,14 @@ if ( ! function_exists( 'dns_send_listing_notification' ) ) {
         }
 
         /* BuddyBoss Push Notification */
-        if ( function_exists( 'bp_push_notification_send' ) ) {
-            bp_push_notification_send( [
-                'user_id' => $user_id,
-                'title'   => __( 'New Listing Match Found!', 'dns' ),
-                'message' => wp_strip_all_tags( $message ),
-                'url'     => $listing_link,
-            ] );
-        }
+        // if ( function_exists( 'bp_push_notification_send' ) ) {
+        //     bp_push_notification_send( [
+        //         'user_id' => $user_id,
+        //         'title'   => __( 'New Listing Match Found!', 'dns' ),
+        //         'message' => wp_strip_all_tags( $message ),
+        //         'url'     => $listing_link,
+        //     ] );
+        // }
 
         return true;
     }
@@ -696,6 +696,71 @@ if ( ! function_exists( 'remove_user_from_terms' ) ) {
                 update_term_meta( $term_id, 'subscribed_users', $existing );
             }
         }
+    }
+}
+
+
+/**
+ * Find users whose meta data matches a post's categories and locations
+ */
+if ( ! function_exists( 'dns_find_matching_users_for_post' ) ) {
+    function dns_find_matching_users_for_post( $post_id ) {
+
+        // Get post categories and locations
+        $post_categories = wp_get_post_terms( $post_id, 'at_biz_dir-category', ['fields' => 'ids'] );
+        $post_locations = wp_get_post_terms( $post_id, 'at_biz_dir-location', ['fields' => 'ids'] );
+
+        // Handle potential errors
+        if ( is_wp_error( $post_categories ) ) {
+            $post_categories = [];
+        }
+
+        if ( is_wp_error( $post_locations ) ) {
+            $post_locations = [];
+        }
+
+        // If no categories or locations, return empty array
+        if ( empty( $post_categories ) && empty( $post_locations ) ) {
+            return [];
+        }
+
+        // Get all users who have notification preferences
+        $users = get_users([
+            'meta_key'     => 'dns_notify_prefs',
+            'meta_compare' => 'EXISTS',
+        ]);
+
+        $matching_users = [];
+
+        foreach ( $users as $user ) {
+            $user_prefs = get_user_meta( $user->ID, 'dns_notify_prefs', true );
+
+            if ( empty( $user_prefs ) || ! is_array( $user_prefs ) ) {
+                continue;
+            }
+
+            // Check both listing_types and market_types
+            foreach ( ['listing_types', 'market_types'] as $pref_type ) {
+
+                if ( ! isset( $user_prefs[ $pref_type ] ) || ! is_array( $user_prefs[ $pref_type ] ) ) {
+                    continue;
+                }
+
+                $user_listings = isset( $user_prefs[ $pref_type ]['listing'] ) ? $user_prefs[ $pref_type ]['listing'] : [];
+                $user_locations = isset( $user_prefs[ $pref_type ]['locations'] ) ? $user_prefs[ $pref_type ]['locations'] : [];
+
+                // Check if user has matching categories and locations
+                $category_match = ! empty( array_intersect( $post_categories, $user_listings ) );
+                $location_match = ! empty( array_intersect( $post_locations, $user_locations ) );
+
+                if ( $category_match && $location_match ) {
+                    $matching_users[] = $user->ID;
+                    break; // Found a match, no need to check other pref types for this user
+                }
+            }
+        }
+
+        return array_unique( $matching_users );
     }
 }
 
