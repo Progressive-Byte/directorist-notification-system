@@ -249,7 +249,6 @@ Unsubscribe: {unsubscribe_url}
                 } else {
                     $failed_count++;
                     do_action( 'dns_email_failed', $user_id, $post_id );
-                    error_log( 'DNS: Failed to send email to ' . $user->user_email . ' for post ' . $post_id );
                 }
                 
                 // Small delay to prevent rate limiting
