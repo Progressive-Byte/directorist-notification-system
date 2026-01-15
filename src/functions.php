@@ -773,3 +773,37 @@ if ( ! function_exists( 'dns_is_multiple_address_enabled' ) ) {
         return (bool) get_option('dns_multiple_address_enabled', false);
     }
 }
+
+/**
+ * Get the directory type name for a listing post.
+ *
+ * @param int $post_id The listing post ID
+ * @return string The directory type name, or empty string if not found
+ */
+function get_directory_type_name( $post_id ) {
+    global $wpdb;
+
+    if ( ! $post_id ) {
+        return '';
+    }
+
+    // Get the term ID from post meta
+    $term_id = get_post_meta( $post_id, '_directory_type', true );
+
+    if ( ! $term_id ) {
+        return ''; // no term assigned
+    }
+
+    // Ensure it's numeric
+    $term_id = intval( $term_id );
+
+    // Query term name from wp_terms table
+    $sql = $wpdb->prepare(
+        "SELECT name FROM {$wpdb->prefix}terms WHERE term_id = %d LIMIT 1",
+        $term_id
+    );
+
+    $term_name = $wpdb->get_var( $sql );
+
+    return $term_name ?: ''; // return empty string if nothing found
+}
