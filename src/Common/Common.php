@@ -91,17 +91,18 @@ class Common {
         }
 
         // --------------------------
-        // Queue subscription emails
+        // LIGHTWEIGHT: Just queue post_id and user_ids
         // --------------------------
-        $result = $this->dns_send_listing_notification_emails( $post_id, $new_users );
-
-        // --------------------------
-        // Only update notified users if emails were queued successfully
-        // --------------------------
-        if ( is_wp_error( $result ) ) {
-            error_log( 'DNS Email Queue Error: ' . $result->get_error_message() );
-            return;
-        }
+        $queue = get_transient( 'dns_email_queue' );
+        $queue = is_array( $queue ) ? $queue : [];
+        
+        // Add to queue (just post_id and user_ids)
+        $queue[] = [
+            'post_id'  => $post_id,
+            'user_ids' => $new_users,
+        ];
+        
+        set_transient( 'dns_email_queue', $queue, HOUR_IN_SECONDS );
 
         // --------------------------
         // Send BuddyPress notifications to new users
@@ -117,164 +118,18 @@ class Common {
         // --------------------------
         $updated_users = array_merge( $notified_users, $new_users );
         update_post_meta( $post_id, '_notified_users', array_unique( $updated_users ) );
-    }
 
-    /**
-     * Queue email notifications for users about a new listing
-     *
-     * @param int   $post_id  The listing post ID
-     * @param array $user_ids Array of user IDs to notify
-     * @return bool|WP_Error True on success, WP_Error on failure
-     */
-    public function dns_send_listing_notification_emails( $post_id, $user_ids ) {
-        
-        // --------------------------
-        // VALIDATION
-        // --------------------------
-        $post_id  = absint( $post_id );
-        $user_ids = array_filter( array_map( 'absint', (array) $user_ids ) );
-        
-        if ( ! $post_id || get_post_status( $post_id ) !== 'publish' ) {
-            return new \WP_Error( 'invalid_post', __( 'Invalid or unpublished post ID.', 'directorist-notification-system' ) );
-        }
-        
-        if ( empty( $user_ids ) ) {
-            return new \WP_Error( 'no_users', __( 'No users provided for notification.', 'directorist-notification-system' ) );
-        }
-        
-        // --------------------------
-        // GET LISTING DATA
-        // --------------------------
-        $listing_types = wp_get_post_terms( $post_id, ATBDP_TYPE, [ 'fields' => 'names' ] );
-        $categories    = wp_get_post_terms( $post_id, ATBDP_CATEGORY, [ 'fields' => 'names' ] );
-        $locations     = wp_get_post_terms( $post_id, ATBDP_LOCATION, [ 'fields' => 'names' ] );
-        
-        // Handle WP_Error from taxonomy queries
-        if ( is_wp_error( $listing_types ) ) $listing_types = [];
-        if ( is_wp_error( $categories ) ) $categories = [];
-        if ( is_wp_error( $locations ) ) $locations = [];
-        
-        $listing_data = [
-            'title'    => get_the_title( $post_id ),
-            'link'     => get_permalink( $post_id ),
-            'type'     => implode( ', ', $listing_types ),
-            'category' => implode( ', ', $categories ),
-            'location' => implode( ', ', $locations ),
-        ];
-        
-        // --------------------------
-        // GET EMAIL TEMPLATES
-        // --------------------------
-        $email_subject = get_option(
-            'dns_email_default_subject',
-            __( 'New Listing Match Found: {listing_title}', 'directorist-notification-system' )
-        );
-        
-        $email_body = get_option(
-            'dns_email_default_body',
-            '
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #333;">Hello {user_name},</h2>
-                <p>A new listing matching your preferences has been posted:</p>
-                
-                <div style="background: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
-                    <h3 style="margin-top: 0; color: #0073aa;">{listing_title}</h3>
-                    <p><strong>Type:</strong> {listing_types}</p>
-                    <p><strong>Category:</strong> {listing_category}</p>
-                    <p><strong>Location:</strong> {listing_cities}</p>
-                </div>
-                
-                <p style="text-align: center;">
-                    <a href="{listing_link}" style="background: #0073aa; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                        View Listing
-                    </a>
-                </p>
-                
-                <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
-                
-                <p style="font-size: 12px; color: #666;">
-                    Don\'t want these notifications? 
-                    <a href="{unsubscribe_url}" style="color: #0073aa;">Unsubscribe</a>
-                </p>
-            </div>
-            '
-        );
-        
-        // --------------------------
-        // BUILD EMAIL QUEUE
-        // --------------------------
-        $queue = get_transient( 'dns_email_queue' );
-        $queue = is_array( $queue ) ? $queue : [];
-        
-        $queued_count = 0;
-        
-        foreach ( $user_ids as $user_id ) {
-            $user = get_userdata( $user_id );
-            
-            // Skip invalid users or users without email
-            if ( ! $user || empty( $user->user_email ) ) {
-                continue;
-            }
-            
-            // Skip if user has unsubscribed
-            if ( get_user_meta( $user_id, 'dns_unsubscribed', true ) ) {
-                continue;
-            }
-            
-            // Build placeholders for this user
-            $placeholders = [
-                '{user_name}'        => esc_html( $user->display_name ),
-                '{listing_title}'    => esc_html( $listing_data['title'] ),
-                '{listing_link}'     => esc_url( $listing_data['link'] ),
-                '{listing_types}'    => esc_html( $listing_data['type'] ),
-                '{listing_category}' => esc_html( $listing_data['category'] ),
-                '{listing_cities}'   => esc_html( $listing_data['location'] ),
-                '{unsubscribe_url}'  => esc_url( dns_get_unsubscribe_url( $user_id ) ),
-                '{site_name}'        => esc_html( get_bloginfo( 'name' ) ),
-            ];
-            
-            // Replace placeholders
-            $subject = strtr( $email_subject, $placeholders );
-            $message = strtr( $email_body, $placeholders );
-            
-            // Add to queue
-            $queue[] = [
-                'to'      => sanitize_email( $user->user_email ),
-                'subject' => $subject,
-                'message' => $message,
-                'headers' => [
-                    'Content-Type: text/html; charset=UTF-8',
-                    'From: ' . get_bloginfo( 'name' ) . ' <' . get_option( 'admin_email' ) . '>',
-                ],
-            ];
-            
-            $queued_count++;
-        }
-        
-        // --------------------------
-        // SAVE QUEUE
-        // --------------------------
-        $saved = set_transient( 'dns_email_queue', $queue, HOUR_IN_SECONDS );
-        
-        if ( ! $saved ) {
-            return new \WP_Error( 'queue_save_failed', __( 'Failed to save email queue.', 'directorist-notification-system' ) );
-        }
-        
         // --------------------------
         // SCHEDULE CRON
         // --------------------------
         if ( ! wp_next_scheduled( 'dns_process_email_queue' ) ) {
             wp_schedule_single_event( time() + 30, 'dns_process_email_queue' );
         }
-        
-        // Log success
-        do_action( 'dns_emails_queued', $post_id, $user_ids, $queued_count );
-        
-        return true;
     }
 
     /**
      * Process email queue (called by cron)
+     * NOW: Gets all data when processing
      */
     public function dns_process_email_queue() {
         $queue = get_transient( 'dns_email_queue' );
@@ -283,38 +138,127 @@ class Common {
             return;
         }
         
-        $batch_size = apply_filters( 'dns_email_batch_size', 50 ); // Process 50 emails at a time
+        $batch_size = apply_filters( 'dns_email_batch_size', 10 ); // Process 10 posts at a time
+        $processed_count = 0;
         $sent_count = 0;
         $failed_count = 0;
         
-        foreach ( $queue as $index => $email ) {
-            if ( $sent_count >= $batch_size ) {
+        foreach ( $queue as $index => $item ) {
+            if ( $processed_count >= $batch_size ) {
                 break;
             }
             
-            $result = wp_mail(
-                $email['to'],
-                $email['subject'],
-                $email['message'],
-                $email['headers']
+            $post_id  = $item['post_id'];
+            $user_ids = $item['user_ids'];
+            
+            // --------------------------
+            // NOW GET ALL LISTING DATA
+            // --------------------------
+            $listing_types = wp_get_post_terms( $post_id, ATBDP_TYPE, [ 'fields' => 'names' ] );
+            $categories    = wp_get_post_terms( $post_id, ATBDP_CATEGORY, [ 'fields' => 'names' ] );
+            $locations     = wp_get_post_terms( $post_id, ATBDP_LOCATION, [ 'fields' => 'names' ] );
+            
+            // Handle WP_Error from taxonomy queries
+            if ( is_wp_error( $listing_types ) ) $listing_types = [];
+            if ( is_wp_error( $categories ) ) $categories = [];
+            if ( is_wp_error( $locations ) ) $locations = [];
+            
+            $listing_data = [
+                'title'    => get_the_title( $post_id ),
+                'link'     => get_permalink( $post_id ),
+                'type'     => implode( ', ', $listing_types ),
+                'category' => implode( ', ', $categories ),
+                'location' => implode( ', ', $locations ),
+            ];
+            
+            // --------------------------
+            // GET EMAIL TEMPLATES
+            // --------------------------
+            $email_subject = get_option(
+                'dns_email_default_subject',
+                __( 'New Listing Match Found: {listing_title}', 'directorist-notification-system' )
             );
             
-            if ( $result ) {
-                unset( $queue[ $index ] );
-                $sent_count++;
+            $email_body = get_option(
+                'dns_email_default_body',
+                'Hello {user_name},
+
+A new listing matching your preferences has been posted:
+
+{listing_title}
+
+Type: {listing_types}
+Category: {listing_category}
+Location: {listing_cities}
+
+View Listing: {listing_link}
+
+---
+You are receiving this because you subscribed to listing alerts.
+Unsubscribe: {unsubscribe_url}
+
+© 2026 {site_name}. All rights reserved.'
+            );
+            
+            // --------------------------
+            // SEND EMAILS TO ALL USERS FOR THIS POST
+            // --------------------------
+            foreach ( $user_ids as $user_id ) {
+                $user = get_userdata( $user_id );
                 
-                // Log success
-                do_action( 'dns_email_sent', $email );
-            } else {
-                $failed_count++;
+                // Skip invalid users or users without email
+                if ( ! $user || empty( $user->user_email ) ) {
+                    continue;
+                }
                 
-                // Log failure
-                do_action( 'dns_email_failed', $email );
-                error_log( 'DNS: Failed to send email to ' . $email['to'] );
+                // Skip if user has unsubscribed
+                if ( get_user_meta( $user_id, 'dns_unsubscribed', true ) ) {
+                    continue;
+                }
+                
+                // Build placeholders for this user
+                $placeholders = [
+                    '{user_name}'        => esc_html( $user->display_name ),
+                    '{listing_title}'    => esc_html( $listing_data['title'] ),
+                    '{listing_link}'     => esc_url( $listing_data['link'] ),
+                    '{listing_types}'    => esc_html( $listing_data['type'] ),
+                    '{listing_category}' => esc_html( $listing_data['category'] ),
+                    '{listing_cities}'   => esc_html( $listing_data['location'] ),
+                    '{unsubscribe_url}'  => esc_url( dns_get_unsubscribe_url( $user_id ) ),
+                    '{site_name}'        => esc_html( get_bloginfo( 'name' ) ),
+                ];
+                
+                // Replace placeholders
+                $subject = strtr( $email_subject, $placeholders );
+                $message = strtr( $email_body, $placeholders );
+                
+                // Send email
+                $result = wp_mail(
+                    sanitize_email( $user->user_email ),
+                    $subject,
+                    $message,
+                    [
+                        'Content-Type: text/plain; charset=UTF-8',
+                        'From: ' . get_bloginfo( 'name' ) . ' <' . get_option( 'admin_email' ) . '>',
+                    ]
+                );
+                
+                if ( $result ) {
+                    $sent_count++;
+                    do_action( 'dns_email_sent', $user_id, $post_id );
+                } else {
+                    $failed_count++;
+                    do_action( 'dns_email_failed', $user_id, $post_id );
+                    error_log( 'DNS: Failed to send email to ' . $user->user_email . ' for post ' . $post_id );
+                }
+                
+                // Small delay to prevent rate limiting
+                usleep( 100000 ); // 0.1 second
             }
             
-            // Small delay to prevent rate limiting
-            usleep( 100000 ); // 0.1 second
+            // Remove this item from queue
+            unset( $queue[ $index ] );
+            $processed_count++;
         }
         
         // Reindex array
@@ -333,9 +277,10 @@ class Common {
         }
         
         // Log batch completion
-        do_action( 'dns_email_batch_processed', $sent_count, $failed_count, count( $queue ) );
+        do_action( 'dns_email_batch_processed', $processed_count, $sent_count, $failed_count, count( $queue ) );
     }
 
+    
     /**
      * Handle global unsubscribe requests
      */
