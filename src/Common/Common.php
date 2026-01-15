@@ -35,10 +35,10 @@ class Common {
      */
     public function head() {
 
-        $post_id = 11180729;
-        $user_ids = [ 213, 224, 246 ];
-        $result = $this->dns_send_listing_notification_emails( $post_id, $user_ids );
-        Messages::pri( $result );
+        // $post_id = 11180729;
+        // $user_ids = [ 213, 224, 246 ];
+        // $result = $this->dns_send_listing_notification_emails( $post_id, $user_ids );
+        // Messages::pri( $result );
 
     }
 
