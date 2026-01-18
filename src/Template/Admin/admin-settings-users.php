@@ -194,6 +194,59 @@ use DNS\Helper\Messages;
             </td>
         </tr>
 
+        <!-- Email Notification -->
+        <tr>
+            <th scope="row">
+                <?php esc_html_e('Enable Email Notification', 'directorist-notification-system'); ?>
+            </th>
+            <td>
+                <?php
+                $email_enabled = (bool) get_option('dns_email_notification_enabled', true);
+                ?>
+                <label class="dns-toggle-wrapper">
+                    <span class="dns-toggle">
+                        <input
+                            type="checkbox"
+                            name="dns_email_notification_enabled"
+                            value="1"
+                            <?php checked($email_enabled, true); ?>
+                        />
+                        <span class="dns-toggle-slider"></span>
+                    </span>
+                    <span>
+                        <?php esc_html_e('Send notifications via email', 'directorist-notification-system'); ?>
+                    </span>
+                </label>
+            </td>
+        </tr>
+
+        <!-- In-App / System Notification -->
+        <tr>
+            <th scope="row">
+                <?php esc_html_e('Enable bb Notification', 'directorist-notification-system'); ?>
+            </th>
+            <td>
+                <?php
+                $system_notification_enabled = (bool) get_option('dns_system_notification_enabled', true);
+                ?>
+                <label class="dns-toggle-wrapper">
+                    <span class="dns-toggle">
+                        <input
+                            type="checkbox"
+                            name="dns_system_notification_enabled"
+                            value="1"
+                            <?php checked($system_notification_enabled, true); ?>
+                        />
+                        <span class="dns-toggle-slider"></span>
+                    </span>
+                    <span>
+                        <?php esc_html_e('Show notifications inside dashboard', 'directorist-notification-system'); ?>
+                    </span>
+                </label>
+            </td>
+        </tr>
+
+
 
     </table>
 

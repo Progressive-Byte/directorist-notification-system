@@ -72,6 +72,8 @@ class Admin {
             'dns_subscription_page_id',
             'dns_secondary_page_id',
             'dns_multiple_address_enabled',
+            'dns_email_notification_enabled',
+            'dns_system_notification_enabled',
         ];
 
         foreach ($settings as $setting) {

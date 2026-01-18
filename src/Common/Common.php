@@ -107,9 +107,11 @@ class Common {
         // --------------------------
         // Send BuddyPress notifications to new users
         // --------------------------
-        foreach ( $new_users as $user_id ) {
-            if ( function_exists( 'dns_send_listing_notification' ) ) {
-                dns_send_listing_notification( $user_id, $post_id );
+        if ( get_option('dns_system_notification_enabled', true) ) {
+            foreach ( $new_users as $user_id ) {
+                if ( function_exists( 'dns_send_listing_notification' ) ) {
+                    dns_send_listing_notification( $user_id, $post_id );
+                }
             }
         }
 
@@ -122,9 +124,14 @@ class Common {
         // --------------------------
         // SCHEDULE CRON
         // --------------------------
-        if ( ! wp_next_scheduled( 'dns_process_email_queue' ) ) {
-            wp_schedule_single_event( time() + 30, 'dns_process_email_queue' );
+        if ( get_option( 'dns_email_notification_enabled', true ) ) {
+
+            if ( ! wp_next_scheduled( 'dns_process_email_queue' ) ) {
+                wp_schedule_event( time() + 30, 'minute', 'dns_process_email_queue' );
+            }
         }
+
+
     }
 
     /**

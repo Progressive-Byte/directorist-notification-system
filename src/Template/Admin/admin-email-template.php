@@ -102,7 +102,3 @@ $body = get_option(
 
     </form>
 </div>
-
-
-
-
