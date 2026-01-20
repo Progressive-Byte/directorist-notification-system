@@ -107,13 +107,13 @@ class Common {
         // --------------------------
         // Send BuddyPress notifications to new users
         // --------------------------
-        if ( get_option('dns_system_notification_enabled', true) ) {
-            foreach ( $new_users as $user_id ) {
-                if ( function_exists( 'dns_send_listing_notification' ) ) {
-                    dns_send_listing_notification( $user_id, $post_id );
-                }
-            }
-        }
+        // if ( get_option('dns_system_notification_enabled', true) ) {
+        //     foreach ( $new_users as $user_id ) {
+        //         if ( function_exists( 'dns_send_listing_notification' ) ) {
+        //             dns_send_listing_notification( $user_id, $post_id );
+        //         }
+        //     }
+        // }
 
         // --------------------------
         // Update post meta to avoid notifying the same users again
@@ -127,7 +127,7 @@ class Common {
         if ( get_option( 'dns_email_notification_enabled', true ) ) {
 
             if ( ! wp_next_scheduled( 'dns_process_email_queue' ) ) {
-                wp_schedule_event( time() + 30, 'minute', 'dns_process_email_queue' );
+                wp_schedule_single_event( time() + 30, 'dns_process_email_queue' );
             }
         }
 
@@ -212,6 +212,14 @@ Unsubscribe: {unsubscribe_url}
             // --------------------------
             foreach ( $user_ids as $user_id ) {
                 $user = get_userdata( $user_id );
+
+                if ( get_option('dns_system_notification_enabled', true) ) {
+                    
+                    if ( function_exists( 'dns_send_listing_notification' ) ) {
+                        dns_send_listing_notification( $user_id, $post_id );
+                    }
+                    
+                }
                 
                 // Skip invalid users or users without email
                 if ( ! $user || empty( $user->user_email ) ) {
